@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alertas · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="db-wrapper">
+        <header class="db-topbar">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="db-link">← Inicio</a>
+        </header>
+
+        <p class="db-eyebrow">Vencimientos</p>
+        <h1 class="db-page-title">Alertas</h1>
+        <p class="db-page-subtitle">Socios cuyo vencimiento cae dentro de los próximos {{ dias_limite }} día(s).</p>
+
+        <h3 class="db-section-title db-section-title-danger">❌ Vencidos ({{ vencidos|length }})</h3>
+        {% if vencidos %}
+            <div class="db-list">
+                {% for socio in vencidos %}
+                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
+                        <img class="db-avatar db-avatar--sm"
+                             src="{{ url_for('static', filename='fotos/' + (socio.foto if socio.foto else 'sin-foto.png')) }}"
+                             alt="Foto de {{ socio.nombre }}">
+                        <div class="db-row-info">
+                            <span class="db-row-name">{{ socio.apellido }}, {{ socio.nombre }}</span>
+                            <span class="db-row-meta">
+                                DNI: {{ socio.dni }}
+                                {% if socio.fecha_proximo_vencimiento %} · Venció: {{ socio.fecha_proximo_vencimiento }}{% else %} · Nunca pagó{% endif %}
+                            </span>
+                        </div>
+                        <span class="db-badge db-badge-danger">Vencido</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="db-empty">No hay socios vencidos. 🎉</p>
+        {% endif %}
+
+        <h3 class="db-section-title db-section-title-warning">⏰ Por vencer pronto ({{ por_vencer|length }})</h3>
+        {% if por_vencer %}
+            <div class="db-list">
+                {% for socio in por_vencer %}
+                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
+                        <img class="db-avatar db-avatar--sm"
+                             src="{{ url_for('static', filename='fotos/' + (socio.foto if socio.foto else 'sin-foto.png')) }}"
+                             alt="Foto de {{ socio.nombre }}">
+                        <div class="db-row-info">
+                            <span class="db-row-name">{{ socio.apellido }}, {{ socio.nombre }}</span>
+                            <span class="db-row-meta">DNI: {{ socio.dni }} · Vence: {{ socio.fecha_proximo_vencimiento }}</span>
+                        </div>
+                        <span class="db-badge db-badge-warning">Vence pronto</span>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="db-empty">Nadie vence en los próximos {{ dias_limite }} días.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

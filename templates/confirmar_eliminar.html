@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmar baja · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <p class="db-eyebrow" style="text-align:center;">Acción irreversible</p>
+        <h1 class="db-page-title" style="text-align:center;">Confirmar baja</h1>
+
+        <div class="db-card">
+            <div class="db-profile">
+                <img class="db-avatar"
+                     src="{{ url_for('static', filename='fotos/' + (usuario.foto if usuario.foto else 'sin-foto.png')) }}"
+                     alt="Foto de {{ usuario.nombre }}">
+                <p class="db-profile-name">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+                <p class="db-profile-meta">DNI {{ usuario.dni }}</p>
+            </div>
+
+            <p class="db-warning-text">
+                Esta acción eliminará al socio y todo su historial de pagos de forma permanente. No se puede deshacer.
+            </p>
+
+            <div class="db-btn-row">
+                <form action="{{ url_for('eliminar_socio', dni=usuario.dni) }}" method="POST" style="flex:1;">
+                    <button type="submit" class="db-btn db-btn-danger" style="width:100%;">Sí, dar de baja</button>
+                </form>
+                <a href="{{ url_for('ver_socio', dni=usuario.dni) }}" class="db-btn db-btn-secondary">Cancelar</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

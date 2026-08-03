@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Pago · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <header class="db-topbar" style="border:none; margin-bottom:20px; padding:0;">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+        </header>
+
+        <p class="db-eyebrow">Pagos</p>
+        <h1 class="db-page-title">Registrar pago</h1>
+        <p class="db-page-subtitle">Elegí el socio, el mes y el plan.</p>
+
+        <div class="db-card">
+            {% if error %}
+                <p class="db-alert-error">{{ error }}</p>
+            {% endif %}
+
+            <form action="{{ url_for('nuevo_pago') }}" method="POST">
+                <div class="db-field">
+                    <label>Socio</label>
+                    <select name="dni" class="db-input" required>
+                        <option value="">-- Seleccioná un socio --</option>
+                        {% for socio in socios %}
+                            <option value="{{ socio.dni }}" {% if socio.dni == dni_preseleccionado %}selected{% endif %}>
+                                {{ socio.apellido }}, {{ socio.nombre }} (DNI {{ socio.dni }})
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="db-field">
+                    <label>Mes que paga</label>
+                    <select name="id_mes" class="db-input" required>
+                        {% for mes in meses %}
+                            <option value="{{ mes.id_mes }}" {% if mes.id_mes == mes_actual %}selected{% endif %}>
+                                {{ mes.nombre_mes }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="db-field">
+                    <label>Año</label>
+                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}" required>
+                </div>
+
+                <div class="db-field">
+                    <label>Plan / Membresía</label>
+                    <select name="id_precio" class="db-input" required>
+                        <option value="">-- Seleccioná un plan --</option>
+                        {% for precio in precios %}
+                            <option value="{{ precio.id_precio }}">{{ precio.tipo_membresia }} — ${{ precio.monto }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="db-field">
+                    <label>Fecha de pago</label>
+                    <input type="date" name="fecha_pago" class="db-input" value="{{ fecha_hoy }}" required>
+                </div>
+
+                <div class="db-btn-row">
+                    <button type="submit" class="db-btn db-btn-primary">Registrar pago</button>
+                    <a href="{{ url_for('index') }}" class="db-btn db-btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

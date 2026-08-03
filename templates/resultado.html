@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ usuario.nombre }} {{ usuario.apellido }} · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <header class="db-topbar" style="border:none; margin-bottom:20px; padding:0;">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="db-link">← Inicio</a>
+        </header>
+
+        {% if mensaje == 'alta' %}
+            <p class="db-alert-success">✅ Socio dado de alta correctamente.</p>
+        {% elif mensaje == 'edicion' %}
+            <p class="db-alert-success">✅ Datos actualizados correctamente.</p>
+        {% elif mensaje == 'pago' %}
+            <p class="db-alert-success">✅ Pago registrado correctamente.</p>
+        {% endif %}
+
+        <div class="db-card">
+            <div class="db-profile">
+                <img class="db-avatar"
+                     src="{{ url_for('static', filename='fotos/' + (usuario.foto if usuario.foto else 'sin-foto.png')) }}"
+                     alt="Foto de {{ usuario.nombre }}">
+                <p class="db-profile-name">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+                <p class="db-profile-meta">DNI {{ usuario.dni }}</p>
+                <p class="db-profile-meta">{{ usuario.telefono or 'Sin teléfono' }} · {{ usuario.email or 'Sin email' }}</p>
+            </div>
+
+            {% if membresia_al_dia %}
+                <div class="db-status db-status-ok">✅ Membresía al día</div>
+                <p class="db-status-note">Vence el {{ usuario.fecha_proximo_vencimiento }} (día {{ usuario.dia_vencimiento }} de cada mes)</p>
+            {% else %}
+                <div class="db-status db-status-danger">❌ Membresía vencida</div>
+                {% if usuario.fecha_proximo_vencimiento %}
+                    <p class="db-status-note">Venció el {{ usuario.fecha_proximo_vencimiento }} (día {{ usuario.dia_vencimiento }} de cada mes)</p>
+                {% else %}
+                    <p class="db-status-note">Todavía no registró ningún pago.</p>
+                {% endif %}
+            {% endif %}
+
+            {% if historial_pagos %}
+                <div class="db-table-wrap">
+                    <p class="db-section-label" style="margin-bottom:10px;">Historial de pagos</p>
+                    <table class="db-table">
+                        <thead>
+                            <tr><th>Mes</th><th>Plan</th><th>Monto</th><th>Fecha</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for pago in historial_pagos %}
+                                <tr>
+                                    <td>{{ pago.nombre_mes }} {{ pago.anio }}</td>
+                                    <td>{{ pago.tipo_membresia }}</td>
+                                    <td>${{ pago.monto }}</td>
+                                    <td>{{ pago.fecha_pago }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="db-empty">Este socio no tiene pagos registrados.</p>
+            {% endif %}
+
+            <div class="db-btn-row">
+                <a href="{{ url_for('editar_socio', dni=usuario.dni) }}" class="db-btn db-btn-secondary">✏️ Editar</a>
+                <a href="{{ url_for('nuevo_pago', dni=usuario.dni) }}" class="db-btn db-btn-primary">💰 Pago</a>
+                <a href="{{ url_for('eliminar_socio', dni=usuario.dni) }}" class="db-btn db-btn-danger">🗑️ Baja</a>
+            </div>
+        </div>
+
+        <a href="{{ url_for('index') }}" class="db-link db-back-link">← Buscar otro DNI</a>
+    </div>
+</body>
+</html>

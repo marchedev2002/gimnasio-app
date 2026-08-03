@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Ingreso · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow" style="text-align:center;">
+        <p class="db-eyebrow">Control de acceso</p>
+        <h1 class="db-page-title">Registrar ingreso</h1>
+        <p class="db-page-subtitle">Pasá el DNI del socio para registrar su entrada.</p>
+
+        <form action="{{ url_for('procesar_checkin') }}" method="POST" class="db-search-form">
+            <span class="db-search-icon">#</span>
+            <input type="text" name="dni" class="db-search-input" placeholder="Ingresá el DNI" autofocus required>
+            <button type="submit" class="db-search-btn">Ingresar</button>
+        </form>
+
+        {% if error %}
+            <p class="db-alert-error" style="margin-top:16px;">{{ error }}</p>
+        {% endif %}
+
+        <a href="{{ url_for('index') }}" class="db-link db-back-link">← Volver al inicio</a>
+    </div>
+</body>
+</html>

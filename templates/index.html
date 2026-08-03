@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ nombre_gimnasio }} · Panel de Control</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="db-wrapper">
+        <header class="db-topbar">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+            <div class="db-user">
+                <span class="db-user-name">{{ session.get('nombre', session.get('usuario', '')) }}</span>
+                <a href="{{ url_for('logout') }}" class="db-logout">Salir</a>
+            </div>
+        </header>
+
+        <main>
+            <section>
+                <p class="db-eyebrow">Control de acceso</p>
+                <h1 class="db-hero-title">Buscar socio</h1>
+
+                <form action="{{ url_for('buscar') }}" method="POST" class="db-search-form">
+                    <span class="db-search-icon">#</span>
+                    <input type="text" name="dni" class="db-search-input" placeholder="Ingresá el DNI" autofocus required>
+                    <button type="submit" class="db-search-btn">Buscar</button>
+                </form>
+
+                {% if error %}
+                    <p class="db-alert-error" style="margin-top:16px;">{{ error }}</p>
+                {% endif %}
+            </section>
+
+            <section class="db-stats" style="margin-top:40px;">
+                <div class="db-stat-card">
+                    <span class="db-stat-number">{{ total_socios|default(0) }}</span>
+                    <span class="db-stat-label">Socios totales</span>
+                </div>
+                <div class="db-stat-card db-stat-ok">
+                    <span class="db-stat-number">{{ total_al_dia|default(0) }}</span>
+                    <span class="db-stat-label">Al día</span>
+                </div>
+                <div class="db-stat-card db-stat-danger">
+                    <span class="db-stat-number">{{ total_vencidos|default(0) }}</span>
+                    <span class="db-stat-label">Vencidos</span>
+                </div>
+            </section>
+
+            <section>
+                <p class="db-section-label">Accesos rápidos</p>
+                <div class="db-actions-grid">
+                    <a href="{{ url_for('checkin') }}" class="db-action-card">
+                        <span class="db-action-icon">🚪</span>
+                        <span class="db-action-text">Registrar ingreso</span>
+                    </a>
+                    <a href="{{ url_for('nuevo_socio') }}" class="db-action-card">
+                        <span class="db-action-icon">➕</span>
+                        <span class="db-action-text">Alta de socio</span>
+                    </a>
+                    <a href="{{ url_for('listado_socios') }}" class="db-action-card">
+                        <span class="db-action-icon">📋</span>
+                        <span class="db-action-text">Listado de socios</span>
+                    </a>
+                    <a href="{{ url_for('alertas') }}" class="db-action-card">
+                        <span class="db-action-icon">🔔</span>
+                        <span class="db-action-text">Alertas de vencimiento</span>
+                    </a>
+                    <a href="{{ url_for('reportes') }}" class="db-action-card">
+                        <span class="db-action-icon">📊</span>
+                        <span class="db-action-text">Exportar reportes</span>
+                    </a>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

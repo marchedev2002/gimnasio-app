@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar sesión · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <div style="text-align:center; margin-bottom:28px;">
+            <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" style="width:56px;height:56px;border-radius:12px;object-fit:cover;margin-bottom:14px;" onerror="this.style.display='none'">
+            <h1 class="db-page-title">Iniciar sesión</h1>
+            <p class="db-page-subtitle" style="margin-bottom:0;">{{ nombre_gimnasio }}</p>
+        </div>
+
+        <div class="db-card">
+            {% if error %}
+                <p class="db-alert-error">{{ error }}</p>
+            {% endif %}
+
+            <form action="{{ url_for('login') }}" method="POST">
+                <div class="db-field">
+                    <label>Usuario</label>
+                    <input type="text" name="usuario" class="db-input" required autofocus>
+                </div>
+                <div class="db-field">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" class="db-input" required>
+                </div>
+                <button type="submit" class="db-btn db-btn-primary" style="width:100%;">Ingresar</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

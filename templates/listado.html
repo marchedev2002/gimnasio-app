@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Socios · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="db-wrapper">
+        <header class="db-topbar">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+            <a href="{{ url_for('index') }}" class="db-link">← Inicio</a>
+        </header>
+
+        <p class="db-eyebrow">Socios</p>
+        <h1 class="db-page-title">Listado completo</h1>
+        <p class="db-page-subtitle">Buscá y filtrá por estado de membresía.</p>
+
+        {% if request.args.get('mensaje') == 'baja' %}
+            <p class="db-alert-success">✅ Socio dado de baja correctamente.</p>
+        {% endif %}
+
+        <div class="db-counters">
+            <div class="db-counter db-counter-ok">
+                <span class="db-counter-number">{{ total_al_dia }}</span>
+                <span class="db-counter-label">Al día</span>
+            </div>
+            <div class="db-counter db-counter-danger">
+                <span class="db-counter-number">{{ total_vencidos }}</span>
+                <span class="db-counter-label">Vencidos</span>
+            </div>
+        </div>
+
+        <form action="{{ url_for('listado_socios') }}" method="GET" class="db-filter-form">
+            <input type="text" name="buscar" class="db-input" placeholder="Buscar por nombre, apellido o DNI..." value="{{ busqueda }}">
+            <input type="hidden" name="filtro" value="{{ filtro }}">
+            <button type="submit" class="db-btn db-btn-primary">Buscar</button>
+        </form>
+
+        <div class="db-filter-pills">
+            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='todos') }}" class="db-pill {% if filtro == 'todos' %}db-pill-active{% endif %}">Todos</a>
+            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='al_dia') }}" class="db-pill {% if filtro == 'al_dia' %}db-pill-active-ok{% endif %}">✅ Al día</a>
+            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='vencidos') }}" class="db-pill {% if filtro == 'vencidos' %}db-pill-active-danger{% endif %}">❌ Vencidos</a>
+        </div>
+
+        {% if socios %}
+            <div class="db-list">
+                {% for socio in socios %}
+                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
+                        <img class="db-avatar db-avatar--sm"
+                             src="{{ url_for('static', filename='fotos/' + (socio.foto if socio.foto else 'sin-foto.png')) }}"
+                             alt="Foto de {{ socio.nombre }}">
+                        <div class="db-row-info">
+                            <span class="db-row-name">{{ socio.apellido }}, {{ socio.nombre }}</span>
+                            <span class="db-row-meta">DNI: {{ socio.dni }}</span>
+                        </div>
+                        {% if socio.al_dia == 1 %}
+                            <span class="db-badge db-badge-ok">Al día</span>
+                        {% else %}
+                            <span class="db-badge db-badge-danger">Vencido</span>
+                        {% endif %}
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="db-empty">No se encontraron socios con esos criterios.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

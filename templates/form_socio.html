@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ 'Nuevo Socio' if modo == 'nuevo' else 'Editar Socio' }} · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <header class="db-topbar" style="border:none; margin-bottom:20px; padding:0;">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+        </header>
+
+        <p class="db-eyebrow">{{ 'Alta de socio' if modo == 'nuevo' else 'Edición de socio' }}</p>
+        <h1 class="db-page-title">{{ 'Nuevo socio' if modo == 'nuevo' else 'Editar datos' }}</h1>
+        <p class="db-page-subtitle">Completá los datos {{ 'del nuevo socio' if modo == 'nuevo' else 'a actualizar' }}.</p>
+
+        <div class="db-card">
+            {% if error %}
+                <p class="db-alert-error">{{ error }}</p>
+            {% endif %}
+
+            <form action="{{ url_for('nuevo_socio') if modo == 'nuevo' else url_for('editar_socio', dni=usuario.dni) }}"
+                  method="POST" enctype="multipart/form-data">
+
+                <div class="db-field">
+                    <label>DNI</label>
+                    {% if modo == 'nuevo' %}
+                        <input type="text" name="dni" class="db-input" placeholder="Ej: 40123456" required autofocus>
+                    {% else %}
+                        <input type="text" class="db-input" value="{{ usuario.dni }}" disabled>
+                    {% endif %}
+                </div>
+
+                <div class="db-field">
+                    <label>Nombre</label>
+                    <input type="text" name="nombre" class="db-input" placeholder="Nombre" value="{{ usuario.nombre if usuario else '' }}" required>
+                </div>
+
+                <div class="db-field">
+                    <label>Apellido</label>
+                    <input type="text" name="apellido" class="db-input" placeholder="Apellido" value="{{ usuario.apellido if usuario else '' }}" required>
+                </div>
+
+                <div class="db-field">
+                    <label>Teléfono</label>
+                    <input type="text" name="telefono" class="db-input" placeholder="Ej: 341-5551234" value="{{ usuario.telefono if usuario else '' }}">
+                </div>
+
+                <div class="db-field">
+                    <label>Email</label>
+                    <input type="email" name="email" class="db-input" placeholder="ejemplo@mail.com" value="{{ usuario.email if usuario else '' }}">
+                </div>
+
+                <div class="db-field">
+                    <label>Foto {{ '(opcional)' if modo == 'nuevo' else '(dejar vacío para no cambiarla)' }}</label>
+                    <input type="file" name="foto" class="db-input" accept=".jpg,.jpeg,.png">
+                </div>
+
+                <div class="db-btn-row">
+                    <button type="submit" class="db-btn db-btn-primary">{{ 'Dar de alta' if modo == 'nuevo' else 'Guardar cambios' }}</button>
+                    <a href="{{ url_for('ver_socio', dni=usuario.dni) if usuario else url_for('index') }}" class="db-btn db-btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

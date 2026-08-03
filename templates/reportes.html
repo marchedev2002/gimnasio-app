@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <header class="db-topbar" style="border:none; margin-bottom:20px; padding:0;">
+            <a href="{{ url_for('index') }}" class="db-brand">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
+                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
+            </a>
+        </header>
+
+        <p class="db-eyebrow">Reportes</p>
+        <h1 class="db-page-title">Exportar pagos</h1>
+        <p class="db-page-subtitle">Descargá un Excel con los pagos de un mes puntual.</p>
+
+        <div class="db-card">
+            <form action="{{ url_for('exportar_reporte') }}" method="GET">
+                <div class="db-field">
+                    <label>Mes</label>
+                    <select name="mes" class="db-input" required>
+                        {% for m in meses %}
+                            <option value="{{ m.id_mes }}" {% if m.id_mes == mes_actual %}selected{% endif %}>{{ m.nombre_mes }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="db-field">
+                    <label>Año</label>
+                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}" required>
+                </div>
+
+                <div class="db-btn-row">
+                    <button type="submit" class="db-btn db-btn-primary">📥 Descargar Excel</button>
+                    <a href="{{ url_for('index') }}" class="db-btn db-btn-secondary">Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingreso registrado · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <div class="db-card">
+            <div class="db-profile">
+                <img class="db-avatar"
+                     src="{{ url_for('static', filename='fotos/' + (usuario.foto if usuario.foto else 'sin-foto.png')) }}"
+                     alt="Foto de {{ usuario.nombre }}">
+                <p class="db-profile-name">{{ usuario.nombre }} {{ usuario.apellido }}</p>
+                <p class="db-profile-meta">DNI {{ usuario.dni }}</p>
+            </div>
+
+            {% if membresia_al_dia %}
+                <div class="db-status db-status-ok">✅ Membresía al día</div>
+            {% else %}
+                <div class="db-status db-status-danger">❌ Membresía vencida</div>
+            {% endif %}
+
+            <p class="db-alert-success" style="text-align:center; margin-top:14px;">Ingreso registrado a las {{ hora_ingreso }} hs.</p>
+
+            {% if plan_actual %}
+                <div class="db-table-wrap" style="text-align:center;">
+                    <p class="db-profile-meta"><strong>Plan:</strong> {{ plan_actual.tipo_membresia }}</p>
+                    {% if plan_actual.dias_max_mes %}
+                        <p class="{% if excede_limite %}db-warning-text{% else %}db-profile-meta{% endif %}">
+                            Visitas este mes: {{ visitas_mes }} / {{ plan_actual.dias_max_mes }}
+                            {% if excede_limite %} ⚠️ Superó el límite de su plan{% endif %}
+                        </p>
+                    {% else %}
+                        <p class="db-profile-meta">Visitas este mes: {{ visitas_mes }} (plan sin límite)</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <p class="db-empty">Este socio no tiene un plan asignado todavía.</p>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('checkin') }}" class="db-link db-back-link">← Registrar otro ingreso</a>
+    </div>
+</body>
+</html>

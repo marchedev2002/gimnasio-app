@@ -1,0 +1,573 @@
+/* =========================================================
+   Sistema de Socios - Hoja de estilos unificada
+   ========================================================= */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --db-bg: #12141c;
+    --db-surface: #181c26;
+    --db-surface-raised: #1f2430;
+    --db-border: #2a2f3d;
+    --db-text: #f2f4f8;
+    --db-text-dim: #8d94a6;
+    --db-accent: #e6493b;
+    --db-accent-hover: #cf3f32;
+    --db-success: #2bd4a0;
+    --db-success-bg: #17332b;
+    --db-danger: #ef5350;
+    --db-danger-bg: #3a1e1e;
+    --db-warning: #d98f3c;
+    --db-warning-bg: #3a2f16;
+    --db-mono: 'IBM Plex Mono', 'Courier New', monospace;
+    --db-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --db-body-font: 'Inter', 'Segoe UI', sans-serif;
+}
+
+body {
+    background: var(--db-bg);
+    font-family: var(--db-body-font);
+    color: var(--db-text);
+    min-height: 100vh;
+}
+
+body.db-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+a { color: inherit; }
+
+/* --- Layout --- */
+
+.db-wrapper {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 60px;
+}
+
+.db-wrapper--narrow {
+    max-width: 460px;
+    padding: 0 0 40px;
+}
+
+body.db-center .db-wrapper--narrow {
+    padding: 0;
+}
+
+.db-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 0;
+    border-bottom: 1px solid var(--db-border);
+    margin-bottom: 36px;
+}
+
+.db-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: var(--db-text);
+}
+
+.db-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.db-brand-name {
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: -0.01em;
+}
+
+.db-user {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.db-user-name {
+    color: var(--db-text-dim);
+    font-size: 0.85rem;
+    text-transform: capitalize;
+}
+
+.db-link {
+    color: var(--db-text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: color 0.15s;
+}
+
+.db-link:hover { color: var(--db-text); }
+
+.db-logout {
+    color: var(--db-text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    border: 1px solid var(--db-border);
+    padding: 6px 14px;
+    border-radius: 6px;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.db-logout:hover {
+    border-color: var(--db-accent);
+    color: var(--db-text);
+}
+
+.db-back-link {
+    display: inline-block;
+    margin-top: 28px;
+}
+
+/* --- Encabezados de página --- */
+
+.db-eyebrow {
+    font-family: var(--db-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+    color: var(--db-accent);
+    margin-bottom: 8px;
+}
+
+.db-page-title {
+    font-family: var(--db-display);
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+}
+
+.db-hero-title {
+    font-family: var(--db-display);
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: 24px;
+}
+
+.db-page-subtitle {
+    color: var(--db-text-dim);
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+}
+
+.db-section-label {
+    font-family: var(--db-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 0.72rem;
+    color: var(--db-text-dim);
+    margin-bottom: 14px;
+}
+
+.db-section-title {
+    font-family: var(--db-display);
+    font-size: 1.1rem;
+    margin: 30px 0 12px;
+}
+
+.db-section-title-danger { color: var(--db-danger); }
+.db-section-title-warning { color: var(--db-warning); }
+
+/* --- Tarjetas --- */
+
+.db-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 12px;
+    padding: 28px;
+}
+
+/* --- Alertas de mensaje --- */
+
+.db-alert-success {
+    background: var(--db-success-bg);
+    border: 1px solid var(--db-success);
+    color: var(--db-success);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.db-alert-error {
+    background: var(--db-danger-bg);
+    border: 1px solid var(--db-danger);
+    color: var(--db-danger);
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+/* --- Buscador tipo dashboard --- */
+
+.db-search-form {
+    display: flex;
+    align-items: stretch;
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+}
+
+.db-search-form:focus-within { border-color: var(--db-accent); }
+
+.db-search-icon {
+    display: flex;
+    align-items: center;
+    padding: 0 18px;
+    font-family: var(--db-mono);
+    color: var(--db-text-dim);
+    font-size: 1.1rem;
+    border-right: 1px solid var(--db-border);
+}
+
+.db-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--db-text);
+    font-family: var(--db-mono);
+    font-size: 1.15rem;
+    letter-spacing: 0.04em;
+    padding: 18px 16px;
+}
+
+.db-search-input:focus { outline: none; }
+
+.db-search-input::placeholder {
+    color: var(--db-text-dim);
+    font-family: var(--db-body-font);
+    letter-spacing: normal;
+}
+
+.db-search-btn {
+    border: none;
+    background: var(--db-accent);
+    color: #fff;
+    font-family: var(--db-body-font);
+    font-weight: 600;
+    padding: 0 30px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.db-search-btn:hover { background: var(--db-accent-hover); }
+
+/* --- Estadísticas (dashboard) --- */
+
+.db-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 48px;
+}
+
+.db-stat-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.db-stat-number {
+    font-family: var(--db-mono);
+    font-size: 2rem;
+    font-weight: 500;
+}
+
+.db-stat-label { color: var(--db-text-dim); font-size: 0.82rem; }
+
+.db-stat-ok { border-color: var(--db-success); background: var(--db-success-bg); }
+.db-stat-ok .db-stat-number { color: var(--db-success); }
+.db-stat-danger { border-color: var(--db-danger); background: var(--db-danger-bg); }
+.db-stat-danger .db-stat-number { color: var(--db-danger); }
+
+/* --- Contadores (listado) --- */
+
+.db-counters {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.db-counter {
+    flex: 1;
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.db-counter-ok { border-color: var(--db-success); background: var(--db-success-bg); }
+.db-counter-ok .db-counter-number { color: var(--db-success); }
+.db-counter-danger { border-color: var(--db-danger); background: var(--db-danger-bg); }
+.db-counter-danger .db-counter-number { color: var(--db-danger); }
+
+.db-counter-number {
+    font-family: var(--db-mono);
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.db-counter-label { color: var(--db-text-dim); font-size: 0.8rem; }
+
+/* --- Accesos rápidos --- */
+
+.db-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.db-action-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    padding: 18px;
+    text-decoration: none;
+    color: var(--db-text);
+    transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+
+.db-action-card:hover {
+    border-color: var(--db-accent);
+    background: var(--db-surface-raised);
+    transform: translateY(-1px);
+}
+
+.db-action-icon { font-size: 1.3rem; }
+.db-action-text { font-size: 0.9rem; font-weight: 500; }
+
+/* --- Formularios --- */
+
+.db-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+    text-align: left;
+}
+
+.db-field label { font-size: 0.8rem; color: var(--db-text-dim); }
+
+.db-input {
+    background: var(--db-bg);
+    border: 1px solid var(--db-border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: var(--db-text);
+    font-family: var(--db-body-font);
+    font-size: 0.95rem;
+    width: 100%;
+}
+
+.db-input:focus { outline: none; border-color: var(--db-accent); }
+.db-input:disabled { opacity: 0.5; }
+
+input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
+
+/* --- Botones --- */
+
+.db-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 13px 22px;
+    border-radius: 8px;
+    border: none;
+    font-family: var(--db-body-font);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.db-btn-primary { background: var(--db-accent); color: #fff; }
+.db-btn-primary:hover { background: var(--db-accent-hover); }
+
+.db-btn-secondary { background: transparent; border: 1px solid var(--db-border); color: var(--db-text); }
+.db-btn-secondary:hover { border-color: var(--db-accent); }
+
+.db-btn-danger { background: var(--db-danger); color: #fff; }
+.db-btn-danger:hover { background: #d63d3d; }
+
+.db-btn-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 22px;
+    flex-wrap: wrap;
+}
+
+.db-btn-row .db-btn { flex: 1; }
+
+/* --- Ficha de socio / perfil --- */
+
+.db-profile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 6px;
+}
+
+.db-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--db-accent);
+    margin-bottom: 16px;
+}
+
+.db-avatar--sm { width: 44px; height: 44px; border: none; flex-shrink: 0; margin-bottom: 0; }
+
+.db-profile-name {
+    font-family: var(--db-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.db-profile-meta { color: var(--db-text-dim); font-size: 0.85rem; margin: 2px 0; }
+
+.db-status {
+    padding: 16px;
+    border-radius: 10px;
+    font-weight: 600;
+    text-align: center;
+    margin: 20px 0 6px;
+    font-family: var(--db-display);
+}
+
+.db-status-ok { background: var(--db-success-bg); color: var(--db-success); border: 1px solid var(--db-success); }
+.db-status-danger { background: var(--db-danger-bg); color: var(--db-danger); border: 1px solid var(--db-danger); }
+
+.db-status-note { text-align: center; color: var(--db-text-dim); font-size: 0.85rem; margin-bottom: 12px; }
+
+/* --- Tabla de historial --- */
+
+.db-table-wrap { margin-top: 26px; }
+
+.db-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+
+.db-table th {
+    text-align: left;
+    color: var(--db-text-dim);
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--db-border);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.68rem;
+    letter-spacing: 0.05em;
+}
+
+.db-table td { padding: 10px; color: var(--db-text); border-bottom: 1px solid var(--db-border); }
+
+/* --- Listados (socios / alertas) --- */
+
+.db-list { display: flex; flex-direction: column; gap: 8px; }
+
+.db-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    padding: 12px 16px;
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--db-text);
+    transition: border-color 0.15s, background 0.15s;
+}
+
+.db-row:hover { border-color: var(--db-accent); background: var(--db-surface-raised); }
+
+.db-row-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.db-row-name { font-weight: 600; }
+.db-row-meta { color: var(--db-text-dim); font-size: 0.8rem; }
+
+.db-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.db-badge-ok { background: var(--db-success-bg); color: var(--db-success); }
+.db-badge-danger { background: var(--db-danger-bg); color: var(--db-danger); }
+.db-badge-warning { background: var(--db-warning-bg); color: var(--db-warning); }
+
+/* --- Filtros --- */
+
+.db-filter-form { display: flex; gap: 10px; margin-bottom: 14px; }
+.db-filter-form input { flex: 1; }
+
+.db-filter-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+
+.db-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    color: var(--db-text-dim);
+    text-decoration: none;
+    font-size: 0.85rem;
+    transition: border-color 0.15s;
+}
+
+.db-pill:hover { border-color: var(--db-accent); }
+
+.db-pill-active { background: var(--db-surface-raised); color: var(--db-text); border-color: var(--db-text-dim); }
+.db-pill-active-ok { background: var(--db-success-bg); color: var(--db-success); border-color: var(--db-success); }
+.db-pill-active-danger { background: var(--db-danger-bg); color: var(--db-danger); border-color: var(--db-danger); }
+
+/* --- Estado vacío --- */
+
+.db-empty { color: var(--db-text-dim); padding: 24px 0; text-align: center; }
+
+/* --- Advertencia (confirmar baja) --- */
+
+.db-warning-text { color: var(--db-danger); font-size: 0.88rem; margin: 16px 0 22px; text-align: center; }
+
+/* --- Responsive --- */
+
+@media (max-width: 640px) {
+    .db-wrapper { padding: 0 16px 40px; }
+    .db-hero-title { font-size: 1.8rem; }
+    .db-search-form { flex-wrap: wrap; }
+    .db-search-btn { width: 100%; padding: 14px; }
+    .db-stats { grid-template-columns: 1fr; }
+    .db-counters { flex-direction: column; }
+    .db-actions-grid { grid-template-columns: 1fr 1fr; }
+    .db-btn-row { flex-direction: column; }
+    .db-card { padding: 20px; }
+}

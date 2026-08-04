@@ -65,13 +65,16 @@ def calcular_siguiente_vencimiento(fecha_base, dia_vencimiento):
 
 
 
-pool_conexiones = pooling.MySQLConnectionPool(
-    pool_name="gimnasio_pool",
-    pool_size=5,
-    **DB_CONFIG
-)
+pool_conexiones = None
 
 def get_connection():
+    global pool_conexiones
+    if pool_conexiones is None:
+        pool_conexiones = pooling.MySQLConnectionPool(
+            pool_name="gimnasio_pool",
+            pool_size=5,
+            **DB_CONFIG
+        )
     return pool_conexiones.get_connection()
 
 def login_requerido(vista):

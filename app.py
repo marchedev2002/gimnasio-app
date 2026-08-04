@@ -5,6 +5,7 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 import mysql.connector
+from mysql.connector import pooling
 from datetime import date, timedelta, datetime
 from config import DB_CONFIG, SECRET_KEY, NOMBRE_GIMNASIO
 from io import BytesIO
@@ -60,9 +61,14 @@ def calcular_siguiente_vencimiento(fecha_base, dia_vencimiento):
 
 
 
+pool_conexiones = pooling.MySQLConnectionPool(
+    pool_name="gimnasio_pool",
+    pool_size=5,
+    **DB_CONFIG
+)
+
 def get_connection():
-    """Abre una conexión nueva a la base de datos MySQL."""
-    return mysql.connector.connect(**DB_CONFIG)
+    return pool_conexiones.get_connection()
 
 def login_requerido(vista):
     """Decorador que bloquea el acceso a una ruta si no hay sesion iniciada"""

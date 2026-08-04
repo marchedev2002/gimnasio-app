@@ -1,4 +1,5 @@
 import os
+import time
 import calendar
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session, send_file 
@@ -69,13 +70,22 @@ pool_conexiones = None
 
 def get_connection():
     global pool_conexiones
-    if pool_conexiones is None:
-        pool_conexiones = pooling.MySQLConnectionPool(
-            pool_name="gimnasio_pool",
-            pool_size=5,
-            **DB_CONFIG
-        )
-    return pool_conexiones.get_connection()
+
+    for intento in range(3):
+        try:
+            if pool_conexiones is None:
+                pool_conexiones = pooling.MySQLConnectionPool(
+                    pool_name="gimnasio_pool",
+                    pool_size=5,
+                    **DB_CONFIG
+                )
+            return pool_conexiones.get_connection()
+        except mysql.connector.Error:
+            if intento < 2:
+                time.sleep(3)  # le da tiempo a Aiven para "despertarse"
+                pool_conexiones = None  # fuerza a recrear el pool en el próximo intento
+            else:
+                raise  # si después de 3 intentos sigue fallando, ahí sí mostramos el error
 
 def login_requerido(vista):
     """Decorador que bloquea el acceso a una ruta si no hay sesion iniciada"""

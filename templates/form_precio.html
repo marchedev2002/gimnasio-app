@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Tipo de Membresía · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="db-center">
+    <div class="db-wrapper db-wrapper--narrow">
+        <p class="db-eyebrow">Administración</p>
+        <h1 class="db-page-title">Nuevo tipo de membresía</h1>
+
+        <div class="db-card">
+            {% if error %}
+                <p class="db-alert-error">{{ error }}</p>
+            {% endif %}
+
+            <form action="{{ url_for('nuevo_precio') }}" method="POST">
+                <div class="db-field">
+                    <label>Nombre del plan</label>
+                    <input type="text" name="tipo_membresia" class="db-input" placeholder="Ej: Libre, Pilates..." required autofocus>
+                </div>
+
+                <div class="db-field">
+                    <label>Precio</label>
+                    <input type="number" step="0.01" name="monto" class="db-input" placeholder="Ej: 20000" required>
+                </div>
+
+                <div class="db-field">
+                    <label>Días máximos por mes (opcional, dejar vacío si es sin límite)</label>
+                    <input type="number" name="dias_max_mes" class="db-input" placeholder="Ej: 12">
+                </div>
+
+                <div class="db-btn-row">
+                    <button type="submit" class="db-btn db-btn-primary">Guardar</button>
+                    <a href="{{ url_for('admin_general') }}" class="db-btn db-btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

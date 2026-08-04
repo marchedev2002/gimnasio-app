@@ -306,7 +306,7 @@ def nuevo_pago():
         socios = cursor.fetchall()
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()
-        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO ORDER BY tipo_membresia")
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = 1 ORDER BY tipo_membresia")
         precios = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -526,6 +526,39 @@ def reportes():
     resumen_semana = resumen_desde(inicio_semana)
     resumen_mes = resumen_desde(inicio_mes)
 
+    # --- Distribución de ingresos por profesor (para el gráfico de torta) ---
+    meses_grafico = request.args.get('meses', 1)
+    try:
+        meses_grafico = int(meses_grafico)
+    except ValueError:
+        meses_grafico = 1
+    meses_grafico = max(1, min(12, meses_grafico))  # entre 1 y 12
+
+    # Calcular desde qué fecha mirar hacia atrás (ej: si meses_grafico=3, arranca
+    # el día 1 del mes de hace 2 meses, incluyendo el mes actual)
+    mes_desde = hoy.month - (meses_grafico - 1)
+    anio_desde = hoy.year
+    while mes_desde <= 0:
+        mes_desde += 12
+        anio_desde -= 1
+    fecha_desde_grafico = date(anio_desde, mes_desde, 1)
+
+    cursor.execute("""
+        SELECT COALESCE(CONCAT(PROFESOR.nombre, ' ', PROFESOR.apellido), 'Musculación libre / Sin clase') AS categoria,
+               COUNT(*) AS cantidad
+        FROM ASISTENCIA
+        LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
+        LEFT JOIN PROFESOR ON CLASE.id_profesor = PROFESOR.id_profesor
+        WHERE ASISTENCIA.fecha_hora >= %s
+        GROUP BY categoria
+        ORDER BY cantidad DESC
+    """, (fecha_desde_grafico,))
+    distribucion_profesores = cursor.fetchall()
+
+    total_ingresos_periodo = sum(fila['cantidad'] for fila in distribucion_profesores)
+    for fila in distribucion_profesores:
+        fila['porcentaje'] = round((fila['cantidad'] / total_ingresos_periodo * 100), 1) if total_ingresos_periodo else 0
+
     cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
     meses = cursor.fetchall()
 
@@ -535,8 +568,149 @@ def reportes():
     return render_template(
         'reportes.html',
         resumen_dia=resumen_dia, resumen_semana=resumen_semana, resumen_mes=resumen_mes,
-        meses=meses, mes_actual=hoy.month, anio_actual=hoy.year
+        meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, distribucion_profesores = distribucion_profesores, meses_grafico=meses_grafico,
+        total_ingresos_periodo = total_ingresos_periodo
     )
+
+@app.route('/admin')
+@login_requerido
+def admin_general():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT * FROM PRECIO WHERE activo = TRUE ORDER BY tipo_membresia")
+    precios = cursor.fetchall()
+
+    cursor.execute("SELECT * FROM  PROFESOR ORDER BY apellido, nombre")
+    profesores = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT CLASE.*, PROFESOR.nombre as profesor_nombre, PROFESOR.apellido as profesor_apellido
+        FROM CLASE
+        JOIN PROFESOR ON CLASE.id_profesor = PROFESOR.id_profesor
+        ORDER BY CLASE.hora_inicio
+        """)
+    clases = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return render_template(
+        'admin.html',
+        precios=precios,
+        profesores=profesores,
+        clases=clases)
+
+@app.route('/admin/precio/nuevo', methods=['GET', 'POST'])
+@login_requerido
+def nuevo_precio():
+    if request.method == 'GET':
+        return render_template('form_precio.html')
+
+    tipo_membresia = request.form.get('tipo_membresia', '').strip()
+    monto = request.form.get('monto', '').strip()
+    dias_max_mes = request.form.get('dias_max_mes', '').strip()
+
+    if not tipo_membresia or not monto:
+        return render_template('form_precio.html', error="Completá el nombre y el monto.")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO PRECIO (tipo_membresia, monto, dias_max_mes, activo)
+        VALUES (%s, %s, %s, TRUE)
+    """, (tipo_membresia, monto, dias_max_mes or None))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('admin_general'))
+
+
+@app.route('/admin/precio/editar/<int:id_precio>', methods=['POST'])
+@login_requerido
+def editar_precio(id_precio):
+    nuevo_monto = request.form.get('monto', '').strip()
+
+    if not nuevo_monto:
+        return redirect(url_for('admin_general'))
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT tipo_membresia, dias_max_mes FROM PRECIO WHERE id_precio = %s", (id_precio,))
+    precio_actual = cursor.fetchone()
+
+    if precio_actual:
+        cursor.execute("UPDATE PRECIO SET activo = FALSE WHERE id_precio = %s", (id_precio,))
+        cursor.execute("""
+            INSERT INTO PRECIO (tipo_membresia, monto, dias_max_mes, activo)
+            VALUES (%s, %s, %s, TRUE)
+        """, (precio_actual['tipo_membresia'], nuevo_monto, precio_actual['dias_max_mes']))
+        conn.commit()
+
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('admin_general'))
+
+
+@app.route('/admin/profesor/nuevo', methods=['GET', 'POST'])
+@login_requerido
+def nuevo_profesor():
+    if request.method == 'GET':
+        return render_template('form_profesor.html')
+
+    nombre = request.form.get('nombre', '').strip()
+    apellido = request.form.get('apellido', '').strip()
+
+    if not nombre or not apellido:
+        return render_template('form_profesor.html', error="Completá nombre y apellido.")
+
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO PROFESOR (nombre, apellido) VALUES (%s, %s)", (nombre, apellido))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('admin_general'))
+
+
+@app.route('/admin/clase/nueva', methods=['GET', 'POST'])
+@login_requerido
+def nueva_clase():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'GET':
+        cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR ORDER BY apellido, nombre")
+        profesores = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('form_clase.html', profesores=profesores)
+
+    nombre = request.form.get('nombre', '').strip()
+    hora_inicio = request.form.get('hora_inicio', '').strip()
+    hora_fin = request.form.get('hora_fin', '').strip()
+    id_profesor = request.form.get('id_profesor', '').strip()
+
+    if not nombre or not hora_inicio or not hora_fin or not id_profesor:
+        cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR ORDER BY apellido, nombre")
+        profesores = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('form_clase.html', profesores=profesores, error="Completá todos los campos.")
+
+    cursor.execute("""
+        INSERT INTO CLASE (nombre, hora_inicio, hora_fin, id_profesor)
+        VALUES (%s, %s, %s, %s)
+    """, (nombre, hora_inicio, hora_fin, id_profesor))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('admin_general'))
 
 @app.route('/reportes/exportar')
 @login_requerido
@@ -640,9 +814,18 @@ def procesar_checkin():
 
     # Registrar el ingreso (fecha y hora actuales)
     ahora = datetime.now()
+    hora_actual = ahora.time()
+    cursor.execute("""
+        SELECT id_clase FROM CLASE
+        WHERE hora_inicio <= %s AND hora_fin >= %s
+        LIMIT 1
+    """, (hora_actual, hora_actual))
+    clase_en_curso = cursor.fetchone()
+    id_clase_actual = clase_en_curso['id_clase'] if clase_en_curso else None
+
     cursor.execute(
-        "INSERT INTO ASISTENCIA (dni, fecha_hora) VALUES (%s, %s)",
-        (dni, ahora)
+        "INSERT INTO ASISTENCIA (dni, fecha_hora, id_clase) VALUES (%s, %s, %s)",
+        (dni, ahora, id_clase_actual)
     )
     conn.commit()
 

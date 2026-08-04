@@ -210,7 +210,7 @@ def nuevo_socio():
 
     nombre_foto = guardar_foto(dni, request.files.get('foto'))
 
-    dia_vencimiento_nuevo = date.today().day
+    dia_vencimiento_nuevo = int(request.form.get('dia_vencimiento', date.today().day))
 
     cursor.execute("""
         INSERT INTO USUARIO (dni, nombre, apellido, telefono, email, foto, dia_vencimiento, fecha_proximo_vencimiento)
@@ -379,31 +379,18 @@ def nuevo_pago():
         VALUES (%s, %s, %s, %s, %s, %s)
     """, (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago))
 
-    cursor.execute("SELECT dia_vencimiento, fecha_proximo_vencimiento FROM USUARIO WHERE dni = %s", (dni,))
+    cursor.execute("SELECT dia_vencimiento FROM USUARIO WHERE dni = %s", (dni,))
     socio = cursor.fetchone()
+    dia_vto = socio['dia_vencimiento']
 
     id_mes_int = int(id_mes)
     anio_int = int(anio)
 
-    if socio['fecha_proximo_vencimiento'] is None:
-        # Es el PRIMER pago de este socio: el día ancla se fija según la fecha
-        # real que se ingresó por pantalla, no según el día de hoy del sistema.
-        fecha_pago_dt = datetime.strptime(fecha_pago, '%Y-%m-%d').date()
-        dia_vto = fecha_pago_dt.day
-        cursor.execute("UPDATE USUARIO SET dia_vencimiento = %s WHERE dni = %s", (dia_vto, dni))
-        nueva_fecha_vencimiento = calcular_siguiente_vencimiento(fecha_pago_dt, dia_vto)
-    else:
-        # Pagos siguientes: se respeta el día ancla que ya quedó fijado antes.
-        dia_vto = socio['dia_vencimiento']
-        ultimo_dia_mes_pagado = calendar.monthrange(anio_int, id_mes_int)[1]
-        dia_ajustado = min(dia_vto, ultimo_dia_mes_pagado)
-        fecha_periodo_pagado = date(anio_int, id_mes_int, dia_ajustado)
-        nueva_fecha_vencimiento = calcular_siguiente_vencimiento(fecha_periodo_pagado, dia_vto)
+    ultimo_dia_mes_pagado = calendar.monthrange(anio_int, id_mes_int)[1]
+    dia_ajustado = min(dia_vto, ultimo_dia_mes_pagado)
+    fecha_periodo_pagado = date(anio_int, id_mes_int, dia_ajustado)
 
-        cursor.execute(
-            "UPDATE USUARIO SET fecha_proximo_vencimiento = %s WHERE dni = %s",
-            (nueva_fecha_vencimiento, dni)
-        )
+    nueva_fecha_vencimiento = calcular_siguiente_vencimiento(fecha_periodo_pagado, dia_vto)
 
     conn.commit()
     cursor.close()

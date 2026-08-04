@@ -362,7 +362,7 @@ def nuevo_pago():
         socios = cursor.fetchall()
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()
-        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO ORDER BY tipo_membresia")
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = 1ORDER BY tipo_membresia")
         precios = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -391,7 +391,10 @@ def nuevo_pago():
     fecha_periodo_pagado = date(anio_int, id_mes_int, dia_ajustado)
 
     nueva_fecha_vencimiento = calcular_siguiente_vencimiento(fecha_periodo_pagado, dia_vto)
-
+    cursor.execute(
+    "UPDATE USUARIO SET fecha_proximo_vencimiento = %s WHERE dni = %s",
+    (nueva_fecha_vencimiento, dni)
+    )
     conn.commit()
     cursor.close()
     conn.close()

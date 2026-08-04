@@ -71,6 +71,14 @@
                     <input type="date" name="fecha_pago" class="db-input" value="{{ fecha_hoy }}" required>
                 </div>
 
+                <div class="db-field">
+                    <label>Método de pago</label>
+                    <select name="metodo_pago" class="db-input" required>
+                        <option value="Efectivo">💵 Efectivo</option>
+                        <option value="Debito">💳 Débito</option>
+                    </select>
+                </div>
+
                 <div class="db-btn-row">
                     <button type="submit" class="db-btn db-btn-primary">Registrar pago</button>
                     <a href="{{ url_for('index') }}" class="db-btn db-btn-secondary">Cancelar</a>

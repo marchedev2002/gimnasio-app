@@ -3,45 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes · {{ nombre_gimnasio }}</title>
+    <title>Reportes de Caja · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="db-center">
-    <div class="db-wrapper db-wrapper--narrow">
-        <header class="db-topbar" style="border:none; margin-bottom:20px; padding:0;">
+<body>
+    <div class="db-wrapper">
+        <header class="db-topbar">
             <a href="{{ url_for('index') }}" class="db-brand">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
                 <span class="db-brand-name">{{ nombre_gimnasio }}</span>
             </a>
+            <a href="{{ url_for('index') }}" class="db-link">← Inicio</a>
         </header>
 
-        <p class="db-eyebrow">Reportes</p>
-        <h1 class="db-page-title">Exportar pagos</h1>
-        <p class="db-page-subtitle">Descargá un Excel con los pagos de un mes puntual.</p>
+        <p class="db-eyebrow">Caja</p>
+        <h1 class="db-page-title">Reportes</h1>
+        <p class="db-page-subtitle">Recaudación por período, desglosada por método de pago.</p>
 
-        <div class="db-card">
-            <form action="{{ url_for('exportar_reporte') }}" method="GET">
-                <div class="db-field">
+        <div class="db-report-grid">
+
+            <div class="db-report-card">
+                <p class="db-section-label">Hoy</p>
+                <p class="db-report-total">${{ "%.2f"|format(resumen_dia.total) }}</p>
+                <p class="db-report-count">{{ resumen_dia.cantidad }} pago(s)</p>
+                <div class="db-report-split">
+                    <span>💵 Efectivo</span>
+                    <span>${{ "%.2f"|format(resumen_dia.efectivo) }}</span>
+                </div>
+                <div class="db-report-split">
+                    <span>💳 Débito</span>
+                    <span>${{ "%.2f"|format(resumen_dia.debito) }}</span>
+                </div>
+            </div>
+
+            <div class="db-report-card">
+                <p class="db-section-label">Esta semana</p>
+                <p class="db-report-total">${{ "%.2f"|format(resumen_semana.total) }}</p>
+                <p class="db-report-count">{{ resumen_semana.cantidad }} pago(s)</p>
+                <div class="db-report-split">
+                    <span>💵 Efectivo</span>
+                    <span>${{ "%.2f"|format(resumen_semana.efectivo) }}</span>
+                </div>
+                <div class="db-report-split">
+                    <span>💳 Débito</span>
+                    <span>${{ "%.2f"|format(resumen_semana.debito) }}</span>
+                </div>
+            </div>
+
+            <div class="db-report-card">
+                <p class="db-section-label">Este mes</p>
+                <p class="db-report-total">${{ "%.2f"|format(resumen_mes.total) }}</p>
+                <p class="db-report-count">{{ resumen_mes.cantidad }} pago(s)</p>
+                <div class="db-report-split">
+                    <span>💵 Efectivo</span>
+                    <span>${{ "%.2f"|format(resumen_mes.efectivo) }}</span>
+                </div>
+                <div class="db-report-split">
+                    <span>💳 Débito</span>
+                    <span>${{ "%.2f"|format(resumen_mes.debito) }}</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="db-card" style="margin-top:36px;">
+            <p class="db-section-label">Descargar Excel de un mes puntual</p>
+            <form action="{{ url_for('exportar_reporte') }}" method="GET" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                <div class="db-field" style="flex:1; min-width:140px; margin-bottom:0;">
                     <label>Mes</label>
-                    <select name="mes" class="db-input" required>
+                    <select name="mes" class="db-input">
                         {% for m in meses %}
                             <option value="{{ m.id_mes }}" {% if m.id_mes == mes_actual %}selected{% endif %}>{{ m.nombre_mes }}</option>
                         {% endfor %}
                     </select>
                 </div>
-
-                <div class="db-field">
+                <div class="db-field" style="flex:1; min-width:100px; margin-bottom:0;">
                     <label>Año</label>
-                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}" required>
+                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}">
                 </div>
-
-                <div class="db-btn-row">
-                    <button type="submit" class="db-btn db-btn-primary">📥 Descargar Excel</button>
-                    <a href="{{ url_for('index') }}" class="db-btn db-btn-secondary">Volver</a>
-                </div>
+                <button type="submit" class="db-btn db-btn-primary">📥 Descargar</button>
             </form>
         </div>
     </div>

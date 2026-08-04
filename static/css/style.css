@@ -571,3 +571,45 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     .db-btn-row { flex-direction: column; }
     .db-card { padding: 20px; }
 }
+
+/* --- Dashboard de reportes de caja --- */
+
+.db-report-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.db-report-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 12px;
+    padding: 22px;
+}
+
+.db-report-total {
+    font-family: var(--db-mono);
+    font-size: 1.9rem;
+    font-weight: 500;
+    margin: 6px 0 2px;
+}
+
+.db-report-count {
+    color: var(--db-text-dim);
+    font-size: 0.8rem;
+    margin-bottom: 18px;
+}
+
+.db-report-split {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-top: 1px solid var(--db-border);
+    font-size: 0.88rem;
+}
+
+@media (max-width: 640px) {
+    .db-report-grid {
+        grid-template-columns: 1fr;
+    }
+}

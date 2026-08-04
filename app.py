@@ -295,23 +295,19 @@ def ver_socio(dni):
         mensaje=mensaje
     )
 
-@app.route('/pago/nuevo', methods=['GET','POST'])
+@app.route('/pago/nuevo', methods=['GET', 'POST'])
 @login_requerido
 def nuevo_pago():
-    """Formulario para registrar un nuevo pago de un socio"""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'GET':
         cursor.execute("SELECT dni, nombre, apellido FROM USUARIO ORDER BY apellido, nombre")
         socios = cursor.fetchall()
-
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()
-
         cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO ORDER BY tipo_membresia")
         precios = cursor.fetchall()
-
         cursor.close()
         conn.close()
 
@@ -319,55 +315,40 @@ def nuevo_pago():
         dni_preseleccionado = request.args.get('dni', '')
 
         return render_template(
-            'form_pago.html',
-            socios=socios,
-            meses=meses,
-            precios=precios,
-            dni_preseleccionado=dni_preseleccionado,
-            mes_actual = hoy.month,
-            anio_actual = hoy.year,
-            fecha_hoy=hoy.isoformat()
+            'form_pago.html', socios=socios, meses=meses, precios=precios,
+            dni_preseleccionado=dni_preseleccionado, mes_actual=hoy.month,
+            anio_actual=hoy.year, fecha_hoy=hoy.isoformat()
         )
 
-    #POST
     dni = request.form.get('dni', '').strip()
     id_mes = request.form.get('id_mes', '').strip()
     anio = request.form.get('anio', '').strip()
     id_precio = request.form.get('id_precio', '').strip()
     fecha_pago = request.form.get('fecha_pago', '').strip()
+    metodo_pago = request.form.get('metodo_pago', '').strip()
 
-    if not dni or not id_mes or not anio or not id_precio or not fecha_pago:
+    if not dni or not id_mes or not anio or not id_precio or not fecha_pago or not metodo_pago:
         cursor.execute("SELECT dni, nombre, apellido FROM USUARIO ORDER BY apellido, nombre")
         socios = cursor.fetchall()
-
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()
-
         cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO ORDER BY tipo_membresia")
         precios = cursor.fetchall()
-
         cursor.close()
         conn.close()
 
         hoy = date.today()
         return render_template(
-            'form_pago.html',
-            socios=socios,
-            meses=meses,
-            precios=precios,
-            dni_preseleccionado=dni,
-            mes_actual = hoy.month,
-            anio_actual = hoy.year,
-            fecha_hoy=hoy.isoformat(),
-            error="Todos los campos son obligatorios."
+            'form_pago.html', socios=socios, meses=meses, precios=precios,
+            dni_preseleccionado=dni, mes_actual=hoy.month, anio_actual=hoy.year,
+            fecha_hoy=hoy.isoformat(), error="Completá todos los campos, incluido el método de pago."
         )
 
     cursor.execute("""
-        INSERT INTO PAGO (dni, id_mes, anio, id_precio, fecha_pago)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (dni, id_mes, anio, id_precio, fecha_pago))
+        INSERT INTO PAGO (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """, (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago))
 
-    # Calcular el vencimiento en base al MES/AÑO que se está pagando (no a la fecha de hoy)
     cursor.execute("SELECT dia_vencimiento FROM USUARIO WHERE dni = %s", (dni,))
     socio = cursor.fetchone()
     dia_vto = socio['dia_vencimiento']
@@ -375,12 +356,10 @@ def nuevo_pago():
     id_mes_int = int(id_mes)
     anio_int = int(anio)
 
-    # El "día ancla" puede no existir en todos los meses (ej: día 31 en un mes de 30 días)
     ultimo_dia_mes_pagado = calendar.monthrange(anio_int, id_mes_int)[1]
     dia_ajustado = min(dia_vto, ultimo_dia_mes_pagado)
     fecha_periodo_pagado = date(anio_int, id_mes_int, dia_ajustado)
 
-    # El vencimiento queda en el mismo día del MES SIGUIENTE al que se pagó
     nueva_fecha_vencimiento = calcular_siguiente_vencimiento(fecha_periodo_pagado, dia_vto)
 
     cursor.execute(
@@ -392,7 +371,7 @@ def nuevo_pago():
     cursor.close()
     conn.close()
 
-    return redirect(url_for('ver_socio', dni=dni, mensaje="pago"))
+    return redirect(url_for('ver_socio', dni=dni, mensaje='pago'))
 
 @app.route('/socios')
 @login_requerido
@@ -519,21 +498,44 @@ def alertas():
 @app.route('/reportes')
 @login_requerido
 def reportes():
-    """Pantalla para elegir el mes/año y generar el reporte de pagos"""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
+    hoy = date.today()
+    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes de esta semana
+    inicio_mes = date(hoy.year, hoy.month, 1)
+
+    def resumen_desde(fecha_desde):
+        cursor.execute("""
+            SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
+            FROM PAGO
+            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            WHERE PAGO.fecha_pago >= %s
+            GROUP BY PAGO.metodo_pago
+        """, (fecha_desde,))
+        filas = cursor.fetchall()
+
+        total = sum(float(f['total']) for f in filas)
+        cantidad = sum(f['cantidad'] for f in filas)
+        efectivo = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Efectivo'), 0)
+        debito = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Debito'), 0)
+
+        return {'total': total, 'cantidad': cantidad, 'efectivo': efectivo, 'debito': debito}
+
+    resumen_dia = resumen_desde(hoy)
+    resumen_semana = resumen_desde(inicio_semana)
+    resumen_mes = resumen_desde(inicio_mes)
+
     cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
     meses = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    hoy = date.today()
     return render_template(
         'reportes.html',
-        meses=meses,
-        mes_actual=hoy.month,
-        anio_actual=hoy.year
+        resumen_dia=resumen_dia, resumen_semana=resumen_semana, resumen_mes=resumen_mes,
+        meses=meses, mes_actual=hoy.month, anio_actual=hoy.year
     )
 
 @app.route('/reportes/exportar')

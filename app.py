@@ -137,6 +137,8 @@ def login():
         session['usuario'] = personal['usuario']
         session['nombre'] = personal['nombre']
         return redirect(url_for('index'))
+    else:
+        intentos_fallidos[ip_origen] = intentos_fallidos.get(ip_origen, 0) + 1
 
     return render_template('login.html', error="Usuario o contraseña incorrectos.")
 

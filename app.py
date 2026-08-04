@@ -13,7 +13,11 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 
 app = Flask(__name__)
+intentos_fallidos = {}
 app.secret_key = SECRET_KEY
+app.config['SESSION_COOKIE_SECURE'] = True
+app.config['SESSION_COOKIE_HTTPONLY'] = True
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 @app.context_processor
 def inject_nombre_gimnasio():
     """Inyecta el nombre del gimnasio en todas las plantillas."""
@@ -119,6 +123,11 @@ def login():
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
+    ip_origen = request.remote_addr
+    intentos = intentos_fallidos.get(ip_origen, 0)
+
+    if intentos >= 5:
+        return render_template('login.html', error="Demasiados intentos fallidos. Esperá unos minutos e intentá de nuevo.")
     cursor.execute("SELECT * FROM PERSONAL WHERE usuario = %s", (usuario_ingresado,))
     personal = cursor.fetchone()
     cursor.close()

@@ -587,6 +587,70 @@ def reportes():
     for fila in distribucion_profesores:
         fila['porcentaje'] = round((fila['cantidad'] / total_ingresos_periodo * 100), 1) if total_ingresos_periodo else 0
 
+    #Tendencia de ingresos: ultimos 12 meses
+    fecha_hace_12_meses = hoy.replace(day=1)
+    for _ in range(11):
+        fecha_hace_12_meses = (fecha_hace_12_meses - timedelta(days=1)).replace(day=1)
+
+    cursor.execute("""
+        SELECT DATE_FORMAT(fecha_pago, '%%Y-%%m') AS periodo, SUM(PRECIO.monto) AS total
+        FROM PAGO
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE fecha_pago >= %s
+        GROUP BY periodo
+        ORDER BY periodo
+    """, (fecha_hace_12_meses,))
+    filas_tendencia = cursor.fetchall()
+
+    #Rellenamos los meses sin pagos con $0
+    mapa_totales = {fila['periodo']: float(fila['total']) for fila in filas_tendencia}
+    tendencia_labels = []
+    tendencia_valores = []
+    cursor_mes = fecha_hace_12_meses
+    for _ in range(12):
+        clave = cursor_mes.strftime('%Y-%m')
+        tendencia_labels.append(cursor_mes.strftime('%b %Y'))
+        tendencia_valores.append(mapa_totales.get(clave, 0))
+        cursor_mes = date(cursor_mes.year + (1 if cursor_mes.month == 12 else 0),
+                          1 if cursor_mes.month == 12 else cursor_mes.month + 1, 1)
+
+    #Porcentaje de Retencion: % de socios que renuevan mes a mes, los ultimos 6 periodos
+    periodos = []
+    anio_iter, mes_iter = hoy.year, hoy.month
+    for _ in range(7):
+        periodos.insert(0, (anio_iter, mes_iter))
+        mes_iter -= 1
+        if mes_iter == 0:
+            mes_iter == 12
+            anio_iter -=1
+
+    anio_min, mes_min = periodos[0]
+    cursor.execute("""
+        SELECT DISTINCT dni, id_mes, anio FROM PAGO
+        WHERE (anio > %s) OR (anio = %s AND id_mes >= %s)
+    """, (anio_min, anio_min, mes_min))
+    pagos_periodo = cursor.fetchall()
+
+    socios_por_periodo = {}
+    for fila in pagos_periodo:
+        clave = (fila['anio'], fila['id_mes'])
+        socios_por_periodo.setdefault(clave, set()).add(fila['dni'])
+
+    nombres_meses = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    retencion_labels = []
+    retencion_valores = []
+    for i in range(1, 7):
+        periodo_anterior = periodos[i - 1]
+        periodo_actual = periodos[i]
+        base = socios_por_periodo.get(periodo_anterior, set())
+        actuales = socios_por_periodo.get(periodo_actual, set())
+        renovaron = base & actuales
+
+        tasa = round((len(renovaron) / len(base) * 100), 1) if base else None
+        retencion_labels.append(f"{nombres_meses[periodo_actual[1]]} {periodo_actual[0]}")
+        retencion_valores.append(tasa)
+
+
     cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
     meses = cursor.fetchall()
 
@@ -597,7 +661,11 @@ def reportes():
         'reportes.html',
         resumen_dia=resumen_dia, resumen_semana=resumen_semana, resumen_mes=resumen_mes,
         meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, distribucion_profesores = distribucion_profesores, meses_grafico=meses_grafico,
-        total_ingresos_periodo = total_ingresos_periodo
+        total_ingresos_periodo = total_ingresos_periodo,
+        tendencia_labels=tendencia_labels,
+        tendencia_valores=tendencia_valores,
+        retencion_labels=retencion_labels,
+        retencion_valores=retencion_valores
     )
 
 @app.route('/admin')

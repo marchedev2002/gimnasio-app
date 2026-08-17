@@ -122,6 +122,61 @@
                 <p class="db-empty">Todavía no hay check-ins registrados en este período.</p>
             {% endif %}
         </div>
+        <div class="db-card" style="margin-top:36px;">
+            <p class="db-section-label">Tendencia de ingresos (últimos 12 meses)</p>
+            <canvas id="graficoTendencia" height="90"></canvas>
+            <script>
+                new Chart(document.getElementById('graficoTendencia'), {
+                    type: 'line',
+                    data: {
+                        labels: {{ tendencia_labels | tojson }},
+                        datasets: [{
+                            label: 'Ingresos',
+                            data: {{ tendencia_valores | tojson }},
+                            borderColor: '#e6493b',
+                            backgroundColor: 'rgba(230, 73, 59, 0.15)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#f2f4f8' } },
+                            y: { ticks: { color: '#f2f4f8' }, beginAtZero: true }
+                        }
+                    }
+                });
+            </script>
+        </div>
+
+        <div class="db-card" style="margin-top:36px;">
+            <p class="db-section-label">Retención mes a mes (últimos 6 meses)</p>
+            <p style="color:var(--db-text-dim); font-size:0.85rem; margin-bottom:14px;">
+                % de socios que pagaron el mes anterior y volvieron a pagar el mes indicado.
+            </p>
+            <canvas id="graficoRetencion" height="90"></canvas>
+            <script>
+                new Chart(document.getElementById('graficoRetencion'), {
+                    type: 'bar',
+                    data: {
+                        labels: {{ retencion_labels | tojson }},
+                        datasets: [{
+                            label: 'Retención %',
+                            data: {{ retencion_valores | tojson }},
+                            backgroundColor: '#2bd4a0'
+                        }]
+                    },
+                    options: {
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { ticks: { color: '#f2f4f8' } },
+                            y: { ticks: { color: '#f2f4f8' }, beginAtZero: true, max: 100 }
+                        }
+                    }
+                });
+            </script>
+        </div>S
 
         <div class="db-card" style="margin-top:36px;">
             <p class="db-section-label">Descargar Excel de un mes puntual</p>

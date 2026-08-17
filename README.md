@@ -1,103 +1,132 @@
-# Sistema de Socios - Gimnasio (v1)
+# Sistema de Gestión de Socios — Gimnasio
 
-Versión funcional inicial: buscás por DNI y te muestra los datos del socio,
-su foto y si tiene la membresía al día o vencida.
+Sistema web completo para la gestión diaria de un gimnasio: control de acceso por DNI, membresías con vencimiento personalizado por socio, gestión de pagos, clases con profesores, y un dashboard de Business Intelligence con métricas de ingresos y retención.
 
-## Estructura del proyecto
+## El problema
 
-```
-gimnasio_app/
-├── app.py                 <- Backend Flask (la lógica)
-├── config.py               <- Datos de conexión a MySQL (EDITAR)
-├── schema.sql               <- Script para crear la base de datos
-├── requirements.txt
-├── templates/
-│   ├── index.html           <- Pantalla de búsqueda
-│   └── resultado.html       <- Pantalla de resultado
-└── static/
-    ├── css/style.css
-    └── fotos/                <- Acá van las fotos de los socios
-```
+Un gimnasio de barrio llevaba el control de socios y pagos en papel y planillas de Excel sueltas. No había forma rápida de saber, al momento en que alguien entraba por la puerta, si tenía la cuota al día — y mucho menos entender tendencias de ingresos o qué profesores concentraban más asistencia.
 
-## Paso 1: Crear la base de datos
+## La solución
 
-1. Abrí **MySQL Workbench** y conectate a tu servidor local.
-2. Archivo -> Open SQL Script -> seleccioná `schema.sql`.
-3. Ejecutalo completo (ícono del rayo ⚡ o Ctrl+Shift+Enter).
-4. Esto crea la base `gimnasio_db` con las tablas USUARIO, PAGO, MES y
-   PRECIO, más 2 socios de ejemplo para probar (uno al día, uno vencido).
+Un sistema web accesible desde cualquier dispositivo, pensado para que la persona en recepción escriba un DNI y en segundos sepa: quién es, si puede entrenar, y deje registro del ingreso — todo alimentando después un dashboard analítico para la toma de decisiones del dueño del gimnasio.
 
-## Paso 2: Configurar la conexión
+---
 
-Abrí `config.py` y completá tu usuario y contraseña de MySQL:
+## Funcionalidades
 
-```python
-DB_CONFIG = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'TU_PASSWORD_ACA',
-    'database': 'gimnasio_db'
-}
-```
+- **Control de acceso por DNI**: búsqueda instantánea del estado de membresía, con registro automático de cada ingreso.
+- **Vencimientos personalizados**: cada socio tiene su propio "día ancla" de vencimiento (fijado al momento del alta), independiente de cuándo pague cada mes — la deuda nunca "corre" el día de vencimiento real.
+- **Gestión de pagos**: múltiples métodos de pago (efectivo/débito), historial completo por socio, cálculo automático de vencimiento al registrar cada pago.
+- **Administración de clases y profesores**: horarios de clases vinculados a profesores, con asignación automática de cada check-in a la clase en curso según el horario (sin pasos extra para quien opera el sistema).
+- **Dashboard de Business Intelligence**:
+  - Recaudación por período (hoy / semana / mes), desglosada por método de pago.
+  - Tendencia de ingresos de los últimos 12 meses (gráfico de línea).
+  - Tasa de retención mes a mes (% de socios que renuevan).
+  - Distribución de asistencia por profesor (gráfico de torta), con filtro de período configurable.
+  - Exportación a Excel de pagos por mes.
+- **Alertas de vencimiento**: listado de socios vencidos y próximos a vencer, configurable por rango de días.
+- **Autenticación y seguridad**: login con contraseñas hasheadas (scrypt), límite de intentos fallidos, cookies de sesión endurecidas.
+- **Tests automatizados**: suite de tests con `pytest` corriendo en CI (GitHub Actions) en cada push, contra una base de datos de test aislada.
 
-## Paso 3: Instalar dependencias
+---
+## Imagenes relevantes para BI
+**Resumen de recaudación por período**
+![Tarjetas de resumen](docs/tarjetas_resumen.png)
 
-Necesitás Python instalado. Abrí una terminal en la carpeta `gimnasio_app` y corré:
+**Tendencia de ingresos**
+![Tendencia de ingresos](docs/tendencia_ingresos.png)
+
+**Retención de socios mes a mes**
+![Retención](docs/retencion.png)
+
+**Distribución de asistencia por profesor**
+![Distribución por profesor](docs/distribucion_profesores.png)
+
+*Nota: capturas generadas con datos ficticios para preservar la privacidad de los socios reales del gimnasio.*
+
+## Arquitectura y stack
+
+| Capa | Tecnología |
+|---|---|
+| Backend | Python 3 + Flask |
+| Base de datos | MySQL (alojada en Aiven, plan gratuito) |
+| Frontend | HTML + Jinja2 + CSS (sin frameworks) + Chart.js para visualizaciones |
+| Hosting | Render (plan gratuito) |
+| CI/CD | GitHub Actions |
+| Testing | pytest |
+
+### Por qué estas decisiones
+
+- **Flask sobre Django**: para un sistema de este alcance, la simplicidad y el control explícito de Flask permitieron iterar rápido sin la sobrecarga de un framework más opinionado.
+- **MySQL en Aiven, no en el mismo proveedor de hosting**: separar la base de datos del servidor de aplicación evita quedar atado a un solo proveedor y facilita escalar cada componente de forma independiente.
+- **Connection pooling**: las consultas iniciales abrían una conexión nueva a la base por cada request, generando latencias perceptibles (~1s) en cada acción. Se resolvió implementando un pool de conexiones reutilizables, reduciendo la latencia percibida de forma notable.
+- **Sin ORM**: se usó SQL directo con parámetros preparados (`%s`) en lugar de un ORM como SQLAlchemy, priorizando control total sobre las queries y evitando una capa de abstracción innecesaria para el tamaño del proyecto.
+
+---
+
+## Desafíos técnicos resueltos (algunos highlights)
+
+**1. Migración forzada de proveedor a mitad de proyecto**
+El plan gratuito de PythonAnywhere eliminó el soporte a MySQL después de haber empezado el despliegue ahí. Esto obligó a evaluar alternativas (PythonAnywhere de pago, Vercel + Supabase con Postgres, Render + Aiven) bajo la restricción de mantener costo cero, resultando en la migración a Render + Aiven sin cambiar el motor de base de datos ni reescribir las queries existentes.
+
+**2. Bug de zona horaria en producción**
+Los pagos registrados después de las 21:00 hs (horario Argentina) aparecían con la fecha del día siguiente en los reportes. Causa: el servidor en la nube corre en UTC por defecto, y Argentina está 3 horas detrás — entre las 21:00 y medianoche hora local, el servidor ya "cree" que es el día siguiente. Se resolvió fijando la variable de entorno `TZ=America/Argentina/Buenos_Aires` en el entorno de producción, sin necesidad de tocar código.
+
+**3. Resiliencia ante caídas de la base de datos**
+Al implementar el pool de conexiones, un fallo transitorio de la base (por ejemplo, cuando el plan gratuito de Aiven "duerme" la base por inactividad) tiraba abajo el proceso completo del servidor, no solo la request afectada. Se resolvió con inicialización perezosa (lazy) del pool y reintentos automáticos con backoff, evitando que una caída temporal de la base derribe todo el servicio.
+
+**4. Diseño de vencimientos con "día ancla" fijo**
+El requerimiento de negocio era que la fecha de vencimiento de cada socio quedara fija en el día del mes en que se dio de alta (ej: día 10), independientemente de qué día del mes pagara cada vez. Se resolvió separando el concepto de "día ancla" (fijo, guardado por socio) del cálculo de "próxima fecha de vencimiento" (recalculado en cada pago, siempre anclado a ese día, con ajuste automático para meses con menos días — ej: 31 en febrero).
+
+---
+
+## Modelo de datos
+USUARIO ──┬── PAGO ──── PRECIO (historial de precios, no se sobreescriben)
+├── ASISTENCIA ──── CLASE ──── PROFESOR
+
+Decisión de diseño destacable: en lugar de sobreescribir el precio de un plan al modificarlo, se crea un nuevo registro y se desactiva el anterior (`activo = FALSE`) — así los pagos históricos siempre reflejan el precio real que se cobró en su momento, sin perder trazabilidad.
+
+---
+
+## Cómo correrlo localmente
 
 ```bash
+git clone https://github.com/marchedev2002/gimnasio-app.git
+cd gimnasio-app
 pip install -r requirements.txt
-```
 
-## Paso 4: Ejecutar la aplicación
+# Definir variables de entorno (ver .env.example)
+export DB_HOST=tu-host
+export DB_PORT=tu-puerto
+export DB_USER=tu-usuario
+export DB_PASSWORD=tu-password
+export DB_NAME=tu-base
+export SECRET_KEY=una-clave-secreta
 
-```bash
 python app.py
 ```
 
-Te va a mostrar algo como `Running on http://127.0.0.1:5000`.
-Abrí esa dirección en el navegador.
+## Correr los tests
 
-## Paso 5: Probar
-
-Con los datos de ejemplo del `schema.sql` podés probar:
-
-- **DNI 40123456** (Juan Pérez) → Membresía **AL DÍA** (pagó julio 2026)
-- **DNI 38987654** (María Gómez) → Membresía **VENCIDA** (pagó junio pero no julio)
-
-## Cómo cargar fotos de socios
-
-1. Guardá la foto del socio en `static/fotos/`, por ejemplo `40123456.jpg`.
-2. En MySQL Workbench, actualizá ese registro:
-   ```sql
-   UPDATE USUARIO SET foto = '40123456.jpg' WHERE dni = '40123456';
-   ```
-3. Si un socio no tiene foto cargada (`foto` es NULL), se muestra automáticamente
-   un ícono genérico (`sin-foto.png`).
-
-## Cómo cargar un socio nuevo (por ahora, manual en Workbench)
-
-```sql
-INSERT INTO USUARIO (dni, nombre, apellido, telefono, email, foto)
-VALUES ('12345678', 'Nombre', 'Apellido', '341-1234567', 'mail@mail.com', NULL);
+```bash
+pip install pytest
+# Definir variables de entorno apuntando a una base de datos de TEST separada
+pytest
 ```
 
-## Cómo registrar un pago (por ahora, manual en Workbench)
+---
 
-```sql
--- id_mes: 1=Enero ... 12=Diciembre
--- id_precio: revisar tabla PRECIO para ver los ID de cada plan
-INSERT INTO PAGO (dni, id_mes, anio, id_precio, fecha_pago)
-VALUES ('12345678', 7, 2026, 1, '2026-07-15');
-```
+## Roadmap
 
-## Próximos pasos sugeridos (para cuando quieras seguir mejorando)
+- [ ] Arquitectura multi-tenant (soporte para múltiples gimnasios en un mismo despliegue)
+- [ ] Notificaciones automáticas de vencimiento por email
+- [ ] Roles de usuario diferenciados (recepción vs. administración)
+- [ ] Auditoría de acciones (logs de quién hizo qué)
 
-1. **Formulario para dar de alta socios nuevos** desde la web (en vez de SQL manual).
-2. **Formulario para registrar pagos** desde la web, con subida de foto incluida.
-3. **Listado general** de todos los socios con su estado (al día / vencido).
-4. **Alertas** de socios próximos a vencer (ej: faltan 3 días).
-5. Login con usuario/contraseña para el personal del gimnasio.
-6. Pasar de `debug=True` a un servidor de producción cuando esté listo para usarse en el día a día.
+---
 
-Cualquier error o duda que te aparezca al ejecutarlo, mandámelo tal cual
-aparece en la terminal y lo resolvemos.
+## Autor
+
+Valentin Marchese — marchese52002@gmail.com
+
+Proyecto desarrollado end-to-end: diseño de base de datos, backend, frontend, despliegue en la nube, CI/CD y observabilidad.

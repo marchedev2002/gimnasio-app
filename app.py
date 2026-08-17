@@ -593,7 +593,7 @@ def reportes():
         fecha_hace_12_meses = (fecha_hace_12_meses - timedelta(days=1)).replace(day=1)
 
     cursor.execute("""
-        SELECT DATE_FORMAT(fecha_pago, '%%Y-%%m') AS periodo, SUM(PRECIO.monto) AS total
+        SELECT DATE_FORMAT(fecha_pago, '%Y-%m') AS periodo, SUM(PRECIO.monto) AS total
         FROM PAGO
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
         WHERE fecha_pago >= %s

@@ -152,7 +152,7 @@ def login():
     cursor.close()
     conn.close()
 
-    if personal and check_password_hash(personal['password_hash'], password_ingresada):
+    if personal and check_password_hash(personal['password_hash'], password_ingresado):
         session['usuario'] = personal['usuario']
         session['nombre'] = personal['nombre']
         session['id_gimnasio'] = personal['id_gimnasio']

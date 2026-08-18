@@ -340,11 +340,11 @@ def nuevo_pago():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'GET':
-        cursor.execute("SELECT dni, nombre, apellido FROM USUARIO ORDER BY apellido, nombre")
+        cursor.execute("SELECT dni, nombre, apellido FROM USUARIO WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         socios = cursor.fetchall()
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()
-        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = 1 ORDER BY tipo_membresia")
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = 1 AND id_gimnasio = %s ORDER BY tipo_membresia", (session['id_gimnasio'],))
         precios = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -366,11 +366,11 @@ def nuevo_pago():
     metodo_pago = request.form.get('metodo_pago', '').strip()
 
     if not dni or not id_mes or not anio or not id_precio or not fecha_pago or not metodo_pago:
-        cursor.execute("SELECT dni, nombre, apellido FROM USUARIO ORDER BY apellido, nombre")
+        cursor.execute("SELECT dni, nombre, apellido FROM USUARIO WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         socios = cursor.fetchall()
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()
-        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = 1ORDER BY tipo_membresia")
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = 1 AND id_gimnasio = %s ORDER BY tipo_membresia", (session['id_gimnasio'],))
         precios = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -383,11 +383,11 @@ def nuevo_pago():
         )
 
     cursor.execute("""
-        INSERT INTO PAGO (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago)
-        VALUES (%s, %s, %s, %s, %s, %s)
-    """, (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago))
+        INSERT INTO PAGO (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago, id_gimnasio)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """, (dni, id_mes, anio, id_precio, fecha_pago, metodo_pago, session['id_gimnasio']))
 
-    cursor.execute("SELECT dia_vencimiento FROM USUARIO WHERE dni = %s", (dni,))
+    cursor.execute("SELECT dia_vencimiento FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     socio = cursor.fetchone()
     dia_vto = socio['dia_vencimiento']
 
@@ -400,8 +400,8 @@ def nuevo_pago():
 
     nueva_fecha_vencimiento = calcular_siguiente_vencimiento(fecha_periodo_pagado, dia_vto)
     cursor.execute(
-    "UPDATE USUARIO SET fecha_proximo_vencimiento = %s WHERE dni = %s",
-    (nueva_fecha_vencimiento, dni)
+        "UPDATE USUARIO SET fecha_proximo_vencimiento = %s WHERE dni = %s AND id_gimnasio = %s",
+        (nueva_fecha_vencimiento, dni, session['id_gimnasio'])
     )
     conn.commit()
     cursor.close()
@@ -502,10 +502,11 @@ def alertas():
     cursor = conn.cursor(dictionary=True)
 
     cursor.execute("""
-        SELECT dni, nombre, apellido, foto, fecha_proximo_vencimiento
+        SELECT dni, nombre, apellido, fecha_proximo_vencimiento
         FROM USUARIO
+        WHERE id_gimnasio = %s
         ORDER BY apellido, nombre
-    """)
+    """, (session['id_gimnasio'],))
     todos = cursor.fetchall()
 
     cursor.close()
@@ -908,7 +909,7 @@ def procesar_checkin():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s", (dni,))
+    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     usuario = cursor.fetchone()
 
     if not usuario:
@@ -921,15 +922,15 @@ def procesar_checkin():
     hora_actual = ahora.time()
     cursor.execute("""
         SELECT id_clase FROM CLASE
-        WHERE hora_inicio <= %s AND hora_fin >= %s
+        WHERE hora_inicio <= %s AND hora_fin >= %s AND id_gimnasio = %s
         LIMIT 1
-    """, (hora_actual, hora_actual))
+    """, (hora_actual, hora_actual, session['id_gimnasio']))
     clase_en_curso = cursor.fetchone()
     id_clase_actual = clase_en_curso['id_clase'] if clase_en_curso else None
 
     cursor.execute(
-        "INSERT INTO ASISTENCIA (dni, fecha_hora, id_clase) VALUES (%s, %s, %s)",
-        (dni, ahora, id_clase_actual)
+    "INSERT INTO ASISTENCIA (dni, fecha_hora, id_clase, id_gimnasio) VALUES (%s, %s, %s, %s)",
+    (dni, ahora, id_clase_actual, session['id_gimnasio'])
     )
     conn.commit()
 
@@ -945,18 +946,20 @@ def procesar_checkin():
         SELECT PRECIO.tipo_membresia, PRECIO.dias_max_mes
         FROM PAGO
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE PAGO.dni = %s
+        WHERE PAGO.dni = %s AND PAGO.id_gimnasio = %s
         ORDER BY PAGO.fecha_pago DESC
         LIMIT 1
-    """, (dni,))
+    """, (dni, session['id_gimnasio']))
     plan_actual = cursor.fetchone()
 
     # Cuántas veces ya asistió este mes calendario
     cursor.execute("""
         SELECT COUNT(*) AS cantidad
         FROM ASISTENCIA
-        WHERE dni = %s AND YEAR(fecha_hora) = YEAR(CURDATE()) AND MONTH(fecha_hora) = MONTH(CURDATE())
-    """, (dni,))
+        WHERE dni = %s AND id_gimnasio = %s
+        AND EXTRACT(YEAR FROM fecha_hora) = EXTRACT(YEAR FROM CURRENT_DATE)
+        AND EXTRACT(MONTH FROM fecha_hora) = EXTRACT(MONTH FROM CURRENT_DATE)
+    """, (dni, session['id_gimnasio']))
     visitas_mes = cursor.fetchone()['cantidad']
 
     cursor.close()

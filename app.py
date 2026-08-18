@@ -22,7 +22,8 @@ app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 @app.context_processor
 def inject_nombre_gimnasio():
     """Inyecta el nombre del gimnasio en todas las plantillas."""
-    return dict(nombre_gimnasio=NOMBRE_GIMNASIO)
+    nombre = session.get('nombre_gimnasio_sesion', NOMBRE_GIMNASIO)
+    return dict(nombre_gimnasio=nombre)
 
 # Carpeta donde se guardan las fotos de los socios
 CARPETA_FOTOS = os.path.join(app.root_path, 'static', 'fotos')
@@ -141,14 +142,21 @@ def login():
 
     if intentos >= 5:
         return render_template('login.html', error="Demasiados intentos fallidos. Esperá unos minutos e intentá de nuevo.")
-    cursor.execute("SELECT * FROM PERSONAL WHERE usuario = %s", (usuario_ingresado,))
+    cursor.execute("""
+        SELECT PERSONAL.*, GIMNASIO.nombre AS nombre_gimnasio
+        FROM PERSONAL
+        JOIN GIMNASIO ON PERSONAL.id_gimnasio = GIMNASIO.id_gimnasio
+    WHERE PERSONAL.usuario = %s
+    """, (usuario_ingresado,))
     personal = cursor.fetchone()
     cursor.close()
     conn.close()
 
-    if personal and check_password_hash(personal['password_hash'], password_ingresado):
+    if personal and check_password_hash(personal['password_hash'], password_ingresada):
         session['usuario'] = personal['usuario']
         session['nombre'] = personal['nombre']
+        session['id_gimnasio'] = personal['id_gimnasio']
+        session['nombre_gimnasio_sesion'] = personal['nombre_gimnasio']
         return redirect(url_for('index'))
     else:
         intentos_fallidos[ip_origen] = intentos_fallidos.get(ip_origen, 0) + 1

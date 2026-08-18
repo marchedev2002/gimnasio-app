@@ -205,7 +205,7 @@ def nuevo_socio():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s", (dni,))
+    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     if cursor.fetchone():
         cursor.close()
         conn.close()
@@ -221,9 +221,9 @@ def nuevo_socio():
     dia_vencimiento_nuevo = int(request.form.get('dia_vencimiento', date.today().day))
 
     cursor.execute("""
-        INSERT INTO USUARIO (dni, nombre, apellido, telefono, email, foto, dia_vencimiento, fecha_proximo_vencimiento)
+        INSERT INTO USUARIO (dni, nombre, apellido, telefono, email, foto, dia_vencimiento, fecha_proximo_vencimiento, id_gimnasio)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-    """, (dni, nombre, apellido, telefono or None, email or None, nombre_foto, dia_vencimiento_nuevo, None))
+    """, (dni, nombre, apellido, telefono or None, email or None, nombre_foto, dia_vencimiento_nuevo, None, session['id_gimnasio']))
 
     conn.commit()
     cursor.close()
@@ -239,7 +239,7 @@ def editar_socio(dni):
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'GET':
-        cursor.execute("SELECT * FROM USUARIO WHERE dni = %s", (dni,))
+        cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
         usuario = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -256,7 +256,7 @@ def editar_socio(dni):
     email = request.form.get('email', '').strip()
 
     if not nombre or not apellido:
-        cursor.execute("SELECT * FROM USUARIO WHERE dni = %s", (dni,))
+        cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
         usuario = cursor.fetchone()
         cursor.close()
         conn.close()
@@ -272,8 +272,8 @@ def editar_socio(dni):
         cursor.execute("""
             UPDATE USUARIO
             SET nombre = %s, apellido = %s, telefono = %s, email = %s, foto = %s
-            WHERE dni = %s
-        """, (nombre, apellido, telefono or None, email or None, nombre_foto_nuevo, dni))
+            WHERE dni = %s AND id_gimnasio = %s
+        """, (nombre, apellido, telefono or None, email or None, nombre_foto_nuevo, dni, session['id_gimnasio']))
     else:
         cursor.execute("""
             UPDATE USUARIO
@@ -295,7 +295,7 @@ def ver_socio(dni):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s", (dni,))
+    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     usuario = cursor.fetchone()
 
     if not usuario:
@@ -418,12 +418,13 @@ def listado_socios():
     hoy = date.today()
 
     cursor.execute("""
-        SELECT dni, nombre, apellido, foto, fecha_proximo_vencimiento,
-               CASE WHEN fecha_proximo_vencimiento IS NOT NULL AND fecha_proximo_vencimiento >= %s
+        SELECT dni, nombre, apellido, fecha_proximo_vencimiento,
+            CASE WHEN fecha_proximo_vencimiento IS NOT NULL AND fecha_proximo_vencimiento >= %s
                     THEN 1 ELSE 0 END AS al_dia
         FROM USUARIO
+        WHERE id_gimnasio = %s
         ORDER BY apellido, nombre
-    """, (hoy,))
+    """, (hoy, session['id_gimnasio']))
 
     todos = cursor.fetchall()
     cursor.close()
@@ -465,7 +466,7 @@ def eliminar_socio(dni):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s", (dni,))
+    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     usuario = cursor.fetchone()
 
     if not usuario:
@@ -478,10 +479,9 @@ def eliminar_socio(dni):
         conn.close()
         return render_template('confirmar_eliminar.html', usuario=usuario)
 
-    cursor.execute("DELETE FROM PAGO WHERE dni = %s", (dni,))
-    cursor.execute("DELETE FROM ASISTENCIA WHERE dni = %s", (dni,))
-    
-    cursor.execute("DELETE FROM USUARIO WHERE dni = %s",(dni,))
+    cursor.execute("DELETE FROM ASISTENCIA WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
+    cursor.execute("DELETE FROM PAGO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
+    cursor.execute("DELETE FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     conn.commit()
     cursor.close()
     conn.close()

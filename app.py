@@ -222,7 +222,7 @@ def nuevo_socio():
 
     cursor.execute("""
         INSERT INTO USUARIO (dni, nombre, apellido, telefono, email, foto, dia_vencimiento, fecha_proximo_vencimiento, id_gimnasio)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
     """, (dni, nombre, apellido, telefono or None, email or None, nombre_foto, dia_vencimiento_nuevo, None, session['id_gimnasio']))
 
     conn.commit()

@@ -683,18 +683,19 @@ def admin_general():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM PRECIO WHERE activo = TRUE ORDER BY tipo_membresia")
+    cursor.execute("SELECT * FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY tipo_membresia", (session['id_gimnasio'],))
     precios = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM  PROFESOR ORDER BY apellido, nombre")
+    cursor.execute("SELECT * FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
     profesores = cursor.fetchall()
 
     cursor.execute("""
-        SELECT CLASE.*, PROFESOR.nombre as profesor_nombre, PROFESOR.apellido as profesor_apellido
+        SELECT CLASE.*, PROFESOR.nombre AS profesor_nombre, PROFESOR.apellido AS profesor_apellido
         FROM CLASE
         JOIN PROFESOR ON CLASE.id_profesor = PROFESOR.id_profesor
+        WHERE CLASE.id_gimnasio = %s
         ORDER BY CLASE.hora_inicio
-        """)
+    """, (session['id_gimnasio'],))
     clases = cursor.fetchall()
 
     cursor.close()
@@ -722,9 +723,9 @@ def nuevo_precio():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO PRECIO (tipo_membresia, monto, dias_max_mes, activo)
-        VALUES (%s, %s, %s, TRUE)
-    """, (tipo_membresia, monto, dias_max_mes or None))
+        INSERT INTO PRECIO (tipo_membresia, monto, dias_max_mes, activo, id_gimnasio)
+        VALUES (%s, %s, %s, TRUE, %s)
+    """, (tipo_membresia, monto, dias_max_mes or None, session['id_gimnasio']))
     conn.commit()
     cursor.close()
     conn.close()
@@ -743,15 +744,15 @@ def editar_precio(id_precio):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT tipo_membresia, dias_max_mes FROM PRECIO WHERE id_precio = %s", (id_precio,))
+    cursor.execute("SELECT tipo_membresia, dias_max_mes FROM PRECIO WHERE id_precio = %s AND id_gimnasio = %s", (id_precio, session['id_gimnasio']))
     precio_actual = cursor.fetchone()
 
     if precio_actual:
-        cursor.execute("UPDATE PRECIO SET activo = FALSE WHERE id_precio = %s", (id_precio,))
+        cursor.execute("UPDATE PRECIO SET activo = FALSE WHERE id_precio = %s AND id_gimnasio = %s", (id_precio, session['id_gimnasio']))
         cursor.execute("""
-            INSERT INTO PRECIO (tipo_membresia, monto, dias_max_mes, activo)
-            VALUES (%s, %s, %s, TRUE)
-        """, (precio_actual['tipo_membresia'], nuevo_monto, precio_actual['dias_max_mes']))
+            INSERT INTO PRECIO (tipo_membresia, monto, dias_max_mes, activo, id_gimnasio)
+            VALUES (%s, %s, %s, TRUE, %s)
+        """, (precio_actual['tipo_membresia'], nuevo_monto, precio_actual['dias_max_mes'], session['id_gimnasio']))
         conn.commit()
 
     cursor.close()
@@ -774,7 +775,7 @@ def nuevo_profesor():
 
     conn = get_connection()
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO PROFESOR (nombre, apellido) VALUES (%s, %s)", (nombre, apellido))
+    cursor.execute("INSERT INTO PROFESOR (nombre, apellido, id_gimnasio) VALUES (%s, %s, %s)", (nombre, apellido, session['id_gimnasio']))
     conn.commit()
     cursor.close()
     conn.close()
@@ -789,7 +790,7 @@ def nueva_clase():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'GET':
-        cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR ORDER BY apellido, nombre")
+        cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         profesores = cursor.fetchall()
         cursor.close()
         conn.close()
@@ -801,7 +802,7 @@ def nueva_clase():
     id_profesor = request.form.get('id_profesor', '').strip()
 
     if not nombre or not hora_inicio or not hora_fin or not id_profesor:
-        cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR ORDER BY apellido, nombre")
+        cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         profesores = cursor.fetchall()
         cursor.close()
         conn.close()

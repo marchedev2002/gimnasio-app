@@ -547,9 +547,9 @@ def reportes():
             SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
             FROM PAGO
             JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-            WHERE PAGO.fecha_pago >= %s
+            WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
             GROUP BY PAGO.metodo_pago
-        """, (fecha_desde,))
+        """, (fecha_desde, session['id_gimnasio']))
         filas = cursor.fetchall()
 
         total = sum(float(f['total']) for f in filas)
@@ -582,14 +582,14 @@ def reportes():
 
     cursor.execute("""
         SELECT COALESCE(CONCAT(PROFESOR.nombre, ' ', PROFESOR.apellido), 'Musculación libre / Sin clase') AS categoria,
-               COUNT(*) AS cantidad
+            COUNT(*) AS cantidad
         FROM ASISTENCIA
         LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
         LEFT JOIN PROFESOR ON CLASE.id_profesor = PROFESOR.id_profesor
-        WHERE ASISTENCIA.fecha_hora >= %s
+        WHERE ASISTENCIA.fecha_hora >= %s AND ASISTENCIA.id_gimnasio = %s
         GROUP BY categoria
         ORDER BY cantidad DESC
-    """, (fecha_desde_grafico,))
+    """, (fecha_desde_grafico, session['id_gimnasio']))
     distribucion_profesores = cursor.fetchall()
 
     total_ingresos_periodo = sum(fila['cantidad'] for fila in distribucion_profesores)
@@ -605,10 +605,10 @@ def reportes():
         SELECT DATE_FORMAT(fecha_pago, '%Y-%m') AS periodo, SUM(PRECIO.monto) AS total
         FROM PAGO
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE fecha_pago >= %s
+        WHERE fecha_pago >= %s AND PAGO.id_gimnasio = %s
         GROUP BY periodo
         ORDER BY periodo
-    """, (fecha_hace_12_meses,))
+    """, (fecha_hace_12_meses, session['id_gimnasio']))
     filas_tendencia = cursor.fetchall()
 
     #Rellenamos los meses sin pagos con $0
@@ -636,8 +636,8 @@ def reportes():
     anio_min, mes_min = periodos[0]
     cursor.execute("""
         SELECT DISTINCT dni, id_mes, anio FROM PAGO
-        WHERE (anio > %s) OR (anio = %s AND id_mes >= %s)
-    """, (anio_min, anio_min, mes_min))
+        WHERE ((anio > %s) OR (anio = %s AND id_mes >= %s)) AND id_gimnasio = %s
+    """, (anio_min, anio_min, mes_min, session['id_gimnasio']))
     pagos_periodo = cursor.fetchall()
 
     socios_por_periodo = {}
@@ -809,9 +809,9 @@ def nueva_clase():
         return render_template('form_clase.html', profesores=profesores, error="Completá todos los campos.")
 
     cursor.execute("""
-        INSERT INTO CLASE (nombre, hora_inicio, hora_fin, id_profesor)
-        VALUES (%s, %s, %s, %s)
-    """, (nombre, hora_inicio, hora_fin, id_profesor))
+        INSERT INTO CLASE (nombre, hora_inicio, hora_fin, id_profesor, id_gimnasio)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (nombre, hora_inicio, hora_fin, id_profesor, session['id_gimnasio']))
     conn.commit()
     cursor.close()
     conn.close()
@@ -828,15 +828,15 @@ def exportar_reporte():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT PAGO.fecha_pago, MES.nombre_mes, PAGO.anio, PRECIO.tipo_membresia, PRECIO.monto,
-               USUARIO.dni, USUARIO.nombre, USUARIO.apellido
+        SELECT usuario.dni, usuario.nombre, usuario.apellido,
+            mes.nombre_mes, pago.anio, precio.tipo_membresia, precio.monto, pago.fecha_pago
         FROM PAGO
+        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
         JOIN MES ON PAGO.id_mes = MES.id_mes
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        JOIN USUARIO ON PAGO.dni = USUARIO.dni
-        WHERE PAGO.id_mes = %s AND PAGO.anio = %s
-        ORDER BY PAGO.fecha_pago ASC
-    """, (mes, anio))
+        WHERE PAGO.id_mes = %s AND PAGO.anio = %s AND PAGO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (mes, anio, session['id_gimnasio']))
     pagos = cursor.fetchall()
     cursor.close()
     conn.close()

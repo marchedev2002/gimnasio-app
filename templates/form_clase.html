@@ -9,7 +9,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body class="db-center">
+<body>
+    {% include 'partials/navbar.html' %}
     <div class="db-wrapper db-wrapper--narrow">
         <p class="db-eyebrow">Administración</p>
         <h1 class="db-page-title">Nueva clase</h1>

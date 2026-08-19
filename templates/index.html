@@ -11,16 +11,7 @@
 </head>
 <body>
     <div class="db-wrapper">
-        <header class="db-topbar">
-            <a href="{{ url_for('index') }}" class="db-brand">
-                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="db-logo" onerror="this.style.display='none'">
-                <span class="db-brand-name">{{ nombre_gimnasio }}</span>
-            </a>
-            <div class="db-user">
-                <span class="db-user-name">{{ session.get('nombre', session.get('usuario', '')) }}</span>
-                <a href="{{ url_for('logout') }}" class="db-logout">Salir</a>
-            </div>
-        </header>
+        {% include 'partials/navbar.html' %}
 
         <main>
             <section>

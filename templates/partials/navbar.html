@@ -1,0 +1,21 @@
+<header class="db-nav">
+    <a href="{{ url_for('index') }}" class="db-nav-brand">
+        {{ nombre_gimnasio }} <span class="db-nav-dot">•</span>
+    </a>
+
+    <nav class="db-nav-tabs">
+        <a href="{{ url_for('checkin') }}" class="db-nav-tab {% if request.endpoint in ['checkin', 'procesar_checkin', 'index', 'buscar'] %}db-nav-tab-activo{% endif %}">Acceso</a>
+        <a href="{{ url_for('listado_socios') }}" class="db-nav-tab {% if request.endpoint in ['listado_socios', 'ver_socio', 'nuevo_socio', 'editar_socio', 'nuevo_pago', 'eliminar_socio', 'confirmar_eliminar'] %}db-nav-tab-activo{% endif %}">Socios</a>
+        <a href="{{ url_for('alertas') }}" class="db-nav-tab {% if request.endpoint == 'alertas' %}db-nav-tab-activo{% endif %}">Vencimientos</a>
+        <a href="{{ url_for('reportes') }}" class="db-nav-tab {% if request.endpoint in ['reportes', 'exportar_reporte', 'desbloquear_reportes'] %}db-nav-tab-activo{% endif %}">Caja</a>
+        <a href="{{ url_for('admin_general') }}" class="db-nav-tab {% if request.endpoint in ['admin_general', 'nuevo_precio', 'editar_precio', 'nuevo_profesor', 'nueva_clase'] %}db-nav-tab-activo{% endif %}">Ajustes</a>
+    </nav>
+
+    <div class="db-nav-usuario">
+        <div class="db-nav-avatar">{{ session.get('nombre', session.get('usuario', '?'))[0]|upper }}</div>
+        <div class="db-nav-usuario-info">
+            <span class="db-nav-usuario-nombre">{{ session.get('nombre', session.get('usuario', '')) }}</span>
+            <a href="{{ url_for('logout') }}" class="db-nav-logout">Cerrar sesión</a>
+        </div>
+    </div>
+</header>

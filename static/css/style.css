@@ -663,3 +663,109 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     width: 100%;
     max-width: 320px;
 }
+
+/* --- Barra de navegación unificada --- */
+
+.db-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    padding: 16px 32px;
+    border-bottom: 1px solid var(--db-border);
+    background: var(--db-bg);
+    flex-wrap: wrap;
+}
+
+.db-nav-brand {
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: var(--db-text);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.db-nav-dot {
+    color: var(--db-accent);
+}
+
+.db-nav-tabs {
+    display: flex;
+    gap: 28px;
+    flex: 1;
+    flex-wrap: wrap;
+}
+
+.db-nav-tab {
+    color: var(--db-text-dim);
+    text-decoration: none;
+    font-size: 0.92rem;
+    font-weight: 500;
+    padding-bottom: 4px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s;
+}
+
+.db-nav-tab:hover {
+    color: var(--db-text);
+}
+
+.db-nav-tab-activo {
+    color: var(--db-text);
+    border-bottom-color: var(--db-accent);
+}
+
+.db-nav-usuario {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.db-nav-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: var(--db-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.db-nav-usuario-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+}
+
+.db-nav-usuario-nombre {
+    font-size: 0.85rem;
+    color: var(--db-text);
+    text-transform: capitalize;
+}
+
+.db-nav-logout {
+    font-size: 0.75rem;
+    color: var(--db-text-dim);
+    text-decoration: none;
+}
+
+.db-nav-logout:hover {
+    color: var(--db-accent);
+}
+
+@media (max-width: 768px) {
+    .db-nav {
+        padding: 14px 16px;
+    }
+    .db-nav-tabs {
+        gap: 16px;
+        order: 3;
+        width: 100%;
+    }
+}

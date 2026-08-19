@@ -11,28 +11,44 @@
 </head>
 <body>
     <div class="db-wrapper">
-        {% include 'partials/navbar.html' %}
+            {% include 'partials/navbar.html' %}
 
-        <p class="db-eyebrow">Vencimientos</p>
-        <h1 class="db-page-title">Alertas</h1>
-        <p class="db-page-subtitle">Socios cuyo vencimiento cae dentro de los próximos {{ dias_limite }} día(s).</p>
+    <div class="db-wrapper">
 
-        <h3 class="db-section-title db-section-title-danger">❌ Vencidos ({{ vencidos|length }})</h3>
+        <p class="db-eyebrow">Cobranza</p>
+        <h1 class="db-page-title">Vencimientos</h1>
+
+        <div class="db-venc-stats">
+            <div class="db-venc-stat-card">
+                <span class="db-venc-stat-number">{{ vencidos|length }}</span>
+                <span class="db-venc-stat-label">Vencidos</span>
+            </div>
+            <div class="db-venc-stat-card">
+                <span class="db-venc-stat-number">{{ por_vencer|length }}</span>
+                <span class="db-venc-stat-label">Vencen en {{ dias_limite }} días</span>
+            </div>
+        </div>
+
+        <h3 class="db-section-title db-section-title-danger">Vencidos</h3>
         {% if vencidos %}
-            <div class="db-list">
+            <div class="db-socios-tabla">
+                <div class="db-socios-header db-venc-header">
+                    <span>Socio</span>
+                    <span>DNI</span>
+                    <span>Plan</span>
+                    <span>Venció</span>
+                    <span>Días</span>
+                </div>
                 {% for socio in vencidos %}
-                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
-                        <img class="db-avatar db-avatar--sm"
-                             src="{{ url_for('static', filename='fotos/' + (socio.foto if socio.foto else 'sin-foto.png')) }}"
-                             alt="Foto de {{ socio.nombre }}">
-                        <div class="db-row-info">
-                            <span class="db-row-name">{{ socio.apellido }}, {{ socio.nombre }}</span>
-                            <span class="db-row-meta">
-                                DNI: {{ socio.dni }}
-                                {% if socio.fecha_proximo_vencimiento %} · Venció: {{ socio.fecha_proximo_vencimiento }}{% else %} · Nunca pagó{% endif %}
-                            </span>
-                        </div>
-                        <span class="db-badge db-badge-danger">Vencido</span>
+                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-socios-row db-venc-header">
+                        <span class="db-socios-nombre">
+                            <span class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</span>
+                            {{ socio.nombre }} {{ socio.apellido }}
+                        </span>
+                        <span>{{ socio.dni }}</span>
+                        <span>{{ socio.plan or '—' }}</span>
+                        <span>{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') if socio.fecha_proximo_vencimiento else 'Nunca pagó' }}</span>
+                        <span>{{ socio.dias_vencido ~ ' días' if socio.dias_vencido is not none else '—' }}</span>
                     </a>
                 {% endfor %}
             </div>
@@ -40,25 +56,33 @@
             <p class="db-empty">No hay socios vencidos. 🎉</p>
         {% endif %}
 
-        <h3 class="db-section-title db-section-title-warning">⏰ Por vencer pronto ({{ por_vencer|length }})</h3>
+        <h3 class="db-section-title db-section-title-warning">Vencen en los próximos {{ dias_limite }} días</h3>
         {% if por_vencer %}
-            <div class="db-list">
+            <div class="db-socios-tabla">
+                <div class="db-socios-header db-venc-header">
+                    <span>Socio</span>
+                    <span>DNI</span>
+                    <span>Plan</span>
+                    <span>Vence</span>
+                    <span>Días</span>
+                </div>
                 {% for socio in por_vencer %}
-                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
-                        <img class="db-avatar db-avatar--sm"
-                             src="{{ url_for('static', filename='fotos/' + (socio.foto if socio.foto else 'sin-foto.png')) }}"
-                             alt="Foto de {{ socio.nombre }}">
-                        <div class="db-row-info">
-                            <span class="db-row-name">{{ socio.apellido }}, {{ socio.nombre }}</span>
-                            <span class="db-row-meta">DNI: {{ socio.dni }} · Vence: {{ socio.fecha_proximo_vencimiento }}</span>
-                        </div>
-                        <span class="db-badge db-badge-warning">Vence pronto</span>
+                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-socios-row db-venc-header">
+                        <span class="db-socios-nombre">
+                            <span class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</span>
+                            {{ socio.nombre }} {{ socio.apellido }}
+                        </span>
+                        <span>{{ socio.dni }}</span>
+                        <span>{{ socio.plan or '—' }}</span>
+                        <span>{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') }}</span>
+                        <span>{{ socio.dias_para_vencer }} días</span>
                     </a>
                 {% endfor %}
             </div>
         {% else %}
             <p class="db-empty">Nadie vence en los próximos {{ dias_limite }} días.</p>
         {% endif %}
+
     </div>
 </body>
 </html>

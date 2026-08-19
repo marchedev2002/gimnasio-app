@@ -891,3 +891,48 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
         width: 100%;
     }
 }
+/* --- Rediseño de Vencimientos --- */
+
+.db-venc-stats {
+    display: flex;
+    gap: 16px;
+    margin: 20px 0 32px;
+    flex-wrap: wrap;
+}
+
+.db-venc-stat-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    padding: 20px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 140px;
+}
+
+.db-venc-stat-number {
+    font-family: var(--db-mono);
+    font-size: 1.8rem;
+    font-weight: 500;
+}
+
+.db-venc-stat-label {
+    color: var(--db-text-dim);
+    font-size: 0.82rem;
+}
+
+.db-venc-header {
+    grid-template-columns: 2fr 1fr 1.3fr 1fr 0.8fr;
+}
+
+@media (max-width: 768px) {
+    .db-venc-header.db-socios-header {
+        display: none;
+    }
+
+    .db-venc-header.db-socios-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+}

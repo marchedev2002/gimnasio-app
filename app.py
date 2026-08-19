@@ -520,39 +520,55 @@ def eliminar_socio(dni):
 @app.route('/alertas')
 @login_requerido
 def alertas():
-    """Muestra socios vencidos y por vencer, según el día fijo de cada uno."""
-    dias_limite = request.args.get('dias', 5)
+    dias_limite = request.args.get('dias', 7)
     try:
         dias_limite = int(dias_limite)
     except ValueError:
-        dias_limite = 5
+        dias_limite = 7
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
+    hoy = date.today()
+
     cursor.execute("""
-        SELECT dni, nombre, apellido, fecha_proximo_vencimiento
+        SELECT USUARIO.dni, USUARIO.nombre, USUARIO.apellido, USUARIO.fecha_proximo_vencimiento,
+               ultimo.tipo_membresia AS plan
         FROM USUARIO
-        WHERE id_gimnasio = %s
-        ORDER BY apellido, nombre
-    """, (session['id_gimnasio'],))
+        LEFT JOIN (
+            SELECT PAGO.dni, PRECIO.tipo_membresia
+            FROM PAGO
+            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            INNER JOIN (
+                SELECT dni, MAX(fecha_pago) AS ultima_fecha
+                FROM PAGO
+                WHERE id_gimnasio = %s
+                GROUP BY dni
+            ) ultima ON PAGO.dni = ultima.dni AND PAGO.fecha_pago = ultima.ultima_fecha
+            WHERE PAGO.id_gimnasio = %s
+        ) ultimo ON ultimo.dni = USUARIO.dni
+        WHERE USUARIO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (session['id_gimnasio'], session['id_gimnasio'], session['id_gimnasio']))
     todos = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
-    hoy = date.today()
-
     vencidos = [
         s for s in todos
         if s['fecha_proximo_vencimiento'] is None or s['fecha_proximo_vencimiento'] < hoy
     ]
+    for s in vencidos:
+        s['dias_vencido'] = (hoy - s['fecha_proximo_vencimiento']).days if s['fecha_proximo_vencimiento'] else None
 
     por_vencer = [
         s for s in todos
         if s['fecha_proximo_vencimiento'] is not None
         and hoy <= s['fecha_proximo_vencimiento'] <= hoy + timedelta(days=dias_limite)
     ]
+    for s in por_vencer:
+        s['dias_para_vencer'] = (s['fecha_proximo_vencimiento'] - hoy).days
 
     return render_template(
         'alertas.html',

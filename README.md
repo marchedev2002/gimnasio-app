@@ -27,6 +27,7 @@ Un sistema web accesible desde cualquier dispositivo, pensado para que la person
 - **Alertas de vencimiento**: listado de socios vencidos y próximos a vencer, configurable por rango de días.
 - **Autenticación y seguridad**: login con contraseñas hasheadas (scrypt), límite de intentos fallidos, cookies de sesión endurecidas.
 - **Tests automatizados**: suite de tests con `pytest` corriendo en CI (GitHub Actions) en cada push, contra una base de datos de test aislada.
+- **Arquitectura multi-tenant**: un mismo despliegue soporta múltiples gimnasios de forma completamente aislada — cada usuario de personal pertenece a un gimnasio específico, y todos los datos (socios, pagos, asistencias, precios, profesores, clases, reportes) quedan filtrados automáticamente sin posibilidad de fuga entre clientes. Validado con un caso de prueba real: dos gimnasios distintos con un socio del mismo DNI, confirmando aislamiento total de historial de pagos y estadísticas.
 
 ---
 ## Imagenes relevantes para BI
@@ -78,6 +79,9 @@ Al implementar el pool de conexiones, un fallo transitorio de la base (por ejemp
 **4. Diseño de vencimientos con "día ancla" fijo**
 El requerimiento de negocio era que la fecha de vencimiento de cada socio quedara fija en el día del mes en que se dio de alta (ej: día 10), independientemente de qué día del mes pagara cada vez. Se resolvió separando el concepto de "día ancla" (fijo, guardado por socio) del cálculo de "próxima fecha de vencimiento" (recalculado en cada pago, siempre anclado a ese día, con ajuste automático para meses con menos días — ej: 31 en febrero).
 
+**5. Migración a arquitectura multi-tenant sin downtime**
+El sistema fue diseñado originalmente para un único gimnasio, con `dni` como clave primaria de la tabla de socios. Migrar a soporte multi-cliente requirió: (a) rediseñar la clave primaria como compuesta (`dni` + `id_gimnasio`), permitiendo que el mismo DNI exista en distintos gimnasios sin colisión; (b) propagar el filtro de aislamiento a más de 20 consultas SQL a lo largo de todo el backend; y (c) migrar los datos existentes con `ALTER TABLE ... DEFAULT` para no perder ningún registro histórico durante la transición. La validación se hizo con un caso de prueba deliberado (mismo DNI en dos gimnasios), que expuso dos fugas de aislamiento en consultas que agregaban datos (`COUNT`, historial de pagos) en lugar de filtrar directamente por socio — un recordatorio de que las consultas de agregación necesitan la misma disciplina de filtrado que las de búsqueda directa.
+
 ---
 
 ## Modelo de datos
@@ -118,7 +122,6 @@ pytest
 
 ## Roadmap
 
-- [ ] Arquitectura multi-tenant (soporte para múltiples gimnasios en un mismo despliegue)
 - [ ] Notificaciones automáticas de vencimiento por email
 - [ ] Roles de usuario diferenciados (recepción vs. administración)
 - [ ] Auditoría de acciones (logs de quién hizo qué)

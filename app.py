@@ -560,6 +560,15 @@ def reportes():
         return {'total': total, 'cantidad': cantidad, 'efectivo': efectivo, 'debito': debito}
 
     resumen_dia = resumen_desde(hoy)
+    cursor.execute("""
+        SELECT USUARIO.nombre, USUARIO.apellido, PRECIO.monto, PAGO.metodo_pago
+        FROM PAGO
+        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (hoy, session['id_gimnasio']))
+    detalle_pagos_hoy = cursor.fetchall()
     resumen_semana = resumen_desde(inicio_semana)
     resumen_mes = resumen_desde(inicio_mes)
 
@@ -669,6 +678,7 @@ def reportes():
     return render_template(
         'reportes.html',
         resumen_dia=resumen_dia,
+        detalle_pagos_hoy=detalle_pagos_hoy,
         meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, distribucion_profesores = distribucion_profesores, meses_grafico=meses_grafico,
         total_ingresos_periodo = total_ingresos_periodo,
         tendencia_labels=tendencia_labels,

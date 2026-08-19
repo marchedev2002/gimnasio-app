@@ -38,6 +38,29 @@
                     <span>💳 Débito</span>
                     <span>${{ "%.2f"|format(resumen_dia.debito) }}</span>
                 </div>
+
+                {% if detalle_pagos_hoy %}
+                    <button type="button" id="btn-toggle-detalle" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">
+                        Ver quién pagó hoy ▾
+                    </button>
+
+                    <div id="detalle-pagos-hoy" style="display:none; margin-top:14px;">
+                        <table class="db-table">
+                            <thead>
+                                <tr><th>Nombre</th><th>Apellido</th><th>Monto</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for pago in detalle_pagos_hoy %}
+                                    <tr>
+                                        <td>{{ pago.nombre }}</td>
+                                        <td>{{ pago.apellido }}</td>
+                                        <td>${{ "%.2f"|format(pago.monto) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
             </div>
 
             <div class="db-report-card db-report-bloqueado" id="tarjeta-semana">
@@ -266,6 +289,15 @@
 
             modal.style.display = 'none';
         });
+        const btnToggle = document.getElementById('btn-toggle-detalle');
+        if (btnToggle) {
+            btnToggle.addEventListener('click', () => {
+                const detalle = document.getElementById('detalle-pagos-hoy');
+                const visible = detalle.style.display === 'block';
+                detalle.style.display = visible ? 'none' : 'block';
+                btnToggle.textContent = visible ? 'Ver quién pagó hoy ▾' : 'Ocultar detalle ▴';
+            });
+        }
     </script>
 </body>
 </html>

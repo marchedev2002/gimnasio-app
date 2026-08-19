@@ -413,21 +413,33 @@ def nuevo_pago():
 @app.route('/socios')
 @login_requerido
 def listado_socios():
-    """Muestra el listado completo de todos los socios con su estado y filtros"""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
+
     hoy = date.today()
-
     cursor.execute("""
-        SELECT dni, nombre, apellido, fecha_proximo_vencimiento,
-            CASE WHEN fecha_proximo_vencimiento IS NOT NULL AND fecha_proximo_vencimiento >= %s
-                    THEN 1 ELSE 0 END AS al_dia
+        SELECT USUARIO.dni, USUARIO.nombre, USUARIO.apellido, USUARIO.fecha_proximo_vencimiento,
+               CASE WHEN USUARIO.fecha_proximo_vencimiento IS NOT NULL AND USUARIO.fecha_proximo_vencimiento >= %s
+                    THEN 1 ELSE 0 END AS al_dia,
+               ultimo.tipo_membresia AS plan
         FROM USUARIO
-        WHERE id_gimnasio = %s
-        ORDER BY apellido, nombre
-    """, (hoy, session['id_gimnasio']))
-
+        LEFT JOIN (
+            SELECT PAGO.dni, PRECIO.tipo_membresia
+            FROM PAGO
+            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            INNER JOIN (
+                SELECT dni, MAX(fecha_pago) AS ultima_fecha
+                FROM PAGO
+                WHERE id_gimnasio = %s
+                GROUP BY dni
+            ) ultima ON PAGO.dni = ultima.dni AND PAGO.fecha_pago = ultima.ultima_fecha
+            WHERE PAGO.id_gimnasio = %s
+        ) ultimo ON ultimo.dni = USUARIO.dni
+        WHERE USUARIO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (hoy, session['id_gimnasio'], session['id_gimnasio'], session['id_gimnasio']))
     todos = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
@@ -442,7 +454,9 @@ def listado_socios():
     if busqueda:
         socios = [
             s for s in socios
-            if busqueda in s['nombre'].lower() or busqueda in s['apellido'].lower() or busqueda in s['dni'].lower()
+            if busqueda in s['nombre'].lower()
+            or busqueda in s['apellido'].lower()
+            or busqueda in s['dni'].lower()
         ]
 
     if filtro == 'al_dia':
@@ -450,13 +464,27 @@ def listado_socios():
     elif filtro == 'vencidos':
         socios = [s for s in socios if s['al_dia'] == 0]
 
+    # --- Paginación: 10 socios por página ---
+    POR_PAGINA = 10
+    total_filtrado = len(socios)
+    total_paginas = max(1, (total_filtrado + POR_PAGINA - 1) // POR_PAGINA)
+
+    pagina = request.args.get('pagina', 1, type=int)
+    pagina = max(1, min(pagina, total_paginas))
+
+    inicio = (pagina - 1) * POR_PAGINA
+    socios_pagina = socios[inicio:inicio + POR_PAGINA]
+
     return render_template(
         'listado.html',
-        socios=socios,
+        socios=socios_pagina,
         total_al_dia=total_al_dia,
         total_vencidos=total_vencidos,
+        total_socios=len(todos),
         busqueda=busqueda,
-        filtro=filtro
+        filtro=filtro,
+        pagina=pagina,
+        total_paginas=total_paginas
     )
 
 
@@ -1086,7 +1114,7 @@ def procesar_checkin():
 
     if usuario.get('fecha_proximo_vencimiento'):
         usuario['fecha_proximo_vencimiento'] = usuario['fecha_proximo_vencimiento'].isoformat()
-        
+
     session['resultado_checkin'] = {
         'usuario': dict(usuario),
         'membresia_al_dia': membresia_al_dia,

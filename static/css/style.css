@@ -791,3 +791,103 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
         padding: 20px;
     }
 }
+/* --- Rediseño del listado de socios (tabla + paginación) --- */
+
+.db-socios-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin: 20px 0 24px;
+}
+
+.db-socios-buscador {
+    flex: 1;
+    min-width: 220px;
+}
+
+.db-socios-buscador input {
+    width: 100%;
+}
+
+.db-socios-alta-btn {
+    margin-left: auto;
+    white-space: nowrap;
+}
+
+.db-socios-tabla {
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.db-socios-header,
+.db-socios-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1.3fr 1fr 0.8fr;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 18px;
+}
+
+.db-socios-header {
+    background: var(--db-surface);
+    color: var(--db-text-dim);
+    font-family: var(--db-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--db-border);
+}
+
+.db-socios-row {
+    text-decoration: none;
+    color: var(--db-text);
+    border-bottom: 1px solid var(--db-border);
+    transition: background 0.15s;
+}
+
+.db-socios-row:last-child {
+    border-bottom: none;
+}
+
+.db-socios-row:hover {
+    background: var(--db-surface);
+}
+
+.db-socios-nombre {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+}
+
+.db-paginacion {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.db-paginacion-info {
+    color: var(--db-text-dim);
+    font-size: 0.85rem;
+    font-family: var(--db-mono);
+}
+
+@media (max-width: 768px) {
+    .db-socios-header {
+        display: none;
+    }
+
+    .db-socios-row {
+        grid-template-columns: 1fr;
+        gap: 4px;
+    }
+
+    .db-socios-alta-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+}

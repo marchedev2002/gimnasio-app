@@ -26,6 +26,20 @@
 
         <div class="db-report-grid">
 
+            <div class="db-report-card">
+                <p class="db-section-label">Hoy</p>
+                <p class="db-report-total">${{ "%.2f"|format(resumen_dia.total) }}</p>
+                <p class="db-report-count">{{ resumen_dia.cantidad }} pago(s)</p>
+                <div class="db-report-split">
+                    <span>💵 Efectivo</span>
+                    <span>${{ "%.2f"|format(resumen_dia.efectivo) }}</span>
+                </div>
+                <div class="db-report-split">
+                    <span>💳 Débito</span>
+                    <span>${{ "%.2f"|format(resumen_dia.debito) }}</span>
+                </div>
+            </div>
+
             <div class="db-report-card db-report-bloqueado" id="tarjeta-semana">
                 <p class="db-section-label">Esta semana</p>
                 <div class="db-blur-contenido">

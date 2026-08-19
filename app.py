@@ -110,7 +110,8 @@ def index():
                SUM(CASE WHEN fecha_proximo_vencimiento IS NOT NULL
                         AND fecha_proximo_vencimiento >= %s THEN 1 ELSE 0 END) AS al_dia
         FROM USUARIO
-    """, (hoy,))
+        WHERE id_gimnasio = %s
+    """, (hoy, session['id_gimnasio']))
     stats = cursor.fetchone()
 
     cursor.close()
@@ -315,9 +316,9 @@ def ver_socio(dni):
         FROM PAGO
         JOIN MES ON PAGO.id_mes = MES.id_mes
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE PAGO.dni = %s
+        WHERE PAGO.dni = %s AND PAGO.id_gimnasio = %s
         ORDER BY PAGO.fecha_pago DESC
-    """, (dni,))
+    """, (dni, session['id_gimnasio']))
     historial_pagos = cursor.fetchall()
 
     cursor.close()

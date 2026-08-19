@@ -941,21 +941,85 @@ def exportar_reporte():
     if not mes or not anio:
         return redirect(url_for('reportes', error="Por favor seleccioná un mes y un año."))
 
-@app.route('/checkin', methods=['GET'])
+@app.route('/checkin')
 @login_requerido
 def checkin():
-    """Pantalla rápida de ingreso: solo pide el DNI."""
-    return render_template('checkin.html')
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    # Feed de últimos ingresos (con estado de membresía de cada uno)
+    cursor.execute("""
+        SELECT ASISTENCIA.fecha_hora, USUARIO.dni, USUARIO.nombre, USUARIO.apellido,
+               USUARIO.fecha_proximo_vencimiento,
+               CLASE.nombre AS nombre_clase
+        FROM ASISTENCIA
+        JOIN USUARIO ON ASISTENCIA.dni = USUARIO.dni AND ASISTENCIA.id_gimnasio = USUARIO.id_gimnasio
+        LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
+        WHERE ASISTENCIA.id_gimnasio = %s
+        ORDER BY ASISTENCIA.fecha_hora DESC
+        LIMIT 15
+    """, (session['id_gimnasio'],))
+    feed_ingresos = cursor.fetchall()
+
+    hoy = date.today()
+    for fila in feed_ingresos:
+        fila['al_dia'] = fila['fecha_proximo_vencimiento'] is not None and fila['fecha_proximo_vencimiento'] >= hoy
+
+    # Estadísticas: ingresos de hoy
+    cursor.execute("""
+        SELECT COUNT(*) AS total FROM ASISTENCIA
+        WHERE id_gimnasio = %s AND DATE(fecha_hora) = %s
+    """, (session['id_gimnasio'], hoy))
+    ingresos_hoy = cursor.fetchone()['total']
+
+    # Estadísticas: total de socios y al día
+    cursor.execute("""
+        SELECT COUNT(*) AS total,
+               SUM(CASE WHEN fecha_proximo_vencimiento IS NOT NULL
+                        AND fecha_proximo_vencimiento >= %s THEN 1 ELSE 0 END) AS al_dia
+        FROM USUARIO
+        WHERE id_gimnasio = %s
+    """, (hoy, session['id_gimnasio']))
+    stats_socios = cursor.fetchone()
+    total_socios = stats_socios['total'] or 0
+    total_al_dia = stats_socios['al_dia'] or 0
+
+    # Vencen esta semana (próximos 7 días, ya vigentes hoy)
+    cursor.execute("""
+        SELECT dni, nombre, apellido, fecha_proximo_vencimiento
+        FROM USUARIO
+        WHERE id_gimnasio = %s
+          AND fecha_proximo_vencimiento IS NOT NULL
+          AND fecha_proximo_vencimiento BETWEEN %s AND %s
+        ORDER BY fecha_proximo_vencimiento
+    """, (session['id_gimnasio'], hoy, hoy + timedelta(days=7)))
+    vencen_semana = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    # Si venimos de validar un DNI (dato guardado en la sesión momentáneamente)
+    resultado_validacion = session.pop('resultado_checkin', None)
+
+    return render_template(
+        'checkin.html',
+        feed_ingresos=feed_ingresos,
+        ingresos_hoy=ingresos_hoy,
+        total_socios=total_socios,
+        total_al_dia=total_al_dia,
+        vencen_semana=vencen_semana,
+        resultado_validacion=resultado_validacion
+    )
 
 
 @app.route('/checkin/procesar', methods=['POST'])
 @login_requerido
 def procesar_checkin():
-    """Registra el ingreso del socio y muestra su estado + visitas del mes."""
     dni = request.form.get('dni', '').strip()
 
     if not dni:
-        return render_template('checkin.html', error="Por favor ingresá un DNI.")
+        session['resultado_checkin'] = {'error': 'Por favor ingresá un DNI.'}
+        return redirect(url_for('checkin'))
 
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
@@ -966,11 +1030,12 @@ def procesar_checkin():
     if not usuario:
         cursor.close()
         conn.close()
-        return render_template('checkin.html', error=f"No se encontró ningún socio con DNI {dni}.")
+        session['resultado_checkin'] = {'error': f"No se encontró ningún socio con DNI {dni}."}
+        return redirect(url_for('checkin'))
 
-    # Registrar el ingreso (fecha y hora actuales)
     ahora = datetime.now()
     hora_actual = ahora.time()
+
     cursor.execute("""
         SELECT id_clase FROM CLASE
         WHERE hora_inicio <= %s AND hora_fin >= %s AND id_gimnasio = %s
@@ -980,19 +1045,17 @@ def procesar_checkin():
     id_clase_actual = clase_en_curso['id_clase'] if clase_en_curso else None
 
     cursor.execute(
-    "INSERT INTO ASISTENCIA (dni, fecha_hora, id_clase, id_gimnasio) VALUES (%s, %s, %s, %s)",
-    (dni, ahora, id_clase_actual, session['id_gimnasio'])
+        "INSERT INTO ASISTENCIA (dni, fecha_hora, id_clase, id_gimnasio) VALUES (%s, %s, %s, %s)",
+        (dni, ahora, id_clase_actual, session['id_gimnasio'])
     )
     conn.commit()
 
-    # Estado de la membresía (misma lógica que ya usábamos en ver_socio)
     hoy = date.today()
     membresia_al_dia = (
         usuario['fecha_proximo_vencimiento'] is not None
         and usuario['fecha_proximo_vencimiento'] >= hoy
     )
 
-    # Plan actual del socio: el de su último pago registrado
     cursor.execute("""
         SELECT PRECIO.tipo_membresia, PRECIO.dias_max_mes
         FROM PAGO
@@ -1003,13 +1066,12 @@ def procesar_checkin():
     """, (dni, session['id_gimnasio']))
     plan_actual = cursor.fetchone()
 
-    # Cuántas veces ya asistió este mes calendario
     cursor.execute("""
         SELECT COUNT(*) AS cantidad
         FROM ASISTENCIA
         WHERE dni = %s AND id_gimnasio = %s
-        AND EXTRACT(YEAR FROM fecha_hora) = EXTRACT(YEAR FROM CURRENT_DATE)
-        AND EXTRACT(MONTH FROM fecha_hora) = EXTRACT(MONTH FROM CURRENT_DATE)
+          AND EXTRACT(YEAR FROM fecha_hora) = EXTRACT(YEAR FROM CURRENT_DATE)
+          AND EXTRACT(MONTH FROM fecha_hora) = EXTRACT(MONTH FROM CURRENT_DATE)
     """, (dni, session['id_gimnasio']))
     visitas_mes = cursor.fetchone()['cantidad']
 
@@ -1022,15 +1084,18 @@ def procesar_checkin():
         and visitas_mes > plan_actual['dias_max_mes']
     )
 
-    return render_template(
-        'resultado_checkin.html',
-        usuario=usuario,
-        membresia_al_dia=membresia_al_dia,
-        hora_ingreso=ahora.strftime('%H:%M'),
-        plan_actual=plan_actual,
-        visitas_mes=visitas_mes,
-        excede_limite=excede_limite
-    )
+    if usuario.get('fecha_proximo_vencimiento'):
+        usuario['fecha_proximo_vencimiento'] = usuario['fecha_proximo_vencimiento'].isoformat()
+        
+    session['resultado_checkin'] = {
+        'usuario': dict(usuario),
+        'membresia_al_dia': membresia_al_dia,
+        'hora_ingreso': ahora.strftime('%H:%M'),
+        'plan_actual': dict(plan_actual) if plan_actual else None,
+        'visitas_mes': visitas_mes,
+        'excede_limite': excede_limite
+    }
+    return redirect(url_for('checkin'))
 
 
 if __name__ == '__main__':

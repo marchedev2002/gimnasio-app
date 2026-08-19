@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registrar Ingreso · {{ nombre_gimnasio }}</title>
+    <title>Acceso · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -11,22 +11,112 @@
 </head>
 <body>
     {% include 'partials/navbar.html' %}
-    <div class="db-wrapper db-wrapper--narrow" style="text-align:center;">
-        <p class="db-eyebrow">Control de acceso</p>
-        <h1 class="db-page-title">Registrar ingreso</h1>
-        <p class="db-page-subtitle">Pasá el DNI del socio para registrar su entrada.</p>
 
-        <form action="{{ url_for('procesar_checkin') }}" method="POST" class="db-search-form">
-            <span class="db-search-icon">#</span>
-            <input type="text" name="dni" class="db-search-input" placeholder="Ingresá el DNI" autofocus required>
-            <button type="submit" class="db-search-btn">Ingresar</button>
-        </form>
+    <div class="db-checkin-layout">
 
-        {% if error %}
-            <p class="db-alert-error" style="margin-top:16px;">{{ error }}</p>
-        {% endif %}
+        <div class="db-checkin-feed">
+            <p class="db-eyebrow">Control de acceso</p>
+            <h1 class="db-page-title">Ingresos recientes</h1>
 
-        <a href="{{ url_for('index') }}" class="db-link db-back-link">← Volver al inicio</a>
+            {% if feed_ingresos %}
+                <div class="db-list" style="margin-top:20px;">
+                    {% for ingreso in feed_ingresos %}
+                        <div class="db-row" style="cursor:default;">
+                            <div class="db-avatar-initials db-avatar-initials--sm">{{ ingreso.nombre[0]|upper }}{{ ingreso.apellido[0]|upper }}</div>
+                            <div class="db-row-info">
+                                <span class="db-row-name">{{ ingreso.nombre }} {{ ingreso.apellido }}</span>
+                                <span class="db-row-meta">
+                                    {{ ingreso.fecha_hora.strftime('%H:%M') }} ·
+                                    {{ ingreso.nombre_clase if ingreso.nombre_clase else 'Musculación libre' }}
+                                </span>
+                            </div>
+                            {% if ingreso.al_dia %}
+                                <span class="db-badge db-badge-ok">Al día</span>
+                            {% else %}
+                                <span class="db-badge db-badge-danger">Vencido</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="db-empty">Todavía no hay ingresos registrados.</p>
+            {% endif %}
+        </div>
+
+        <div class="db-checkin-panel">
+
+            <div class="db-card">
+                <p class="db-section-label">Validar socio</p>
+                <form action="{{ url_for('procesar_checkin') }}" method="POST" class="db-search-form">
+                    <span class="db-search-icon">#</span>
+                    <input type="text" name="dni" class="db-search-input" placeholder="DNI" autofocus required>
+                    <button type="submit" class="db-search-btn">Validar</button>
+                </form>
+            </div>
+
+            {% if resultado_validacion %}
+                {% if resultado_validacion.error %}
+                    <p class="db-alert-error" style="margin-top:16px;">{{ resultado_validacion.error }}</p>
+                {% else %}
+                    <div class="db-card" style="margin-top:16px;">
+                        <div class="db-profile">
+                            <div class="db-avatar-initials">{{ resultado_validacion.usuario.nombre[0]|upper }}{{ resultado_validacion.usuario.apellido[0]|upper }}</div>
+                            <p class="db-profile-name">{{ resultado_validacion.usuario.nombre }} {{ resultado_validacion.usuario.apellido }}</p>
+                            <p class="db-profile-meta">DNI {{ resultado_validacion.usuario.dni }}</p>
+                        </div>
+
+                        {% if resultado_validacion.membresia_al_dia %}
+                            <div class="db-status db-status-ok">✅ Acceso permitido</div>
+                        {% else %}
+                            <div class="db-status db-status-danger">❌ Membresía vencida</div>
+                        {% endif %}
+
+                        <p class="db-status-note">Ingreso registrado a las {{ resultado_validacion.hora_ingreso }} hs.</p>
+
+                        {% if resultado_validacion.plan_actual %}
+                            <p class="db-profile-meta" style="margin-top:10px;"><strong>Plan:</strong> {{ resultado_validacion.plan_actual.tipo_membresia }}</p>
+                            {% if resultado_validacion.plan_actual.dias_max_mes %}
+                                <p class="{% if resultado_validacion.excede_limite %}db-warning-text{% else %}db-profile-meta{% endif %}">
+                                    Visitas este mes: {{ resultado_validacion.visitas_mes }} / {{ resultado_validacion.plan_actual.dias_max_mes }}
+                                    {% if resultado_validacion.excede_limite %} ⚠️{% endif %}
+                                </p>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endif %}
+
+            <div class="db-card" style="margin-top:16px;">
+                <div class="db-stat-card" style="border:none; padding:0;">
+                    <span class="db-stat-number">{{ ingresos_hoy }}</span>
+                    <span class="db-stat-label">Ingresos hoy</span>
+                </div>
+                <div class="db-stat-card" style="border:none; padding:0; margin-top:14px;">
+                    <span class="db-stat-number">{{ total_socios }}</span>
+                    <span class="db-stat-label">Socios · {{ total_al_dia }} al día</span>
+                </div>
+            </div>
+
+            <div class="db-card" style="margin-top:16px;">
+                <p class="db-section-label">Vencen esta semana ({{ vencen_semana|length }})</p>
+                {% if vencen_semana %}
+                    <div class="db-list">
+                        {% for socio in vencen_semana %}
+                            <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
+                                <div class="db-row-info">
+                                    <span class="db-row-name">{{ socio.nombre }} {{ socio.apellido }}</span>
+                                </div>
+                                <span class="db-row-meta">{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') }}</span>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p class="db-empty">Nadie vence esta semana.</p>
+                {% endif %}
+                <a href="{{ url_for('alertas') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Ver todos los vencimientos</a>
+            </div>
+
+        </div>
     </div>
 </body>
 </html>

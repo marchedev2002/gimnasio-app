@@ -769,3 +769,25 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
         width: 100%;
     }
 }
+/* --- Layout de la pantalla de Acceso (feed + panel) --- */
+
+.db-checkin-layout {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 24px;
+    padding: 32px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.db-checkin-panel {
+    display: flex;
+    flex-direction: column;
+}
+
+@media (max-width: 900px) {
+    .db-checkin-layout {
+        grid-template-columns: 1fr;
+        padding: 20px;
+    }
+}

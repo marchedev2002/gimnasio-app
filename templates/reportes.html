@@ -88,7 +88,69 @@
            
 
         </div>
+                <div class="db-card" style="margin-top:36px;">
+            <p class="db-eyebrow" style="margin-bottom:4px;">Caja del mes</p>
+            <h2 class="db-page-title" style="font-size:1.4rem; margin-bottom:20px;">{{ nombre_mes_actual }}</h2>
 
+            <div class="db-caja-mes-grid">
+                <div class="db-caja-mes-chart">
+                    <p class="db-section-label">Cobrado por día</p>
+                    <p class="db-caja-mes-total">
+                        ${{ "%.2f"|format(resumen_mes.total) }}
+                        {% if variacion_mes is not none %}
+                            <span class="{% if variacion_mes >= 0 %}db-caja-var-positiva{% else %}db-caja-var-negativa{% endif %}">
+                                {{ '+' if variacion_mes >= 0 else '' }}{{ variacion_mes }}% vs mes anterior
+                            </span>
+                        {% endif %}
+                    </p>
+                    <canvas id="graficoDiario" height="90"></canvas>
+                    <script>
+                        new Chart(document.getElementById('graficoDiario'), {
+                            type: 'bar',
+                            data: {
+                                labels: {{ dias_labels | tojson }},
+                                datasets: [{
+                                    data: {{ dias_valores | tojson }},
+                                    backgroundColor: {{ dias_labels | tojson }}.map(
+                                        (d, i) => (i + 1 === {{ dia_actual }}) ? '#e6493b' : '#3a3f4d'
+                                    ),
+                                    borderRadius: 4
+                                }]
+                            },
+                            options: {
+                                plugins: { legend: { display: false } },
+                                scales: {
+                                    x: { ticks: { color: '#8d94a6', maxRotation: 0 }, grid: { display: false } },
+                                    y: { ticks: { color: '#8d94a6' }, beginAtZero: true }
+                                }
+                            }
+                        });
+                    </script>
+                </div>
+
+                <div class="db-caja-mes-mix">
+                    <p class="db-section-label">Mix por plan</p>
+                    {% if mix_por_plan %}
+                        {% for item in mix_por_plan %}
+                            <div class="db-mix-item">
+                                <div class="db-mix-item-header">
+                                    <span>{{ item.plan }} · ${{ "%.2f"|format(item.monto) }}</span>
+                                    <span>{{ item.porcentaje }}%</span>
+                                </div>
+                                <div class="db-mix-bar-track">
+                                    <div class="db-mix-bar-fill" style="width: {{ item.porcentaje }}%;"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        <a href="{{ url_for('exportar_reporte', mes=mes_actual, anio=anio_actual) }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:16px;">
+                            Exportar planilla del mes
+                        </a>
+                    {% else %}
+                        <p class="db-empty">Sin pagos registrados este mes.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
         <div class="db-card" style="margin-top:36px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
                 <p class="db-section-label" style="margin-bottom:0;">Ingresos por profesor</p>

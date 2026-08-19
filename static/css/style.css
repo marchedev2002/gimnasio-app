@@ -1000,3 +1000,63 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
         max-height: 160px;
     }
 }
+/* --- Caja del mes: gráfico diario + mix por plan --- */
+
+.db-caja-mes-grid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: 28px;
+}
+
+.db-caja-mes-total {
+    font-family: var(--db-mono);
+    font-size: 1.8rem;
+    margin: 4px 0 14px;
+}
+
+.db-caja-var-positiva {
+    font-family: var(--db-body-font);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--db-success);
+    margin-left: 8px;
+}
+
+.db-caja-var-negativa {
+    font-family: var(--db-body-font);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--db-danger);
+    margin-left: 8px;
+}
+
+.db-mix-item {
+    margin-bottom: 16px;
+}
+
+.db-mix-item-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    color: var(--db-text);
+}
+
+.db-mix-bar-track {
+    background: var(--db-border);
+    border-radius: 6px;
+    height: 8px;
+    overflow: hidden;
+}
+
+.db-mix-bar-fill {
+    background: var(--db-accent);
+    height: 100%;
+    border-radius: 6px;
+}
+
+@media (max-width: 900px) {
+    .db-caja-mes-grid {
+        grid-template-columns: 1fr;
+    }
+}

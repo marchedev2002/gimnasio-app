@@ -617,6 +617,62 @@ def reportes():
     resumen_semana = resumen_desde(inicio_semana)
     resumen_mes = resumen_desde(inicio_mes)
 
+        # --- Cobrado por día (mes actual) ---
+    ultimo_dia_mes_actual = calendar.monthrange(hoy.year, hoy.month)[1]
+
+    cursor.execute("""
+        SELECT DAY(PAGO.fecha_pago) AS dia, SUM(PRECIO.monto) AS total
+        FROM PAGO
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
+        GROUP BY dia
+    """, (inicio_mes, session['id_gimnasio']))
+    filas_dia = cursor.fetchall()
+    mapa_dia = {f['dia']: float(f['total']) for f in filas_dia}
+
+    dias_labels = [str(d) for d in range(1, ultimo_dia_mes_actual + 1)]
+    dias_valores = [mapa_dia.get(d, 0) for d in range(1, ultimo_dia_mes_actual + 1)]
+
+    # --- Comparación vs mes anterior completo ---
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+    fin_mes_anterior = inicio_mes - timedelta(days=1)
+
+    cursor.execute("""
+        SELECT SUM(PRECIO.monto) AS total
+        FROM PAGO
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago BETWEEN %s AND %s AND PAGO.id_gimnasio = %s
+    """, (inicio_mes_anterior, fin_mes_anterior, session['id_gimnasio']))
+    total_mes_anterior = float(cursor.fetchone()['total'] or 0)
+
+    variacion_mes = None
+    if total_mes_anterior > 0:
+        variacion_mes = round(((resumen_mes['total'] - total_mes_anterior) / total_mes_anterior) * 100, 1)
+
+    # --- Mix por plan (mes actual) ---
+    cursor.execute("""
+        SELECT PRECIO.tipo_membresia, SUM(PRECIO.monto) AS total
+        FROM PAGO
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
+        GROUP BY PRECIO.tipo_membresia
+        ORDER BY total DESC
+    """, (inicio_mes, session['id_gimnasio']))
+    filas_plan = cursor.fetchall()
+    total_mix = sum(float(f['total']) for f in filas_plan)
+    mix_por_plan = []
+    for f in filas_plan:
+        monto = float(f['total'])
+        mix_por_plan.append({
+            'plan': f['tipo_membresia'],
+            'monto': monto,
+            'porcentaje': round((monto / total_mix * 100), 1) if total_mix else 0
+        })
+
+    nombres_meses_completo = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+                               'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    nombre_mes_actual = f"{nombres_meses_completo[hoy.month]} {hoy.year}"
+
     # --- Distribución de ingresos por profesor (para el gráfico de torta) ---
     meses_grafico = request.args.get('meses', 1)
     try:
@@ -729,7 +785,13 @@ def reportes():
         tendencia_labels=tendencia_labels,
         tendencia_valores=tendencia_valores,
         retencion_labels=retencion_labels,
-        retencion_valores=retencion_valores
+        retencion_valores=retencion_valores,
+                dias_labels=dias_labels,
+        dias_valores=dias_valores,
+        dia_actual=hoy.day,
+        variacion_mes=variacion_mes,
+        mix_por_plan=mix_por_plan,
+        nombre_mes_actual=nombre_mes_actual,
     )
 @app.route('/reportes/desbloquear', methods=['POST'])
 @login_requerido

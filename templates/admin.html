@@ -3,59 +3,116 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Administración General · {{ nombre_gimnasio }}</title>
+    <title>Ajustes · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    {% include 'partials/navbar.html' %}
+
     <div class="db-wrapper">
-        {% include 'partials/navbar.html' %}
-
         <p class="db-eyebrow">Configuración</p>
-        <h1 class="db-page-title">Administración general</h1>
+        <h1 class="db-page-title">Ajustes</h1>
 
-        <h3 class="db-section-title">Tipos de membresía</h3>
-        <a href="{{ url_for('nuevo_precio') }}" class="db-link" style="display:inline-block; margin-bottom:10px;">+ Nuevo tipo de membresía</a>
-        <div class="db-list">
-            {% for precio in precios %}
-                <div class="db-row">
-                    <div class="db-row-info">
-                        <span class="db-row-name">{{ precio.tipo_membresia }}</span>
-                        <span class="db-row-meta">${{ precio.monto }}</span>
-                    </div>
-                    <form action="{{ url_for('editar_precio', id_precio=precio.id_precio) }}" method="POST" style="display:flex; gap:6px;">
-                        <input type="number" step="0.01" name="monto" class="db-input" placeholder="Nuevo precio" style="width:130px;">
-                        <button type="submit" class="db-btn db-btn-secondary">Actualizar</button>
-                    </form>
-                </div>
-            {% endfor %}
-        </div>
+        {% if request.args.get('error') %}
+            <p class="db-alert-error">{{ request.args.get('error') }}</p>
+        {% endif %}
 
-        <h3 class="db-section-title">Profesores</h3>
-        <a href="{{ url_for('nuevo_profesor') }}" class="db-link" style="display:inline-block; margin-bottom:10px;">+ Nuevo profesor</a>
-        <div class="db-list">
-            {% for profesor in profesores %}
-                <div class="db-row">
-                    <div class="db-row-info">
-                        <span class="db-row-name">{{ profesor.nombre }} {{ profesor.apellido }}</span>
-                    </div>
-                </div>
-            {% endfor %}
-        </div>
+        <div class="db-ajustes-grid">
 
-        <h3 class="db-section-title">Clases</h3>
-        <a href="{{ url_for('nueva_clase') }}" class="db-link" style="display:inline-block; margin-bottom:10px;">+ Nueva clase</a>
-        <div class="db-list">
-            {% for clase in clases %}
-                <div class="db-row">
-                    <div class="db-row-info">
-                        <span class="db-row-name">{{ clase.nombre }}</span>
-                        <span class="db-row-meta">{{ clase.hora_inicio }} - {{ clase.hora_fin }} · Prof. {{ clase.profesor_nombre }} {{ clase.profesor_apellido }}</span>
-                    </div>
+            <div class="db-card">
+                <div class="db-ajustes-card-header">
+                    <p class="db-section-label" style="margin-bottom:0;">Planes y precios</p>
+                    <a href="{{ url_for('nuevo_precio') }}" class="db-link">+ Nuevo</a>
                 </div>
-            {% endfor %}
+
+                <table class="db-table" style="margin-top:14px;">
+                    <thead>
+                        <tr><th>Plan</th><th>Monto</th><th>Socios</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for precio in precios %}
+                            <tr>
+                                <td>{{ precio.tipo_membresia }}</td>
+                                <td>${{ "%.0f"|format(precio.monto) }}</td>
+                                <td>{{ precio.cantidad_socios }}</td>
+                                <td style="text-align:right; white-space:nowrap;">
+                                    <a href="#" class="db-pill-editar" onclick="document.getElementById('editar-precio-{{ precio.id_precio }}').classList.toggle('db-hidden'); return false;">Editar</a>
+                                </td>
+                            </tr>
+                            <tr id="editar-precio-{{ precio.id_precio }}" class="db-hidden">
+                                <td colspan="4">
+                                    <div class="db-ajustes-inline-form">
+                                        <form action="{{ url_for('editar_precio', id_precio=precio.id_precio) }}" method="POST" style="display:flex; gap:8px; flex:1;">
+                                            <input type="number" step="0.01" name="monto" class="db-input" placeholder="Nuevo monto" style="flex:1;">
+                                            <button type="submit" class="db-btn db-btn-primary">Actualizar precio</button>
+                                        </form>
+                                        <form action="{{ url_for('eliminar_precio', id_precio=precio.id_precio) }}" method="POST">
+                                            <button type="submit" class="db-btn db-btn-danger">Eliminar plan</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="db-ajustes-columna">
+
+                <div class="db-card">
+                    <div class="db-ajustes-card-header">
+                        <p class="db-section-label" style="margin-bottom:0;">Clases y profesores</p>
+                    </div>
+
+                    {% for clase in clases %}
+                        <div class="db-ajustes-clase-item">
+                            <div>
+                                <p class="db-ajustes-clase-nombre">{{ clase.nombre }}</p>
+                                <p class="db-ajustes-clase-meta">
+                                    {{ clase.dias + ' · ' if clase.dias else '' }}{{ clase.hora_inicio }}–{{ clase.hora_fin }}
+                                </p>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span class="db-badge db-badge-profesor">Prof. {{ clase.profesor_apellido }}</span>
+                                <a href="{{ url_for('form_clase_ruta', id_clase=clase.id_clase) }}" class="db-link">Editar</a>
+                                <form action="{{ url_for('eliminar_clase', id_clase=clase.id_clase) }}" method="POST" onsubmit="return confirm('¿Eliminar esta clase?');">
+                                    <button type="submit" class="db-link-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="db-empty">Todavía no hay clases cargadas.</p>
+                    {% endfor %}
+
+                    <a href="{{ url_for('form_clase_ruta') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Nueva clase</a>
+                </div>
+
+                <div class="db-card" style="margin-top:20px;">
+                    <div class="db-ajustes-card-header">
+                        <p class="db-section-label" style="margin-bottom:0;">Profesores</p>
+                    </div>
+
+                    {% for profesor in profesores %}
+                        <div class="db-ajustes-clase-item">
+                            <p class="db-ajustes-clase-nombre">{{ profesor.nombre }} {{ profesor.apellido }}</p>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <a href="{{ url_for('form_profesor_ruta', id_profesor=profesor.id_profesor) }}" class="db-link">Editar</a>
+                                <form action="{{ url_for('eliminar_profesor', id_profesor=profesor.id_profesor) }}" method="POST" onsubmit="return confirm('¿Eliminar este profesor?');">
+                                    <button type="submit" class="db-link-danger">Eliminar</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p class="db-empty">Todavía no hay profesores cargados.</p>
+                    {% endfor %}
+
+                    <a href="{{ url_for('form_profesor_ruta') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Nuevo profesor</a>
+                </div>
+
+            </div>
         </div>
     </div>
 </body>

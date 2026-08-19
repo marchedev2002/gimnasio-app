@@ -839,7 +839,22 @@ def admin_general():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
-    cursor.execute("SELECT * FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY tipo_membresia", (session['id_gimnasio'],))
+    cursor.execute("""
+        SELECT PRECIO.id_precio, PRECIO.tipo_membresia, PRECIO.monto,
+            (SELECT COUNT(*) FROM (
+                SELECT PAGO.dni
+                FROM PAGO
+                INNER JOIN (
+                    SELECT dni, MAX(fecha_pago) AS ultima_fecha
+                    FROM PAGO WHERE id_gimnasio = %s
+                    GROUP BY dni
+                ) u ON PAGO.dni = u.dni AND PAGO.fecha_pago = u.ultima_fecha
+                WHERE PAGO.id_precio = PRECIO.id_precio AND PAGO.id_gimnasio = %s
+            ) t) AS cantidad_socios
+        FROM PRECIO
+        WHERE activo = TRUE AND id_gimnasio = %s
+        ORDER BY tipo_membresia
+    """, (session['id_gimnasio'], session['id_gimnasio'], session['id_gimnasio']))
     precios = cursor.fetchall()
 
     cursor.execute("SELECT * FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
@@ -857,11 +872,7 @@ def admin_general():
     cursor.close()
     conn.close()
 
-    return render_template(
-        'admin.html',
-        precios=precios,
-        profesores=profesores,
-        clases=clases)
+    return render_template('admin.html', precios=precios, profesores=profesores, clases=clases)
 
 @app.route('/admin/precio/nuevo', methods=['GET', 'POST'])
 @login_requerido
@@ -916,41 +927,106 @@ def editar_precio(id_precio):
 
     return redirect(url_for('admin_general'))
 
+@app.route('/admin/precio/eliminar/<int:id_precio>', methods=['POST'])
+@login_requerido
+def eliminar_precio(id_precio):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE PRECIO SET activo = FALSE WHERE id_precio = %s AND id_gimnasio = %s", (id_precio, session['id_gimnasio']))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('admin_general'))
 
 @app.route('/admin/profesor/nuevo', methods=['GET', 'POST'])
+@app.route('/admin/profesor/editar/<int:id_profesor>', methods=['GET', 'POST'])
 @login_requerido
-def nuevo_profesor():
+def form_profesor_ruta(id_profesor=None):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    profesor = None
+    if id_profesor:
+        cursor.execute("SELECT * FROM PROFESOR WHERE id_profesor = %s AND id_gimnasio = %s", (id_profesor, session['id_gimnasio']))
+        profesor = cursor.fetchone()
+        if not profesor:
+            cursor.close()
+            conn.close()
+            return redirect(url_for('admin_general'))
+
     if request.method == 'GET':
-        return render_template('form_profesor.html')
+        cursor.close()
+        conn.close()
+        return render_template('form_profesor.html', profesor=profesor)
 
     nombre = request.form.get('nombre', '').strip()
     apellido = request.form.get('apellido', '').strip()
 
     if not nombre or not apellido:
-        return render_template('form_profesor.html', error="Completá nombre y apellido.")
+        cursor.close()
+        conn.close()
+        return render_template('form_profesor.html', profesor=profesor, error="Completá nombre y apellido.")
 
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("INSERT INTO PROFESOR (nombre, apellido, id_gimnasio) VALUES (%s, %s, %s)", (nombre, apellido, session['id_gimnasio']))
+    if profesor:
+        cursor.execute(
+            "UPDATE PROFESOR SET nombre = %s, apellido = %s WHERE id_profesor = %s AND id_gimnasio = %s",
+            (nombre, apellido, id_profesor, session['id_gimnasio'])
+        )
+    else:
+        cursor.execute(
+            "INSERT INTO PROFESOR (nombre, apellido, id_gimnasio) VALUES (%s, %s, %s)",
+            (nombre, apellido, session['id_gimnasio'])
+        )
+
     conn.commit()
     cursor.close()
     conn.close()
+    return redirect(url_for('admin_general'))
 
+
+@app.route('/admin/profesor/eliminar/<int:id_profesor>', methods=['POST'])
+@login_requerido
+def eliminar_profesor(id_profesor):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    cursor.execute("SELECT COUNT(*) AS cantidad FROM CLASE WHERE id_profesor = %s AND id_gimnasio = %s", (id_profesor, session['id_gimnasio']))
+    tiene_clases = cursor.fetchone()['cantidad'] > 0
+
+    if tiene_clases:
+        cursor.close()
+        conn.close()
+        return redirect(url_for('admin_general', error='No se puede eliminar: el profesor tiene clases asignadas.'))
+
+    cursor.execute("DELETE FROM PROFESOR WHERE id_profesor = %s AND id_gimnasio = %s", (id_profesor, session['id_gimnasio']))
+    conn.commit()
+    cursor.close()
+    conn.close()
     return redirect(url_for('admin_general'))
 
 
 @app.route('/admin/clase/nueva', methods=['GET', 'POST'])
+@app.route('/admin/clase/editar/<int:id_clase>', methods=['GET', 'POST'])
 @login_requerido
-def nueva_clase():
+def form_clase_ruta(id_clase=None):
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
+
+    clase = None
+    if id_clase:
+        cursor.execute("SELECT * FROM CLASE WHERE id_clase = %s AND id_gimnasio = %s", (id_clase, session['id_gimnasio']))
+        clase = cursor.fetchone()
+        if not clase:
+            cursor.close()
+            conn.close()
+            return redirect(url_for('admin_general'))
 
     if request.method == 'GET':
         cursor.execute("SELECT id_profesor, nombre, apellido FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         profesores = cursor.fetchall()
         cursor.close()
         conn.close()
-        return render_template('form_clase.html', profesores=profesores)
+        return render_template('form_clase.html', profesores=profesores, clase=clase)
 
     nombre = request.form.get('nombre', '').strip()
     hora_inicio = request.form.get('hora_inicio', '').strip()
@@ -962,16 +1038,34 @@ def nueva_clase():
         profesores = cursor.fetchall()
         cursor.close()
         conn.close()
-        return render_template('form_clase.html', profesores=profesores, error="Completá todos los campos.")
+        return render_template('form_clase.html', profesores=profesores, clase=clase, error="Completá todos los campos obligatorios.")
 
-    cursor.execute("""
-        INSERT INTO CLASE (nombre, hora_inicio, hora_fin, id_profesor, id_gimnasio)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (nombre, hora_inicio, hora_fin, id_profesor, session['id_gimnasio']))
+    if clase:
+        cursor.execute("""
+            UPDATE CLASE SET nombre = %s, hora_inicio = %s, hora_fin = %s, id_profesor = %s
+            WHERE id_clase = %s AND id_gimnasio = %s
+        """, (nombre, hora_inicio, hora_fin, id_profesor, id_clase, session['id_gimnasio']))
+    else:
+        cursor.execute("""
+            INSERT INTO CLASE (nombre, hora_inicio, hora_fin, id_profesor, id_gimnasio)
+            VALUES (%s, %s, %s, %s, %s)
+        """, (nombre, hora_inicio, hora_fin, id_profesor, session['id_gimnasio']))
+
     conn.commit()
     cursor.close()
     conn.close()
+    return redirect(url_for('admin_general'))
 
+
+@app.route('/admin/clase/eliminar/<int:id_clase>', methods=['POST'])
+@login_requerido
+def eliminar_clase(id_clase):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM CLASE WHERE id_clase = %s AND id_gimnasio = %s", (id_clase, session['id_gimnasio']))
+    conn.commit()
+    cursor.close()
+    conn.close()
     return redirect(url_for('admin_general'))
 
 @app.route('/reportes/exportar')

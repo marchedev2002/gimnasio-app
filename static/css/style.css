@@ -613,3 +613,53 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
         grid-template-columns: 1fr;
     }
 }
+
+/* --- Reportes protegidos con clave --- */
+
+.db-report-bloqueado {
+    position: relative;
+}
+
+.db-report-bloqueado .db-blur-contenido {
+    filter: blur(8px);
+    user-select: none;
+    pointer-events: none;
+}
+
+.db-overlay-clave {
+    display: none;
+}
+
+.db-report-bloqueado .db-overlay-clave {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    position: absolute;
+    inset: 0;
+    background: rgba(18, 20, 28, 0.55);
+    border-radius: 12px;
+    justify-content: center;
+}
+
+.db-icono-candado {
+    font-size: 1.8rem;
+}
+
+.db-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+}
+
+.db-modal-box {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 12px;
+    padding: 26px;
+    width: 100%;
+    max-width: 320px;
+}

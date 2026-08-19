@@ -8,7 +8,7 @@ from werkzeug.security import check_password_hash
 import mysql.connector
 from mysql.connector import pooling
 from datetime import date, timedelta, datetime
-from config import DB_CONFIG, SECRET_KEY, NOMBRE_GIMNASIO
+from config import DB_CONFIG, SECRET_KEY, NOMBRE_GIMNASIO, CLAVE_REPORTES
 from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
@@ -668,7 +668,7 @@ def reportes():
 
     return render_template(
         'reportes.html',
-        resumen_dia=resumen_dia, resumen_semana=resumen_semana, resumen_mes=resumen_mes,
+        resumen_dia=resumen_dia,
         meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, distribucion_profesores = distribucion_profesores, meses_grafico=meses_grafico,
         total_ingresos_periodo = total_ingresos_periodo,
         tendencia_labels=tendencia_labels,
@@ -676,6 +676,45 @@ def reportes():
         retencion_labels=retencion_labels,
         retencion_valores=retencion_valores
     )
+@app.route('/reportes/desbloquear', methods=['POST'])
+@login_requerido
+def desbloquear_reportes():
+    clave_ingresada = request.form.get('clave', '')
+
+    if clave_ingresada != CLAVE_REPORTES:
+        return {'error': 'Clave incorrecta'}, 403
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    hoy = date.today()
+    inicio_semana = hoy - timedelta(days=hoy.weekday())
+    inicio_mes = date(hoy.year, hoy.month, 1)
+
+    def resumen_desde(fecha_desde):
+        cursor.execute("""
+            SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
+            FROM PAGO
+            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
+            GROUP BY PAGO.metodo_pago
+        """, (fecha_desde, session['id_gimnasio']))
+        filas = cursor.fetchall()
+
+        total = sum(float(f['total']) for f in filas)
+        cantidad = sum(f['cantidad'] for f in filas)
+        efectivo = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Efectivo'), 0)
+        debito = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Debito'), 0)
+
+        return {'total': total, 'cantidad': cantidad, 'efectivo': efectivo, 'debito': debito}
+
+    resumen_semana = resumen_desde(inicio_semana)
+    resumen_mes = resumen_desde(inicio_mes)
+
+    cursor.close()
+    conn.close()
+
+    return {'resumen_semana': resumen_semana, 'resumen_mes': resumen_mes}
 
 @app.route('/admin')
 @login_requerido

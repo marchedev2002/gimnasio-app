@@ -10,3 +10,4 @@ DB_CONFIG = {
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'cambiar-esto-en-desarrollo-local')
 NOMBRE_GIMNASIO = os.environ.get('NOMBRE_GIMNASIO', 'Le Corps Gym')
+CLAVE_REPORTES = os.environ.get('CLAVE_REPORTES', 'tiohernan777')

@@ -26,31 +26,31 @@
 
         <div class="db-report-grid">
 
-            <div class="db-report-card">
-                <p class="db-section-label">Hoy</p>
-                <p class="db-report-total">${{ "%.2f"|format(resumen_dia.total) }}</p>
-                <p class="db-report-count">{{ resumen_dia.cantidad }} pago(s)</p>
-                <div class="db-report-split">
-                    <span>💵 Efectivo</span>
-                    <span>${{ "%.2f"|format(resumen_dia.efectivo) }}</span>
+            <div class="db-report-card db-report-bloqueado" id="tarjeta-semana">
+                <p class="db-section-label">Esta semana</p>
+                <div class="db-blur-contenido">
+                    <p class="db-report-total">$0.00</p>
+                    <p class="db-report-count">0 pago(s)</p>
+                    <div class="db-report-split"><span>💵 Efectivo</span><span>$0.00</span></div>
+                    <div class="db-report-split"><span>💳 Débito</span><span>$0.00</span></div>
                 </div>
-                <div class="db-report-split">
-                    <span>💳 Débito</span>
-                    <span>${{ "%.2f"|format(resumen_dia.debito) }}</span>
+                <div class="db-overlay-clave">
+                    <span class="db-icono-candado">🔒</span>
+                    <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver monto</button>
                 </div>
             </div>
 
-            <div class="db-report-card">
-                <p class="db-section-label">Esta semana</p>
-                <p class="db-report-total">${{ "%.2f"|format(resumen_semana.total) }}</p>
-                <p class="db-report-count">{{ resumen_semana.cantidad }} pago(s)</p>
-                <div class="db-report-split">
-                    <span>💵 Efectivo</span>
-                    <span>${{ "%.2f"|format(resumen_semana.efectivo) }}</span>
+            <div class="db-report-card db-report-bloqueado" id="tarjeta-mes">
+                <p class="db-section-label">Este mes</p>
+                <div class="db-blur-contenido">
+                    <p class="db-report-total">$0.00</p>
+                    <p class="db-report-count">0 pago(s)</p>
+                    <div class="db-report-split"><span>💵 Efectivo</span><span>$0.00</span></div>
+                    <div class="db-report-split"><span>💳 Débito</span><span>$0.00</span></div>
                 </div>
-                <div class="db-report-split">
-                    <span>💳 Débito</span>
-                    <span>${{ "%.2f"|format(resumen_semana.debito) }}</span>
+                <div class="db-overlay-clave">
+                    <span class="db-icono-candado">🔒</span>
+                    <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver monto</button>
                 </div>
             </div>
 
@@ -197,5 +197,73 @@
             </form>
         </div>
     </div>
+
+    <div id="modal-clave" class="db-modal-overlay" style="display:none;">
+        <div class="db-modal-box">
+            <p class="db-section-label" style="margin-bottom:12px;">Ingresá la clave para ver este monto</p>
+            <input type="password" id="input-clave" class="db-input" placeholder="Clave" autofocus>
+            <p id="error-clave" class="db-alert-error" style="display:none; margin-top:10px;">Clave incorrecta.</p>
+            <div class="db-btn-row">
+                <button type="button" id="btn-confirmar-clave" class="db-btn db-btn-primary">Confirmar</button>
+                <button type="button" id="btn-cancelar-clave" class="db-btn db-btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let tarjetaObjetivo = null;
+        const modal = document.getElementById('modal-clave');
+        const inputClave = document.getElementById('input-clave');
+        const errorClave = document.getElementById('error-clave');
+
+        document.querySelectorAll('.db-btn-desbloquear').forEach(boton => {
+            boton.addEventListener('click', () => {
+                tarjetaObjetivo = boton.closest('.db-report-card').id;
+                errorClave.style.display = 'none';
+                inputClave.value = '';
+                modal.style.display = 'flex';
+                inputClave.focus();
+            });
+        });
+
+        document.getElementById('btn-cancelar-clave').addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        document.getElementById('btn-confirmar-clave').addEventListener('click', async () => {
+            const clave = inputClave.value;
+
+            const respuesta = await fetch("{{ url_for('desbloquear_reportes') }}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'clave=' + encodeURIComponent(clave)
+            });
+
+            if (respuesta.status === 403) {
+                errorClave.style.display = 'block';
+                return;
+            }
+
+            const datos = await respuesta.json();
+
+            document.querySelectorAll('#tarjeta-semana, #tarjeta-mes').forEach(tarjeta => {
+                const key = tarjeta.id === 'tarjeta-semana' ? 'resumen_semana' : 'resumen_mes';
+                const resumen = datos[key];
+                const contenido = tarjeta.querySelector('.db-blur-contenido');
+
+                contenido.querySelector('.db-report-total').textContent =
+                    '$' + resumen.total.toFixed(2);
+                contenido.querySelector('.db-report-count').textContent =
+                    resumen.cantidad + ' pago(s)';
+                const splits = contenido.querySelectorAll('.db-report-split span:last-child');
+                splits[0].textContent = '$' + resumen.efectivo.toFixed(2);
+                splits[1].textContent = '$' + resumen.debito.toFixed(2);
+
+                tarjeta.classList.remove('db-report-bloqueado');
+            });
+
+            modal.style.display = 'none';
+        });
+    </script>
 </body>
 </html>

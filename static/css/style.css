@@ -901,25 +901,49 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 }
 
 .db-venc-stat-card {
-    background: var(--db-surface);
-    border: 1px solid var(--db-border);
-    border-radius: 10px;
-    padding: 20px 28px;
+    border-radius: 12px;
+    padding: 24px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
-    min-width: 140px;
+    justify-content: center;
+    gap: 6px;
+    flex: 1;
+}
+
+.db-venc-stat-card--danger {
+    background: var(--db-danger-bg);
+    border: 1px solid var(--db-danger);
+}
+
+.db-venc-stat-card--warning {
+    background: var(--db-warning-bg);
+    border: 1px solid var(--db-warning);
+}
+
+.db-venc-stat-icon {
+    font-size: 1.4rem;
+    margin-bottom: 6px;
 }
 
 .db-venc-stat-number {
     font-family: var(--db-mono);
-    font-size: 1.8rem;
+    font-size: 2.6rem;
     font-weight: 500;
+    line-height: 1;
+}
+
+.db-venc-stat-card--danger .db-venc-stat-number {
+    color: var(--db-danger);
+}
+
+.db-venc-stat-card--warning .db-venc-stat-number {
+    color: var(--db-warning);
 }
 
 .db-venc-stat-label {
-    color: var(--db-text-dim);
-    font-size: 0.82rem;
+    color: var(--db-text);
+    font-size: 0.9rem;
+    font-weight: 600;
 }
 
 .db-venc-header {
@@ -940,7 +964,7 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 
 .db-venc-top {
     display: flex;
-    gap: 20px;
+    gap: 16px;
     align-items: stretch;
     margin: 20px 0 32px;
     flex-wrap: wrap;
@@ -948,8 +972,10 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 
 .db-venc-stats {
     display: flex;
+    flex-direction: column;
     gap: 16px;
-    flex-wrap: wrap;
+    width: 220px;
+    flex-shrink: 0;
 }
 
 .db-venc-banner {

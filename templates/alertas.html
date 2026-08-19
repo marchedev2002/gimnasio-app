@@ -18,14 +18,23 @@
         <p class="db-eyebrow">Cobranza</p>
         <h1 class="db-page-title">Vencimientos</h1>
 
-        <div class="db-venc-stats">
-            <div class="db-venc-stat-card">
-                <span class="db-venc-stat-number">{{ vencidos|length }}</span>
-                <span class="db-venc-stat-label">Vencidos</span>
+                <div class="db-venc-top">
+            <div class="db-venc-stats">
+                <div class="db-venc-stat-card">
+                    <span class="db-venc-stat-number">{{ vencidos|length }}</span>
+                    <span class="db-venc-stat-label">Vencidos</span>
+                </div>
+                <div class="db-venc-stat-card">
+                    <span class="db-venc-stat-number">{{ por_vencer|length }}</span>
+                    <span class="db-venc-stat-label">Vencen en {{ dias_limite }} días</span>
+                </div>
             </div>
-            <div class="db-venc-stat-card">
-                <span class="db-venc-stat-number">{{ por_vencer|length }}</span>
-                <span class="db-venc-stat-label">Vencen en {{ dias_limite }} días</span>
+
+            <div class="db-venc-banner">
+                <img src="{{ url_for('static', filename='fotos/banner_vencimientos.png') }}"
+                     alt="Le Corps Gym somos todos"
+                     class="db-venc-banner-img"
+                     onerror="this.parentElement.style.display='none'">
             </div>
         </div>
 

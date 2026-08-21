@@ -27,13 +27,24 @@
                     <label>Usuario</label>
                     <input type="text" name="usuario" class="db-input" required autofocus>
                 </div>
-                <div class="db-field">
-                    <label>Contraseña</label>
-                    <input type="password" name="password" class="db-input" required>
+            <div class="db-field">
+                <label>Contraseña</label>
+                <div class="db-password-wrapper">
+                    <input type="password" name="password" id="input-password" class="db-input" required>
+                    <button type="button" id="btn-toggle-password" class="db-toggle-password">👁️</button>
                 </div>
+            </div>
                 <button type="submit" class="db-btn db-btn-primary" style="width:100%;">Ingresar</button>
             </form>
         </div>
     </div>
+    <script>
+        document.getElementById('btn-toggle-password').addEventListener('click', function() {
+            const input = document.getElementById('input-password');
+            const esPassword = input.type === 'password';
+            input.type = esPassword ? 'text' : 'password';
+            this.textContent = esPassword ? '🙈' : '👁️';
+        });
+    </script>
 </body>
 </html>

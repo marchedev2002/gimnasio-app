@@ -20,23 +20,21 @@
 
             {% if feed_ingresos %}
                 <div class="db-list" style="margin-top:20px;">
-                    {% for ingreso in feed_ingresos %}
-                        <div class="db-row" style="cursor:default;">
-                            <div class="db-avatar-initials db-avatar-initials--sm">{{ ingreso.nombre[0]|upper }}{{ ingreso.apellido[0]|upper }}</div>
-                            <div class="db-row-info">
-                                <span class="db-row-name">{{ ingreso.nombre }} {{ ingreso.apellido }}</span>
-                                <span class="db-row-meta">
-                                    {{ ingreso.fecha_hora.strftime('%H:%M') }} ·
-                                    {{ ingreso.nombre_clase if ingreso.nombre_clase else 'Musculación libre' }}
-                                </span>
-                            </div>
-                            {% if ingreso.al_dia %}
-                                <span class="db-badge db-badge-ok">Al día</span>
-                            {% else %}
-                                <span class="db-badge db-badge-danger">Vencido</span>
-                            {% endif %}
+                {% for ingreso in feed_ingresos %}
+                    <div class="db-feed-row">
+                        <span class="db-feed-time">{{ ingreso.fecha_hora.strftime('%H:%M') }}</span>
+                        <div class="db-avatar-initials db-avatar-initials--sm">{{ ingreso.nombre[0]|upper }}{{ ingreso.apellido[0]|upper }}</div>
+                        <div class="db-row-info">
+                            <span class="db-row-name">{{ ingreso.nombre }} {{ ingreso.apellido }}</span>
+                            <span class="db-row-meta">{{ ingreso.nombre_clase if ingreso.nombre_clase else 'Musculación libre' }}</span>
                         </div>
-                    {% endfor %}
+                        {% if ingreso.al_dia %}
+                            <span class="db-badge db-badge-ok">Al día</span>
+                        {% else %}
+                            <span class="db-badge db-badge-danger">Vencido</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
                 </div>
             {% else %}
                 <p class="db-empty">Todavía no hay ingresos registrados.</p>

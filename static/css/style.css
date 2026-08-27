@@ -1573,3 +1573,104 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 .db-pill-active-danger {
     background: var(--db-surface-raised);
 }
+/* =========================================================
+   Refinamiento de Vencimientos
+   ========================================================= */
+
+.db-venc-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.db-venc-stat-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 14px;
+    padding: 22px 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    position: relative;
+    overflow: hidden;
+}
+
+.db-venc-stat-card--danger {
+    border-color: rgba(239, 83, 80, 0.35);
+    background: linear-gradient(145deg, var(--db-danger-bg) 0%, var(--db-surface) 70%);
+}
+
+.db-venc-stat-card--warning {
+    border-color: rgba(217, 143, 60, 0.35);
+    background: linear-gradient(145deg, var(--db-warning-bg) 0%, var(--db-surface) 70%);
+}
+
+.db-venc-stat-icon {
+    font-size: 1.1rem;
+    opacity: 0.85;
+}
+
+.db-venc-stat-number {
+    font-family: var(--db-mono);
+    font-size: 2.6rem;
+    font-weight: 500;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.db-venc-stat-card--danger .db-venc-stat-number {
+    color: var(--db-danger);
+}
+
+.db-venc-stat-card--warning .db-venc-stat-number {
+    color: var(--db-warning);
+}
+
+.db-venc-stat-label {
+    font-size: 0.85rem;
+    color: var(--db-text-dim);
+}
+
+.db-venc-stat-bar {
+    height: 4px;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.db-venc-stat-bar-fill {
+    height: 100%;
+    border-radius: 2px;
+}
+
+.db-venc-stat-card--danger .db-venc-stat-bar-fill {
+    background: var(--db-danger);
+}
+
+.db-venc-stat-card--warning .db-venc-stat-bar-fill {
+    background: var(--db-warning);
+}
+
+@media (min-width: 700px) {
+    .db-venc-stats {
+        width: 200px;
+        flex-shrink: 0;
+    }
+}
+
+/* --- Columnas numéricas de las tablas de vencimientos: alineadas y monoespaciadas --- */
+
+.db-venc-header span:nth-child(2),
+.db-venc-header span:nth-child(4),
+.db-venc-header span:nth-child(5) {
+    font-family: var(--db-mono);
+    text-align: right;
+    padding-right: 12px;
+}
+
+.db-venc-header span:nth-child(4),
+.db-venc-header span:nth-child(5) {
+    font-variant-numeric: tabular-nums;
+}

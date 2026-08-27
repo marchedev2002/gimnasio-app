@@ -1174,13 +1174,24 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     margin-bottom: 8px;
 }
 
-.db-status-live {
+.db-badges-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.db-status-pill {
     display: flex;
     align-items: center;
     gap: 8px;
     font-family: var(--db-mono);
     font-size: 0.75rem;
     color: var(--db-text-dim);
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 20px;
+    padding: 6px 14px;
 }
 
 .db-status-dot {
@@ -1195,6 +1206,44 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 @keyframes db-pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.4; }
+}
+
+.db-clock-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--db-bg);
+    border: 1px solid var(--db-border);
+    border-radius: 20px;
+    padding: 6px 14px 6px 12px;
+    color: var(--db-accent);
+    box-shadow: inset 0 0 12px rgba(230, 73, 59, 0.08);
+}
+
+.db-clock-badge svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.db-clock-time {
+    font-family: var(--db-mono);
+    font-size: 0.8rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    color: var(--db-text);
+}
+
+.db-clock-colon {
+    color: var(--db-accent);
+    animation: db-blink 1s step-end infinite;
+    display: inline-block;
+    padding: 0 1px;
+}
+
+@keyframes db-blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0.15; }
 }
 
 .db-terminal-form {
@@ -1232,18 +1281,12 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(230, 73, 59, 0.35), transparent);
     animation: db-scan 1.4s ease-out 0.2s 1;
+    pointer-events: none;
 }
 
 @keyframes db-scan {
     from { left: -30%; }
     to { left: 100%; }
-}
-
-.db-terminal-hash {
-    font-family: var(--db-mono);
-    color: var(--db-text-dim);
-    font-size: 1.3rem;
-    margin-right: 12px;
 }
 
 .db-terminal-input {
@@ -1255,6 +1298,7 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     font-size: 1.6rem;
     letter-spacing: 0.08em;
     padding: 22px 0;
+    caret-color: var(--db-accent);
 }
 
 .db-terminal-input:focus {
@@ -1262,22 +1306,10 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 }
 
 .db-terminal-input::placeholder {
-    color: var(--db-border);
-    letter-spacing: 0.08em;
-}
-
-.db-terminal-cursor {
-    width: 2px;
-    height: 26px;
-    background: var(--db-accent);
-    margin-left: 4px;
-    animation: db-blink 1s step-end infinite;
-    flex-shrink: 0;
-}
-
-@keyframes db-blink {
-    0%, 50% { opacity: 1; }
-    51%, 100% { opacity: 0; }
+    font-family: var(--db-body-font);
+    font-size: 1rem;
+    letter-spacing: normal;
+    color: var(--db-text-dim);
 }
 
 .db-terminal-btn {
@@ -1373,6 +1405,10 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     .db-terminal-btn {
         justify-content: center;
         padding: 16px;
+    }
+    .db-hero-terminal-top {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 

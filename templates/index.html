@@ -18,9 +18,17 @@
             <section class="db-hero-terminal">
                 <div class="db-hero-terminal-top">
                     <p class="db-eyebrow" style="margin-bottom:0;">Control de acceso</p>
-                    <div class="db-status-live">
-                        <span class="db-status-dot"></span>
-                        Sistema en línea · <span id="reloj-vivo">--:--:--</span>
+                    <div class="db-badges-row">
+                        <div class="db-status-pill">
+                            <span class="db-status-dot"></span>
+                            Sistema en línea
+                        </div>
+                        <div class="db-clock-badge">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.2"/><path d="M10 6v4.2l3 1.8"/></svg>
+                            <span class="db-clock-time">
+                                <span id="reloj-hh">00</span><span class="db-clock-colon">:</span><span id="reloj-mm">00</span><span class="db-clock-colon">:</span><span id="reloj-ss">00</span>
+                            </span>
+                        </div>
                     </div>
                 </div>
 
@@ -28,17 +36,15 @@
 
                 <form action="{{ url_for('buscar') }}" method="POST" class="db-terminal-form">
                     <div class="db-terminal-input-wrap">
-                        <span class="db-terminal-hash">#</span>
                         <input
                             type="text"
                             name="dni"
                             class="db-terminal-input"
-                            placeholder="00.000.000"
+                            placeholder="Ingresá el DNI"
                             autocomplete="off"
                             autofocus
                             required
                         >
-                        <span class="db-terminal-cursor"></span>
                     </div>
                     <button type="submit" class="db-terminal-btn">
                         Validar <span class="db-terminal-btn-arrow">→</span>
@@ -49,7 +55,6 @@
                     <p class="db-alert-error" style="margin-top:16px;">{{ error }}</p>
                 {% endif %}
             </section>
-
             <section class="db-stats-strip">
                 <div class="db-stats-strip-item">
                     <span class="db-stats-strip-number">{{ total_socios|default(0) }}</span>
@@ -121,8 +126,9 @@
         function actualizarReloj() {
             const ahora = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
-            document.getElementById('reloj-vivo').textContent =
-                `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}:${pad(ahora.getSeconds())}`;
+            document.getElementById('reloj-hh').textContent = pad(ahora.getHours());
+            document.getElementById('reloj-mm').textContent = pad(ahora.getMinutes());
+            document.getElementById('reloj-ss').textContent = pad(ahora.getSeconds());
         }
         actualizarReloj();
         setInterval(actualizarReloj, 1000);

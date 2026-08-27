@@ -10,18 +10,39 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="db-wrapper">
-        {% include 'partials/navbar.html' %}
+    {% include 'partials/navbar.html' %}
 
+    <div class="db-wrapper">
         <main>
-            <section>
-                <p class="db-eyebrow">Control de acceso</p>
+
+            <section class="db-hero-terminal">
+                <div class="db-hero-terminal-top">
+                    <p class="db-eyebrow" style="margin-bottom:0;">Control de acceso</p>
+                    <div class="db-status-live">
+                        <span class="db-status-dot"></span>
+                        Sistema en línea · <span id="reloj-vivo">--:--:--</span>
+                    </div>
+                </div>
+
                 <h1 class="db-hero-title">Buscar socio</h1>
 
-                <form action="{{ url_for('buscar') }}" method="POST" class="db-search-form">
-                    <span class="db-search-icon">#</span>
-                    <input type="text" name="dni" class="db-search-input" placeholder="Ingresá el DNI" autofocus required>
-                    <button type="submit" class="db-search-btn">Buscar</button>
+                <form action="{{ url_for('buscar') }}" method="POST" class="db-terminal-form">
+                    <div class="db-terminal-input-wrap">
+                        <span class="db-terminal-hash">#</span>
+                        <input
+                            type="text"
+                            name="dni"
+                            class="db-terminal-input"
+                            placeholder="00.000.000"
+                            autocomplete="off"
+                            autofocus
+                            required
+                        >
+                        <span class="db-terminal-cursor"></span>
+                    </div>
+                    <button type="submit" class="db-terminal-btn">
+                        Validar <span class="db-terminal-btn-arrow">→</span>
+                    </button>
                 </form>
 
                 {% if error %}
@@ -29,51 +50,82 @@
                 {% endif %}
             </section>
 
-            <section class="db-stats" style="margin-top:40px;">
-                <div class="db-stat-card">
-                    <span class="db-stat-number">{{ total_socios|default(0) }}</span>
-                    <span class="db-stat-label">Socios totales</span>
+            <section class="db-stats-strip">
+                <div class="db-stats-strip-item">
+                    <span class="db-stats-strip-number">{{ total_socios|default(0) }}</span>
+                    <span class="db-stats-strip-label">Socios totales</span>
                 </div>
-                <div class="db-stat-card db-stat-ok">
-                    <span class="db-stat-number">{{ total_al_dia|default(0) }}</span>
-                    <span class="db-stat-label">Al día</span>
+                <div class="db-stats-strip-item db-stats-strip-item--ok">
+                    <span class="db-stats-strip-number">{{ total_al_dia|default(0) }}</span>
+                    <span class="db-stats-strip-label">Al día</span>
                 </div>
-                <div class="db-stat-card db-stat-danger">
-                    <span class="db-stat-number">{{ total_vencidos|default(0) }}</span>
-                    <span class="db-stat-label">Vencidos</span>
+                <div class="db-stats-strip-item db-stats-strip-item--danger">
+                    <span class="db-stats-strip-number">{{ total_vencidos|default(0) }}</span>
+                    <span class="db-stats-strip-label">Vencidos</span>
                 </div>
             </section>
 
             <section>
                 <p class="db-section-label">Accesos rápidos</p>
                 <div class="db-actions-grid">
+
                     <a href="{{ url_for('checkin') }}" class="db-action-card">
-                        <span class="db-action-icon">🚪</span>
+                        <span class="db-action-icon">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h-8a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8"/><path d="M8 10h9m0 0-3-3m3 3-3 3"/></svg>
+                        </span>
                         <span class="db-action-text">Registrar ingreso</span>
                     </a>
+
                     <a href="{{ url_for('nuevo_socio') }}" class="db-action-card">
-                        <span class="db-action-icon">➕</span>
+                        <span class="db-action-icon">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.5-3.5 3-5 5.5-5s5 1.5 5.5 5"/><path d="M15.5 6.5v5M13 9h5"/></svg>
+                        </span>
                         <span class="db-action-text">Alta de socio</span>
                     </a>
+
                     <a href="{{ url_for('listado_socios') }}" class="db-action-card">
-                        <span class="db-action-icon">📋</span>
+                        <span class="db-action-icon">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M4 10h12M4 15h7"/></svg>
+                        </span>
                         <span class="db-action-text">Listado de socios</span>
                     </a>
+
                     <a href="{{ url_for('alertas') }}" class="db-action-card">
-                        <span class="db-action-icon">🔔</span>
+                        <span class="db-action-icon">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5c-2.5 0-4 2-4 4.5v2.5l-1.5 3h11L14 9.5V7c0-2.5-1.5-4.5-4-4.5Z"/><path d="M8.2 15.5a1.8 1.8 0 0 0 3.6 0"/></svg>
+                        </span>
                         <span class="db-action-text">Alertas de vencimiento</span>
                     </a>
+
                     <a href="{{ url_for('reportes') }}" class="db-action-card">
-                        <span class="db-action-icon">📊</span>
+                        <span class="db-action-icon">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16V9m4.5 7V4m4.5 12v-5m4.5 5V7"/></svg>
+                        </span>
                         <span class="db-action-text">Exportar reportes</span>
                     </a>
+
                     <a href="{{ url_for('admin_general') }}" class="db-action-card">
-                        <span class="db-action-icon">⚙️</span>
+                        <span class="db-action-icon">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.3"/><path d="M10 3.5v1.6M10 14.9v1.6M16.5 10h-1.6M5.1 10H3.5M14.6 5.4l-1.1 1.1M6.5 13.5l-1.1 1.1M14.6 14.6l-1.1-1.1M6.5 6.5 5.4 5.4"/></svg>
+                        </span>
                         <span class="db-action-text">Administración general</span>
                     </a>
+
                 </div>
             </section>
+
         </main>
     </div>
+
+    <script>
+        function actualizarReloj() {
+            const ahora = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            document.getElementById('reloj-vivo').textContent =
+                `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}:${pad(ahora.getSeconds())}`;
+        }
+        actualizarReloj();
+        setInterval(actualizarReloj, 1000);
+    </script>
 </body>
 </html>

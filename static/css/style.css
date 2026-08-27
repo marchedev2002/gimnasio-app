@@ -1464,3 +1464,112 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 .db-action-card:hover .db-action-icon svg {
     color: var(--db-accent);
 }
+/* =========================================================
+   Refinamiento del padrón de socios
+   ========================================================= */
+
+/* --- Avatares con color rotativo (ficha de colores) --- */
+
+.db-socios-row:nth-of-type(5n+1) .db-avatar-initials {
+    background: var(--db-accent);
+}
+.db-socios-row:nth-of-type(5n+2) .db-avatar-initials {
+    background: #3f8f7a;
+}
+.db-socios-row:nth-of-type(5n+3) .db-avatar-initials {
+    background: #b8863f;
+}
+.db-socios-row:nth-of-type(5n+4) .db-avatar-initials {
+    background: #4d6fa8;
+}
+.db-socios-row:nth-of-type(5n+5) .db-avatar-initials {
+    background: #8a5a9e;
+}
+
+/* --- Estado: de pastilla pesada a punto + texto --- */
+
+.db-badge-ok,
+.db-badge-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: 0.82rem;
+    font-weight: 500;
+}
+
+.db-badge-ok {
+    color: var(--db-success);
+}
+
+.db-badge-danger {
+    color: var(--db-danger);
+}
+
+.db-badge-ok::before,
+.db-badge-danger::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.db-badge-ok::before {
+    background: var(--db-success);
+    box-shadow: 0 0 0 3px var(--db-success-bg);
+}
+
+.db-badge-danger::before {
+    background: var(--db-danger);
+    box-shadow: 0 0 0 3px var(--db-danger-bg);
+}
+
+/* --- DNI y Vencimiento: numérico, alineado para escaneo rápido --- */
+
+.db-socios-header span:nth-child(2),
+.db-socios-row span:nth-child(2) {
+    font-family: var(--db-mono);
+    text-align: right;
+    padding-right: 12px;
+}
+
+.db-socios-header span:nth-child(4),
+.db-socios-row span:nth-child(4) {
+    font-family: var(--db-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    padding-right: 12px;
+}
+
+/* --- Toolbar: altura unificada entre buscador, filtros y botón --- */
+
+.db-socios-toolbar .db-input,
+.db-socios-toolbar .db-pill,
+.db-socios-alta-btn {
+    height: 44px;
+    display: flex;
+    align-items: center;
+}
+
+.db-filter-pills {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 10px;
+    padding: 4px;
+    gap: 4px;
+}
+
+.db-pill {
+    border: none;
+    border-radius: 7px;
+    padding: 0 16px;
+}
+
+.db-pill-active,
+.db-pill-active-ok,
+.db-pill-active-danger {
+    background: var(--db-surface-raised);
+}

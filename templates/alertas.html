@@ -21,13 +21,11 @@
                 <div class="db-venc-top">
             <div class="db-venc-stats">
                 <div class="db-venc-stat-card db-venc-stat-card--danger">
-                    <span class="db-venc-stat-icon">❌</span>
                     <span class="db-venc-stat-number">{{ vencidos|length }}</span>
                     <span class="db-venc-stat-label">Vencidos</span>
                     <div class="db-venc-stat-bar"><div class="db-venc-stat-bar-fill" style="width: {{ (vencidos|length / ((vencidos|length + por_vencer|length) or 1) * 100)|round(0) }}%;"></div></div>
                 </div>
                 <div class="db-venc-stat-card db-venc-stat-card--warning">
-                    <span class="db-venc-stat-icon">⏰</span>
                     <span class="db-venc-stat-number">{{ por_vencer|length }}</span>
                     <span class="db-venc-stat-label">Vencen en {{ dias_limite }} días</span>
                     <div class="db-venc-stat-bar"><div class="db-venc-stat-bar-fill" style="width: {{ (por_vencer|length / ((vencidos|length + por_vencer|length) or 1) * 100)|round(0) }}%;"></div></div>

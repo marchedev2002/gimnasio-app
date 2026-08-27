@@ -17,18 +17,20 @@
 
             <section class="db-hero-terminal">
                 <div class="db-hero-terminal-top">
-                    <p class="db-eyebrow" style="margin-bottom:0;">Control de acceso</p>
-                    <div class="db-badges-row">
+                    <div>
+                        <p class="db-eyebrow" style="margin-bottom:8px;">Control de acceso</p>
                         <div class="db-status-pill">
                             <span class="db-status-dot"></span>
                             Sistema en línea
                         </div>
-                        <div class="db-clock-badge">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="7.2"/><path d="M10 6v4.2l3 1.8"/></svg>
-                            <span class="db-clock-time">
-                                <span id="reloj-hh">00</span><span class="db-clock-colon">:</span><span id="reloj-mm">00</span><span class="db-clock-colon">:</span><span id="reloj-ss">00</span>
-                            </span>
+                    </div>
+
+                    <div class="db-clock-panel">
+                        <span class="db-clock-panel-label">Hora local</span>
+                        <div class="db-clock-panel-digits">
+                            <span id="reloj-hh">00</span><span class="db-clock-colon">:</span><span id="reloj-mm">00</span><span class="db-clock-colon">:</span><span id="reloj-ss">00</span>
                         </div>
+                        <span class="db-clock-panel-date" id="reloj-fecha">—</span>
                     </div>
                 </div>
 
@@ -123,12 +125,17 @@
     </div>
 
     <script>
+        const diasSemana = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const meses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+
         function actualizarReloj() {
             const ahora = new Date();
             const pad = (n) => n.toString().padStart(2, '0');
             document.getElementById('reloj-hh').textContent = pad(ahora.getHours());
             document.getElementById('reloj-mm').textContent = pad(ahora.getMinutes());
             document.getElementById('reloj-ss').textContent = pad(ahora.getSeconds());
+            document.getElementById('reloj-fecha').textContent =
+                `${diasSemana[ahora.getDay()]} ${ahora.getDate()} de ${meses[ahora.getMonth()]}`;
         }
         actualizarReloj();
         setInterval(actualizarReloj, 1000);

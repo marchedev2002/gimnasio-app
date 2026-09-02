@@ -1078,8 +1078,8 @@ def exportar_reporte():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
     cursor.execute("""
-        SELECT usuario.dni, usuario.nombre, usuario.apellido,
-            mes.nombre_mes, pago.anio, precio.tipo_membresia, precio.monto, pago.fecha_pago
+        SELECT USUARIO.dni, USUARIO.nombre, USUARIO.apellido,
+            MES.nombre_mes, PAGO.anio, PRECIO.tipo_membresia, PRECIO.monto, PAGO.fecha_pago
         FROM PAGO
         JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
         JOIN MES ON PAGO.id_mes = MES.id_mes

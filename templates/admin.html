@@ -111,6 +111,26 @@
 
                     <a href="{{ url_for('form_profesor_ruta') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Nuevo profesor</a>
                 </div>
+                <div class="db-card" style="margin-top:20px;">
+                    <div class="db-ajustes-card-header">
+                        <p class="db-section-label" style="margin-bottom:0;">Costos del mes</p>
+                        <a href="{{ url_for('nuevo_costo') }}" class="db-link">+ Nuevo</a>
+                    </div>
+
+                    {% for costo in costos %}
+                        <div class="db-ajustes-clase-item">
+                            <div>
+                                <p class="db-ajustes-clase-nombre">{{ costo.concepto }}</p>
+                                <p class="db-ajustes-clase-meta">${{ "%.2f"|format(costo.monto) }}</p>
+                            </div>
+                            <form action="{{ url_for('eliminar_costo', id_costo=costo.id_costo) }}" method="POST" onsubmit="return confirm('¿Eliminar este costo?');">
+                                <button type="submit" class="db-link-danger">Eliminar</button>
+                            </form>
+                        </div>
+                    {% else %}
+                        <p class="db-empty">Sin costos cargados este mes.</p>
+                    {% endfor %}
+                </div>
 
             </div>
         </div>

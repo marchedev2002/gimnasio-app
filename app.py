@@ -617,6 +617,15 @@ def reportes():
     resumen_semana = resumen_desde(inicio_semana)
     resumen_mes = resumen_desde(inicio_mes)
 
+    cursor.execute("""
+        SELECT SUM(monto) AS total FROM COSTO
+        WHERE id_gimnasio = %s AND id_mes = %s AND anio = %s
+    """, (session['id_gimnasio'], hoy.month, hoy.year))
+    total_egresos = float(cursor.fetchone()['total'] or 0)
+
+    total_ingresos_mes = resumen_mes['total']
+    resultante = total_ingresos_mes - total_egresos
+
         # --- Cobrado por día (mes actual) ---
     ultimo_dia_mes_actual = calendar.monthrange(hoy.year, hoy.month)[1]
 
@@ -792,6 +801,8 @@ def reportes():
         variacion_mes=variacion_mes,
         mix_por_plan=mix_por_plan,
         nombre_mes_actual=nombre_mes_actual,
+        total_egresos=total_egresos,
+        resultante=resultante,
     )
 @app.route('/reportes/desbloquear', methods=['POST'])
 @login_requerido
@@ -830,8 +841,16 @@ def desbloquear_reportes():
 
     cursor.close()
     conn.close()
+    cursor.execute("""
+        SELECT SUM(monto) AS total FROM COSTO
+        WHERE id_gimnasio = %s AND id_mes = %s AND anio = %s
+    """, (session['id_gimnasio'], hoy.month, hoy.year))
+    total_egresos = float(cursor.fetchone()['total'] or 0)
 
-    return {'resumen_semana': resumen_semana, 'resumen_mes': resumen_mes}
+    total_ingresos_mes = resumen_mes['total']
+    resultante = total_ingresos_mes - total_egresos
+
+    return {'resumen_semana': resumen_semana, 'resumen_mes': resumen_mes, 'total_egresos': total_egresos, 'resultante': resumen_mes['total'] - total_egresos}
 
 @app.route('/admin')
 @login_requerido
@@ -869,10 +888,67 @@ def admin_general():
     """, (session['id_gimnasio'],))
     clases = cursor.fetchall()
 
+    hoy = date.today()
+    cursor.execute("""
+        SELECT COSTO.id_costo, COSTO.concepto, COSTO.monto, MES.nombre_mes, COSTO.anio
+        FROM COSTO
+        JOIN MES ON COSTO.id_mes = MES.id_mes
+        WHERE COSTO.id_gimnasio = %s AND COSTO.id_mes = %s AND COSTO.anio = %s
+        ORDER BY COSTO.id_costo DESC
+    """, (session['id_gimnasio'], hoy.month, hoy.year))
+    costos = cursor.fetchall()
+
     cursor.close()
     conn.close()
 
-    return render_template('admin.html', precios=precios, profesores=profesores, clases=clases)
+    return render_template('admin.html', precios=precios, profesores=profesores, clases=clases, costos=costos)
+
+@app.route('/admin/costo/nuevo', methods=['GET', 'POST'])
+@login_requerido
+def nuevo_costo():
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
+    if request.method == 'GET':
+        cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
+        meses = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        hoy = date.today()
+        return render_template('form_costo.html', meses=meses, mes_actual=hoy.month, anio_actual=hoy.year)
+
+    concepto = request.form.get('concepto', '').strip()
+    monto = request.form.get('monto', '').strip()
+    id_mes = request.form.get('id_mes', '').strip()
+    anio = request.form.get('anio', '').strip()
+
+    if not concepto or not monto or not id_mes or not anio:
+        cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
+        meses = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        hoy = date.today()
+        return render_template('form_costo.html', meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, error="Completá todos los campos.")
+
+    cursor.execute("""
+        INSERT INTO COSTO (concepto, monto, id_mes, anio, id_gimnasio)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (concepto, monto, id_mes, anio, session['id_gimnasio']))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('admin_general'))
+
+@app.route('/admin/costo/eliminar/<int:id_costo>', methods=['POST'])
+@login_requerido
+def eliminar_costo(id_costo):
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM COSTO WHERE id_costo = %s AND id_gimnasio = %s", (id_costo, session['id_gimnasio']))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect(url_for('admin_general'))
 
 @app.route('/admin/precio/nuevo', methods=['GET', 'POST'])
 @login_requerido

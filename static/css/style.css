@@ -1754,3 +1754,37 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     text-shadow: 0 0 16px var(--db-accent-glow);
     font-variant-numeric: tabular-nums;
 }
+/* --- Balance del mes --- */
+
+.db-balance-grid {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+}
+
+.db-balance-grid > div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 140px;
+}
+
+.db-balance-label {
+    color: var(--db-text-dim);
+    font-size: 0.82rem;
+}
+
+.db-balance-valor {
+    font-family: var(--db-mono);
+    font-size: 1.8rem;
+    color: var(--db-text);
+}
+
+.db-balance-valor--ok {
+    color: var(--db-success);
+}
+
+.db-balance-valor--danger {
+    color: var(--db-danger);
+}

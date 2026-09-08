@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuevo Costo · {{ nombre_gimnasio }}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    {% include 'partials/navbar_simple.html' %}
+    <div class="db-wrapper db-wrapper--narrow">
+        <p class="db-eyebrow">Administración</p>
+        <h1 class="db-page-title">Nuevo costo</h1>
+
+        <div class="db-card">
+            {% if error %}
+                <p class="db-alert-error">{{ error }}</p>
+            {% endif %}
+
+            <form action="{{ url_for('nuevo_costo') }}" method="POST">
+                <div class="db-field">
+                    <label>Concepto</label>
+                    <input type="text" name="concepto" class="db-input" placeholder="Ej: Alquiler, Sueldos, Servicios..." required autofocus>
+                </div>
+
+                <div class="db-field">
+                    <label>Monto</label>
+                    <input type="number" step="0.01" name="monto" class="db-input" placeholder="Ej: 150000" required>
+                </div>
+
+                <div class="db-field">
+                    <label>Mes</label>
+                    <select name="id_mes" class="db-input" required>
+                        {% for m in meses %}
+                            <option value="{{ m.id_mes }}" {% if m.id_mes == mes_actual %}selected{% endif %}>{{ m.nombre_mes }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="db-field">
+                    <label>Año</label>
+                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}" required>
+                </div>
+
+                <div class="db-btn-row">
+                    <button type="submit" class="db-btn db-btn-primary">Guardar</button>
+                    <a href="{{ url_for('admin_general') }}" class="db-btn db-btn-secondary">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

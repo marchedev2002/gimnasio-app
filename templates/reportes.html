@@ -84,6 +84,29 @@
                     <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver monto</button>
                 </div>
             </div>
+        <div class="db-card db-report-bloqueado" id="tarjeta-balance" style="margin-top:20px;">
+            <p class="db-section-label">Balance del mes</p>
+            <div class="db-blur-contenido">
+                <div class="db-balance-grid">
+                    <div>
+                        <span class="db-balance-label">Ingresos</span>
+                        <span class="db-balance-valor db-balance-valor--ok">$0.00</span>
+                    </div>
+                    <div>
+                        <span class="db-balance-label">Egresos</span>
+                        <span class="db-balance-valor db-balance-valor--danger">$0.00</span>
+                    </div>
+                    <div>
+                        <span class="db-balance-label">Resultante</span>
+                        <span class="db-balance-valor" id="balance-resultante">$0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="db-overlay-clave">
+                <span class="db-icono-candado">🔒</span>
+                <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver balance</button>
+            </div>
+        </div>
 
            
 
@@ -334,6 +357,17 @@
 
                 tarjeta.classList.remove('db-report-bloqueado');
             });
+
+            const tarjetaBalance = document.getElementById('tarjeta-balance');
+            if (tarjetaBalance) {
+                const contenidoBalance = tarjetaBalance.querySelector('.db-blur-contenido');
+                const valores = contenidoBalance.querySelectorAll('.db-balance-valor');
+                valores[0].textContent = '$' + datos.resumen_mes.total.toFixed(2);
+                valores[1].textContent = '$' + datos.total_egresos.toFixed(2);
+                valores[2].textContent = '$' + datos.resultante.toFixed(2);
+                valores[2].classList.add(datos.resultante >= 0 ? 'db-balance-valor--ok' : 'db-balance-valor--danger');
+                tarjetaBalance.classList.remove('db-report-bloqueado');
+            }
 
             modal.style.display = 'none';
         });

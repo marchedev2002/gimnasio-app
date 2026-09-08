@@ -84,8 +84,10 @@
                     <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver monto</button>
                 </div>
             </div>
+
         </div>
-        <div class="db-card db-report-bloqueado db-report-card" id="tarjeta-balance" style="margin-top:20px;"></div>
+
+        <div class="db-card db-report-bloqueado db-report-card" id="tarjeta-balance" style="margin-top:20px;">
             <p class="db-section-label">Balance del mes</p>
             <div class="db-blur-contenido">
                 <div class="db-balance-grid">
@@ -109,10 +111,7 @@
             </div>
         </div>
 
-           
-
-        </div>
-                <div class="db-card" style="margin-top:36px;">
+        <div class="db-card" style="margin-top:36px;">
             <p class="db-eyebrow" style="margin-bottom:4px;">Caja del mes</p>
             <h2 class="db-page-title" style="font-size:1.4rem; margin-bottom:20px;">{{ nombre_mes_actual }}</h2>
 
@@ -167,6 +166,7 @@
                 </div>
             </div>
         </div>
+
         <div class="db-card" style="margin-top:36px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
                 <p class="db-section-label" style="margin-bottom:0;">Ingresos por profesor</p>
@@ -219,6 +219,7 @@
                 <p class="db-empty">Todavía no hay check-ins registrados en este período.</p>
             {% endif %}
         </div>
+
         <div class="db-card" style="margin-top:36px;">
             <p class="db-section-label">Tendencia de ingresos (últimos 12 meses)</p>
             <canvas id="graficoTendencia" height="90"></canvas>
@@ -273,7 +274,7 @@
                     }
                 });
             </script>
-        </div>S
+        </div>
 
         <div class="db-card" style="margin-top:36px;">
             <p class="db-section-label">Descargar Excel de un mes puntual</p>
@@ -372,6 +373,7 @@
 
             modal.style.display = 'none';
         });
+
         const btnToggle = document.getElementById('btn-toggle-detalle');
         if (btnToggle) {
             btnToggle.addEventListener('click', () => {

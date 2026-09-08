@@ -838,14 +838,14 @@ def desbloquear_reportes():
 
     resumen_semana = resumen_desde(inicio_semana)
     resumen_mes = resumen_desde(inicio_mes)
-
-    cursor.close()
-    conn.close()
     cursor.execute("""
         SELECT SUM(monto) AS total FROM COSTO
         WHERE id_gimnasio = %s AND id_mes = %s AND anio = %s
     """, (session['id_gimnasio'], hoy.month, hoy.year))
     total_egresos = float(cursor.fetchone()['total'] or 0)
+    cursor.close()
+    conn.close()
+    
 
     total_ingresos_mes = resumen_mes['total']
     resultante = total_ingresos_mes - total_egresos

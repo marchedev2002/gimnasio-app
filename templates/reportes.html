@@ -33,26 +33,53 @@
                     <span>${{ "%.2f"|format(resumen_dia.debito) }}</span>
                 </div>
 
-                {% if detalle_pagos_hoy %}
+                {% if pagos_efectivo_hoy or pagos_debito_hoy %}
                     <button type="button" id="btn-toggle-detalle" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">
                         Ver quién pagó hoy ▾
                     </button>
 
                     <div id="detalle-pagos-hoy" style="display:none; margin-top:14px;">
-                        <table class="db-table">
-                            <thead>
-                                <tr><th>Nombre</th><th>Apellido</th><th>Monto</th></tr>
-                            </thead>
-                            <tbody>
-                                {% for pago in detalle_pagos_hoy %}
-                                    <tr>
-                                        <td>{{ pago.nombre }}</td>
-                                        <td>{{ pago.apellido }}</td>
-                                        <td>${{ "%.2f"|format(pago.monto) }}</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+
+                        <p class="db-detalle-metodo-titulo">💵 Efectivo ({{ pagos_efectivo_hoy|length }})</p>
+                        {% if pagos_efectivo_hoy %}
+                            <table class="db-table">
+                                <thead>
+                                    <tr><th>Nombre</th><th>Apellido</th><th>Monto</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for pago in pagos_efectivo_hoy %}
+                                        <tr>
+                                            <td>{{ pago.nombre }}</td>
+                                            <td>{{ pago.apellido }}</td>
+                                            <td>${{ "%.2f"|format(pago.monto) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="db-empty" style="padding:10px 0;">Sin pagos en efectivo hoy.</p>
+                        {% endif %}
+
+                        <p class="db-detalle-metodo-titulo" style="margin-top:18px;">💳 Débito ({{ pagos_debito_hoy|length }})</p>
+                        {% if pagos_debito_hoy %}
+                            <table class="db-table">
+                                <thead>
+                                    <tr><th>Nombre</th><th>Apellido</th><th>Monto</th></tr>
+                                </thead>
+                                <tbody>
+                                    {% for pago in pagos_debito_hoy %}
+                                        <tr>
+                                            <td>{{ pago.nombre }}</td>
+                                            <td>{{ pago.apellido }}</td>
+                                            <td>${{ "%.2f"|format(pago.monto) }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p class="db-empty" style="padding:10px 0;">Sin pagos con débito hoy.</p>
+                        {% endif %}
+
                     </div>
                 {% endif %}
             </div>

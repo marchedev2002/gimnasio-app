@@ -1788,3 +1788,15 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
 .db-balance-valor--danger {
     color: var(--db-danger);
 }
+/* --- Título de cada sub-lista (Efectivo / Débito) en el detalle diario --- */
+
+.db-detalle-metodo-titulo {
+    font-family: var(--db-mono);
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--db-text-dim);
+    margin-bottom: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--db-border);
+}

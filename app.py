@@ -613,7 +613,10 @@ def reportes():
         WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
         ORDER BY USUARIO.apellido, USUARIO.nombre
     """, (hoy, session['id_gimnasio']))
-    detalle_pagos_hoy = cursor.fetchall()
+    todos_los_pagos_hoy = cursor.fetchall()
+
+    pagos_efectivo_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Efectivo']
+    pagos_debito_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Debito']
     resumen_semana = resumen_desde(inicio_semana)
     resumen_mes = resumen_desde(inicio_mes)
 
@@ -788,7 +791,8 @@ def reportes():
     return render_template(
         'reportes.html',
         resumen_dia=resumen_dia,
-        detalle_pagos_hoy=detalle_pagos_hoy,
+        pagos_efectivo_hoy=pagos_efectivo_hoy,
+        pagos_debito_hoy=pagos_debito_hoy,
         meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, distribucion_profesores = distribucion_profesores, meses_grafico=meses_grafico,
         total_ingresos_periodo = total_ingresos_periodo,
         tendencia_labels=tendencia_labels,

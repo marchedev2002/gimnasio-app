@@ -2270,3 +2270,114 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     font-size: 0.78rem;
     color: var(--db-text-dim);
 }
+/* =========================================================
+   Listado de Socios estilo "ficha de alumno"
+   ========================================================= */
+
+.db-alumnos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 22px;
+}
+
+.db-alumnos-buscador {
+    margin-top: 4px;
+}
+
+.db-alumnos-buscador .db-input {
+    width: 100%;
+}
+
+.db-alumnos-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.db-alumno-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: border-color 0.15s;
+}
+
+.db-alumno-item:hover {
+    border-color: var(--db-text-dim);
+}
+
+.db-alumno-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.db-alumno-nombre {
+    font-weight: 700;
+    font-size: 0.96rem;
+}
+
+.db-alumno-meta {
+    color: var(--db-text-dim);
+    font-size: 0.8rem;
+    margin-top: 2px;
+}
+
+.db-alumno-acciones {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.db-btn-alumno {
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.db-btn-alumno-perfil {
+    background: var(--db-surface-raised);
+    color: var(--db-text-dim);
+    border: 1px solid var(--db-border);
+}
+
+.db-btn-alumno-perfil:hover {
+    color: var(--db-text);
+    border-color: var(--db-text-dim);
+}
+
+.db-btn-alumno-cobrar {
+    background: var(--db-accent);
+    color: #fff;
+}
+
+.db-btn-alumno-cobrar:hover {
+    background: var(--db-accent-hover);
+}
+
+@media (max-width: 720px) {
+    .db-alumno-item {
+        flex-wrap: wrap;
+    }
+    .db-alumno-acciones {
+        width: 100%;
+        justify-content: flex-start;
+        margin-top: 8px;
+    }
+}

@@ -2109,3 +2109,164 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
         grid-template-columns: 1fr;
     }
 }
+/* =========================================================
+   Check-in estilo "totem" de autoservicio
+   ========================================================= */
+
+.db-totem-wrap {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.db-totem-header {
+    margin-bottom: 32px;
+}
+
+.db-totem-title {
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 2rem;
+    letter-spacing: 0.02em;
+    color: var(--db-text);
+}
+
+.db-totem-title-accent {
+    color: var(--db-accent);
+}
+
+.db-totem-subtitle {
+    font-family: var(--db-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-size: 0.72rem;
+    color: var(--db-text-dim);
+    margin-top: 6px;
+}
+
+.db-totem-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 20px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.db-totem-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: linear-gradient(145deg, var(--db-accent), var(--db-accent-hover));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 24px var(--db-accent-glow);
+}
+
+.db-totem-icon svg {
+    width: 30px;
+    height: 30px;
+    color: #fff;
+}
+
+.db-totem-card-title {
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 1.4rem;
+    letter-spacing: 0.03em;
+}
+
+.db-totem-card-subtitle {
+    color: var(--db-text-dim);
+    font-size: 0.85rem;
+    margin-top: 6px;
+    margin-bottom: 24px;
+}
+
+.db-totem-form {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.db-totem-input {
+    background: var(--db-bg);
+    border: 1px solid var(--db-border);
+    border-radius: 12px;
+    padding: 18px;
+    text-align: center;
+    font-family: var(--db-mono);
+    font-size: 1.4rem;
+    letter-spacing: 0.15em;
+    color: var(--db-text);
+    caret-color: var(--db-accent);
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.db-totem-input:focus {
+    outline: none;
+    border-color: var(--db-accent);
+    box-shadow: 0 0 0 4px var(--db-accent-glow);
+}
+
+.db-totem-input::placeholder {
+    color: var(--db-border);
+    letter-spacing: 0.15em;
+}
+
+.db-totem-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, var(--db-accent), var(--db-accent-hover));
+    color: #fff;
+    font-family: var(--db-body-font);
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.03em;
+    padding: 16px;
+    cursor: pointer;
+    box-shadow: 0 8px 20px var(--db-accent-glow);
+    transition: transform 0.1s, box-shadow 0.15s;
+}
+
+.db-totem-btn:hover {
+    box-shadow: 0 10px 26px var(--db-accent-glow);
+}
+
+.db-totem-btn:active {
+    transform: scale(0.98);
+}
+
+.db-totem-footer-text {
+    color: var(--db-text-dim);
+    font-size: 0.78rem;
+    margin-top: 22px;
+}
+
+.db-totem-resultado {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 20px;
+    padding: 30px 36px;
+    width: 100%;
+    max-width: 420px;
+    margin-top: 24px;
+}
+
+.db-totem-clock {
+    margin-top: 28px;
+    font-family: var(--db-mono);
+    font-size: 0.78rem;
+    color: var(--db-text-dim);
+}

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Acceso · {{ nombre_gimnasio }}</title>
+    <title>Check-in · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
@@ -13,111 +13,80 @@
     <div class="db-app-shell">
         {% include 'partials/sidebar.html' %}
         <div class="db-main-content">
-            <div class="db-checkin-layout">
+            <div class="db-totem-wrap">
 
-        <div class="db-checkin-feed">
-            <p class="db-eyebrow">Control de acceso</p>
-            <h1 class="db-page-title">Ingresos recientes</h1>
-
-            {% if feed_ingresos %}
-                <div class="db-list" style="margin-top:20px;">
-                {% for ingreso in feed_ingresos %}
-                    <div class="db-feed-row">
-                        <span class="db-feed-time">{{ ingreso.fecha_hora.strftime('%H:%M') }}</span>
-                        <div class="db-avatar-initials db-avatar-initials--sm">{{ ingreso.nombre[0]|upper }}{{ ingreso.apellido[0]|upper }}</div>
-                        <div class="db-row-info">
-                            <span class="db-row-name">{{ ingreso.nombre }} {{ ingreso.apellido }}</span>
-                            <span class="db-row-meta">{{ ingreso.nombre_clase if ingreso.nombre_clase else 'Musculación libre' }}</span>
-                        </div>
-                        {% if ingreso.al_dia %}
-                            <span class="db-badge db-badge-ok">Al día</span>
-                        {% else %}
-                            <span class="db-badge db-badge-danger">Vencido</span>
-                        {% endif %}
-                    </div>
-                {% endfor %}
+                <div class="db-totem-header">
+                    <h1 class="db-totem-title">CHECK-IN <span class="db-totem-title-accent">LECORPS</span></h1>
+                    <p class="db-totem-subtitle">Bienvenido a {{ nombre_gimnasio }}</p>
                 </div>
-            {% else %}
-                <p class="db-empty">Todavía no hay ingresos registrados.</p>
-            {% endif %}
-        </div>
 
-        <div class="db-checkin-panel">
+                <div class="db-totem-card">
+                    <div class="db-totem-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11a2 2 0 0 0-2 2v1a9 9 0 0 0 1 4"/><path d="M8 11.5V10a4 4 0 0 1 8 0v1"/><path d="M15 16.5a9 9 0 0 0 1-4v-2.5a4 4 0 0 0-1-2.6"/><path d="M12 15.5v.5a5 5 0 0 0 2 4"/><path d="M5.5 8.5A7 7 0 0 1 12 4a7 7 0 0 1 6.5 4.5"/></svg>
+                    </div>
 
-            <div class="db-card">
-                <p class="db-section-label">Validar socio</p>
-                <form action="{{ url_for('procesar_checkin') }}" method="POST" class="db-search-form">
-                    <span class="db-search-icon">#</span>
-                    <input type="text" name="dni" class="db-search-input" placeholder="DNI" autofocus required>
-                    <button type="submit" class="db-search-btn">Validar</button>
-                </form>
-            </div>
+                    <h2 class="db-totem-card-title">Ingresá tu DNI</h2>
+                    <p class="db-totem-card-subtitle">Sin puntos ni espacios para comenzar</p>
 
-            {% if resultado_validacion %}
-                {% if resultado_validacion.error %}
-                    <p class="db-alert-error" style="margin-top:16px;">{{ resultado_validacion.error }}</p>
-                {% else %}
-                    <div class="db-card" style="margin-top:16px;">
-                        <div class="db-profile">
-                            <div class="db-avatar-initials">{{ resultado_validacion.usuario.nombre[0]|upper }}{{ resultado_validacion.usuario.apellido[0]|upper }}</div>
-                            <p class="db-profile-name">{{ resultado_validacion.usuario.nombre }} {{ resultado_validacion.usuario.apellido }}</p>
-                            <p class="db-profile-meta">DNI {{ resultado_validacion.usuario.dni }}</p>
-                        </div>
+                    <form action="{{ url_for('procesar_checkin') }}" method="POST" class="db-totem-form">
+                        <input type="text" name="dni" class="db-totem-input" placeholder="00000000" autocomplete="off" autofocus required>
+                        <button type="submit" class="db-totem-btn">
+                            Validar <span class="db-terminal-btn-arrow">→</span>
+                        </button>
+                    </form>
 
-                        {% if resultado_validacion.membresia_al_dia %}
-                            <div class="db-status db-status-ok">✅ Acceso permitido</div>
-                        {% else %}
-                            <div class="db-status db-status-danger">❌ Membresía vencida</div>
-                        {% endif %}
+                    <p class="db-totem-footer-text">Si no estás registrado, consultá en recepción</p>
+                </div>
 
-                        <p class="db-status-note">Ingreso registrado a las {{ resultado_validacion.hora_ingreso }} hs.</p>
+                {% if resultado_validacion %}
+                    {% if resultado_validacion.error %}
+                        <p class="db-alert-error" style="margin-top:20px; max-width:420px; width:100%;">{{ resultado_validacion.error }}</p>
+                    {% else %}
+                        <div class="db-totem-resultado">
+                            <div class="db-profile">
+                                <div class="db-avatar-initials">{{ resultado_validacion.usuario.nombre[0]|upper }}{{ resultado_validacion.usuario.apellido[0]|upper }}</div>
+                                <p class="db-profile-name">{{ resultado_validacion.usuario.nombre }} {{ resultado_validacion.usuario.apellido }}</p>
+                                <p class="db-profile-meta">DNI {{ resultado_validacion.usuario.dni }}</p>
+                            </div>
 
-                        {% if resultado_validacion.plan_actual %}
-                            <p class="db-profile-meta" style="margin-top:10px;"><strong>Plan:</strong> {{ resultado_validacion.plan_actual.tipo_membresia }}</p>
-                            {% if resultado_validacion.plan_actual.dias_max_mes %}
-                                <p class="{% if resultado_validacion.excede_limite %}db-warning-text{% else %}db-profile-meta{% endif %}">
-                                    Visitas este mes: {{ resultado_validacion.visitas_mes }} / {{ resultado_validacion.plan_actual.dias_max_mes }}
-                                    {% if resultado_validacion.excede_limite %} ⚠️{% endif %}
-                                </p>
+                            {% if resultado_validacion.membresia_al_dia %}
+                                <div class="db-status db-status-ok">✅ Acceso permitido</div>
+                            {% else %}
+                                <div class="db-status db-status-danger">❌ Membresía vencida</div>
                             {% endif %}
-                        {% endif %}
-                    </div>
+
+                            <p class="db-status-note">Ingreso registrado a las {{ resultado_validacion.hora_ingreso }} hs.</p>
+
+                            {% if resultado_validacion.plan_actual %}
+                                <p class="db-profile-meta" style="margin-top:10px;"><strong>Plan:</strong> {{ resultado_validacion.plan_actual.tipo_membresia }}</p>
+                                {% if resultado_validacion.plan_actual.dias_max_mes %}
+                                    <p class="{% if resultado_validacion.excede_limite %}db-warning-text{% else %}db-profile-meta{% endif %}">
+                                        Visitas este mes: {{ resultado_validacion.visitas_mes }} / {{ resultado_validacion.plan_actual.dias_max_mes }}
+                                        {% if resultado_validacion.excede_limite %} ⚠️{% endif %}
+                                    </p>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    {% endif %}
                 {% endif %}
-            {% endif %}
 
-            <div class="db-card" style="margin-top:16px;">
-                <div class="db-stat-card" style="border:none; padding:0;">
-                    <span class="db-stat-number">{{ ingresos_hoy }}</span>
-                    <span class="db-stat-label">Ingresos hoy</span>
+                <div class="db-totem-clock">
+                    <span id="totem-hora">--:--</span> · <span id="totem-fecha">—</span>
                 </div>
-                <div class="db-stat-card" style="border:none; padding:0; margin-top:14px;">
-                    <span class="db-stat-number">{{ total_socios }}</span>
-                    <span class="db-stat-label">Socios · {{ total_al_dia }} al día</span>
-                </div>
-            </div>
 
-            <div class="db-card" style="margin-top:16px;">
-                <p class="db-section-label">Vencen esta semana ({{ vencen_semana|length }})</p>
-                {% if vencen_semana %}
-                    <div class="db-list">
-                        {% for socio in vencen_semana %}
-                            <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-row">
-                                <div class="db-row-info">
-                                    <span class="db-row-name">{{ socio.nombre }} {{ socio.apellido }}</span>
-                                </div>
-                                <span class="db-row-meta">{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') }}</span>
-                            </a>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="db-empty">Nadie vence esta semana.</p>
-                {% endif %}
-                <a href="{{ url_for('alertas') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Ver todos los vencimientos</a>
             </div>
-
         </div>
     </div>
-        </div>
-    </div>
+
+    <script>
+        function actualizarRelojTotem() {
+            const ahora = new Date();
+            const pad = (n) => n.toString().padStart(2, '0');
+            document.getElementById('totem-hora').textContent = `${pad(ahora.getHours())}:${pad(ahora.getMinutes())}`;
+            document.getElementById('totem-fecha').textContent = ahora.toLocaleDateString('es-AR');
+        }
+        actualizarRelojTotem();
+        setInterval(actualizarRelojTotem, 1000);
+    </script>
 </body>
 </html>

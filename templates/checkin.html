@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    {% include 'partials/navbar.html' %}
-
-    <div class="db-checkin-layout">
+    <div class="db-app-shell">
+        {% include 'partials/sidebar.html' %}
+        <div class="db-main-content">
+            <div class="db-checkin-layout">
 
         <div class="db-checkin-feed">
             <p class="db-eyebrow">Control de acceso</p>
@@ -114,6 +115,8 @@
                 <a href="{{ url_for('alertas') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Ver todos los vencimientos</a>
             </div>
 
+        </div>
+    </div>
         </div>
     </div>
 </body>

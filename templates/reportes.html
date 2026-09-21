@@ -11,8 +11,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="db-wrapper">
-        {% include 'partials/navbar.html' %}
+    <div class="db-app-shell">
+        {% include 'partials/sidebar.html' %}
+        <div class="db-main-content">
+            <div class="db-wrapper">
 
         <p class="db-eyebrow">Caja</p>
         <h1 class="db-page-title">Reportes</h1>
@@ -320,6 +322,8 @@
                 </div>
                 <button type="submit" class="db-btn db-btn-primary">📥 Descargar</button>
             </form>
+        </div>
+            </div>
         </div>
     </div>
 

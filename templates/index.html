@@ -3,125 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ nombre_gimnasio }} · Panel de Control</title>
+    <title>{{ nombre_gimnasio }} · LECORPS CENTER</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    {% include 'partials/navbar.html' %}
+    <div class="db-app-shell">
+        {% include 'partials/sidebar.html' %}
 
-    <div class="db-wrapper">
-        <main>
+        <div class="db-main-content">
+            <div class="db-wrapper">
+                <main>
 
-            <section class="db-hero-terminal">
-                <div class="db-hero-terminal-top">
-                    <div>
-                        <p class="db-eyebrow" style="margin-bottom:8px;">Control de acceso</p>
-                        <div class="db-status-pill">
-                            <span class="db-status-dot"></span>
-                            Sistema en línea
+                    <div class="db-cc-header">
+                        <h1 class="db-cc-title">LECORPS CENTER</h1>
+                        <p class="db-cc-subtitle">Control maestro de <strong>{{ nombre_gimnasio }}</strong>.</p>
+                    </div>
+
+                    <section class="db-hero-terminal">
+                        <div class="db-hero-terminal-top">
+                            <div>
+                                <p class="db-eyebrow" style="margin-bottom:8px;">Control de acceso</p>
+                                <div class="db-status-pill">
+                                    <span class="db-status-dot"></span>
+                                    Sistema en línea
+                                </div>
+                            </div>
+
+                            <div class="db-clock-panel">
+                                <span class="db-clock-panel-label">Hora local</span>
+                                <div class="db-clock-panel-digits">
+                                    <span id="reloj-hh">00</span><span class="db-clock-colon">:</span><span id="reloj-mm">00</span><span class="db-clock-colon">:</span><span id="reloj-ss">00</span>
+                                </div>
+                                <span class="db-clock-panel-date" id="reloj-fecha">—</span>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="db-clock-panel">
-                        <span class="db-clock-panel-label">Hora local</span>
-                        <div class="db-clock-panel-digits">
-                            <span id="reloj-hh">00</span><span class="db-clock-colon">:</span><span id="reloj-mm">00</span><span class="db-clock-colon">:</span><span id="reloj-ss">00</span>
+                        <h2 class="db-hero-title" style="font-size:1.5rem;">Buscar socio</h2>
+
+                        <form action="{{ url_for('buscar') }}" method="POST" class="db-terminal-form">
+                            <div class="db-terminal-input-wrap">
+                                <input
+                                    type="text"
+                                    name="dni"
+                                    class="db-terminal-input"
+                                    placeholder="Ingresá el DNI"
+                                    autocomplete="off"
+                                    required
+                                >
+                            </div>
+                            <button type="submit" class="db-terminal-btn">
+                                Validar <span class="db-terminal-btn-arrow">→</span>
+                            </button>
+                        </form>
+
+                        {% if error %}
+                            <p class="db-alert-error" style="margin-top:16px;">{{ error }}</p>
+                        {% endif %}
+                    </section>
+
+                    <section class="db-cc-stats">
+                        <div class="db-cc-stat-card">
+                            <span class="db-cc-stat-number">{{ total_socios|default(0) }}</span>
+                            <span class="db-cc-stat-label">Membresías totales</span>
                         </div>
-                        <span class="db-clock-panel-date" id="reloj-fecha">—</span>
-                    </div>
-                </div>
+                        <div class="db-cc-stat-card db-cc-stat-card--ok">
+                            <span class="db-cc-stat-number">{{ total_al_dia|default(0) }}</span>
+                            <span class="db-cc-stat-label">Membresías al día</span>
+                        </div>
+                        <div class="db-cc-stat-card db-cc-stat-card--danger">
+                            <span class="db-cc-stat-number">{{ total_vencidos|default(0) }}</span>
+                            <span class="db-cc-stat-label">Membresías vencidas</span>
+                        </div>
+                    </section>
 
-                <h1 class="db-hero-title">Buscar socio</h1>
+                    <section class="db-cc-columns">
+                        <div class="db-card">
+                            <p class="db-cc-panel-title">💰 Flujo económico</p>
+                            {% if flujo_economico %}
+                                {% for pago in flujo_economico %}
+                                    <div class="db-cc-list-item">
+                                        <span class="db-cc-item-icon db-cc-item-icon--pago">
+                                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 15V5m0 0-4 4m4-4 4 4"/></svg>
+                                        </span>
+                                        <div class="db-cc-item-info">
+                                            <span class="db-cc-item-name">{{ pago.nombre }} {{ pago.apellido }}</span>
+                                            <span class="db-cc-item-meta">{{ pago.metodo_pago }} · {{ pago.fecha_pago.strftime('%d/%m') }}</span>
+                                        </div>
+                                        <span class="db-cc-item-amount">+${{ "%.0f"|format(pago.monto) }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="db-empty">Todavía no hay pagos registrados.</p>
+                            {% endif %}
+                        </div>
 
-                <form action="{{ url_for('buscar') }}" method="POST" class="db-terminal-form">
-                    <div class="db-terminal-input-wrap">
-                        <input
-                            type="text"
-                            name="dni"
-                            class="db-terminal-input"
-                            placeholder="Ingresá el DNI"
-                            autocomplete="off"
-                            autofocus
-                            required
-                        >
-                    </div>
-                    <button type="submit" class="db-terminal-btn">
-                        Validar <span class="db-terminal-btn-arrow">→</span>
-                    </button>
-                </form>
+                        <div class="db-card">
+                            <p class="db-cc-panel-title">✅ Últimos Check-ins</p>
+                            {% if ultimos_checkins %}
+                                {% for c in ultimos_checkins %}
+                                    <div class="db-cc-list-item">
+                                        <span class="db-cc-item-icon db-cc-item-icon--check">
+                                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 8 14l8-8.5"/></svg>
+                                        </span>
+                                        <div class="db-cc-item-info">
+                                            <span class="db-cc-item-name">{{ c.nombre }} {{ c.apellido }}</span>
+                                            <span class="db-cc-item-meta">{{ c.nombre_clase if c.nombre_clase else 'Musculación libre' }}</span>
+                                        </div>
+                                        <span class="db-cc-item-meta">{{ c.fecha_hora.strftime('%H:%M') }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="db-empty">Todavía no hay check-ins registrados.</p>
+                            {% endif %}
+                        </div>
+                    </section>
 
-                {% if error %}
-                    <p class="db-alert-error" style="margin-top:16px;">{{ error }}</p>
-                {% endif %}
-            </section>
-            <section class="db-stats-strip">
-                <div class="db-stats-strip-item">
-                    <span class="db-stats-strip-number">{{ total_socios|default(0) }}</span>
-                    <span class="db-stats-strip-label">Socios totales</span>
-                </div>
-                <div class="db-stats-strip-item db-stats-strip-item--ok">
-                    <span class="db-stats-strip-number">{{ total_al_dia|default(0) }}</span>
-                    <span class="db-stats-strip-label">Al día</span>
-                </div>
-                <div class="db-stats-strip-item db-stats-strip-item--danger">
-                    <span class="db-stats-strip-number">{{ total_vencidos|default(0) }}</span>
-                    <span class="db-stats-strip-label">Vencidos</span>
-                </div>
-            </section>
+                    <section>
+                        <p class="db-section-label">Accesos rápidos</p>
+                        <div class="db-actions-grid">
+                            <a href="{{ url_for('checkin') }}" class="db-action-card">
+                                <span class="db-action-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h-8a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8"/><path d="M8 10h9m0 0-3-3m3 3-3 3"/></svg></span>
+                                <span class="db-action-text">Registrar ingreso</span>
+                            </a>
+                            <a href="{{ url_for('nuevo_socio') }}" class="db-action-card">
+                                <span class="db-action-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.5-3.5 3-5 5.5-5s5 1.5 5.5 5"/><path d="M15.5 6.5v5M13 9h5"/></svg></span>
+                                <span class="db-action-text">Alta de socio</span>
+                            </a>
+                            <a href="{{ url_for('listado_socios') }}" class="db-action-card">
+                                <span class="db-action-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M4 10h12M4 15h7"/></svg></span>
+                                <span class="db-action-text">Listado de socios</span>
+                            </a>
+                            <a href="{{ url_for('alertas') }}" class="db-action-card">
+                                <span class="db-action-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5c-2.5 0-4 2-4 4.5v2.5l-1.5 3h11L14 9.5V7c0-2.5-1.5-4.5-4-4.5Z"/><path d="M8.2 15.5a1.8 1.8 0 0 0 3.6 0"/></svg></span>
+                                <span class="db-action-text">Alertas de vencimiento</span>
+                            </a>
+                            <a href="{{ url_for('reportes') }}" class="db-action-card">
+                                <span class="db-action-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16V9m4.5 7V4m4.5 12v-5m4.5 5V7"/></svg></span>
+                                <span class="db-action-text">Exportar reportes</span>
+                            </a>
+                            <a href="{{ url_for('admin_general') }}" class="db-action-card">
+                                <span class="db-action-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.3"/><path d="M10 3.5v1.6M10 14.9v1.6M16.5 10h-1.6M5.1 10H3.5M14.6 5.4l-1.1 1.1M6.5 13.5l-1.1 1.1M14.6 14.6l-1.1-1.1M6.5 6.5 5.4 5.4"/></svg></span>
+                                <span class="db-action-text">Administración general</span>
+                            </a>
+                        </div>
+                    </section>
 
-            <section>
-                <p class="db-section-label">Accesos rápidos</p>
-                <div class="db-actions-grid">
-
-                    <a href="{{ url_for('checkin') }}" class="db-action-card">
-                        <span class="db-action-icon">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3h-8a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8"/><path d="M8 10h9m0 0-3-3m3 3-3 3"/></svg>
-                        </span>
-                        <span class="db-action-text">Registrar ingreso</span>
-                    </a>
-
-                    <a href="{{ url_for('nuevo_socio') }}" class="db-action-card">
-                        <span class="db-action-icon">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="7" r="3"/><path d="M2.5 17c.5-3.5 3-5 5.5-5s5 1.5 5.5 5"/><path d="M15.5 6.5v5M13 9h5"/></svg>
-                        </span>
-                        <span class="db-action-text">Alta de socio</span>
-                    </a>
-
-                    <a href="{{ url_for('listado_socios') }}" class="db-action-card">
-                        <span class="db-action-icon">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h12M4 10h12M4 15h7"/></svg>
-                        </span>
-                        <span class="db-action-text">Listado de socios</span>
-                    </a>
-
-                    <a href="{{ url_for('alertas') }}" class="db-action-card">
-                        <span class="db-action-icon">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5c-2.5 0-4 2-4 4.5v2.5l-1.5 3h11L14 9.5V7c0-2.5-1.5-4.5-4-4.5Z"/><path d="M8.2 15.5a1.8 1.8 0 0 0 3.6 0"/></svg>
-                        </span>
-                        <span class="db-action-text">Alertas de vencimiento</span>
-                    </a>
-
-                    <a href="{{ url_for('reportes') }}" class="db-action-card">
-                        <span class="db-action-icon">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16V9m4.5 7V4m4.5 12v-5m4.5 5V7"/></svg>
-                        </span>
-                        <span class="db-action-text">Exportar reportes</span>
-                    </a>
-
-                    <a href="{{ url_for('admin_general') }}" class="db-action-card">
-                        <span class="db-action-icon">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="10" r="2.3"/><path d="M10 3.5v1.6M10 14.9v1.6M16.5 10h-1.6M5.1 10H3.5M14.6 5.4l-1.1 1.1M6.5 13.5l-1.1 1.1M14.6 14.6l-1.1-1.1M6.5 6.5 5.4 5.4"/></svg>
-                        </span>
-                        <span class="db-action-text">Administración general</span>
-                    </a>
-
-                </div>
-            </section>
-
-        </main>
+                </main>
+            </div>
+        </div>
     </div>
 
     <script>

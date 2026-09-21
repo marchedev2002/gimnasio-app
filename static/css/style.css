@@ -1800,3 +1800,312 @@ input[type="file"].db-input { padding: 10px 14px; color: var(--db-text-dim); }
     padding-top: 10px;
     border-top: 1px solid var(--db-border);
 }
+/* =========================================================
+   Sidebar lateral (reemplaza la navbar superior)
+   ========================================================= */
+
+.db-app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.db-sidebar {
+    width: 232px;
+    flex-shrink: 0;
+    background: var(--db-surface);
+    border-right: 1px solid var(--db-border);
+    display: flex;
+    flex-direction: column;
+    padding: 22px 16px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.db-sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    padding: 4px 8px 22px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid var(--db-border);
+}
+
+.db-sidebar-brand-mark {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--db-accent);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+
+.db-sidebar-brand-name {
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--db-text);
+}
+
+.db-sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.db-sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 8px;
+    color: var(--db-text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-left: 2px solid transparent;
+    transition: background 0.15s, color 0.15s;
+}
+
+.db-sidebar-link svg {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.db-sidebar-link:hover {
+    background: var(--db-surface-raised);
+    color: var(--db-text);
+}
+
+.db-sidebar-link-activo {
+    background: var(--db-danger-bg);
+    color: var(--db-accent);
+    border-left-color: var(--db-accent);
+    font-weight: 600;
+}
+
+.db-sidebar-footer {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 8px 4px;
+    border-top: 1px solid var(--db-border);
+    margin-top: 12px;
+}
+
+.db-sidebar-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    min-width: 0;
+}
+
+.db-sidebar-user-name {
+    font-size: 0.85rem;
+    color: var(--db-text);
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.db-main-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.db-main-content .db-wrapper {
+    max-width: 1180px;
+}
+
+@media (max-width: 900px) {
+    .db-app-shell {
+        flex-direction: column;
+    }
+    .db-sidebar {
+        width: 100%;
+        height: auto;
+        position: relative;
+        flex-direction: row;
+        align-items: center;
+        overflow-x: auto;
+        padding: 12px;
+    }
+    .db-sidebar-brand {
+        border-bottom: none;
+        border-right: 1px solid var(--db-border);
+        padding: 0 14px 0 4px;
+        margin-bottom: 0;
+    }
+    .db-sidebar-nav {
+        flex-direction: row;
+        padding-left: 10px;
+    }
+    .db-sidebar-link span, .db-sidebar-link { white-space: nowrap; }
+    .db-sidebar-footer {
+        border-top: none;
+        border-left: 1px solid var(--db-border);
+        margin-top: 0;
+        margin-left: 10px;
+        padding-left: 14px;
+    }
+    .db-sidebar-user-info { display: none; }
+}
+
+/* --- Command Center: tarjetas de membresías + feeds --- */
+
+.db-cc-header {
+    margin-bottom: 28px;
+}
+
+.db-cc-title {
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 1.9rem;
+    letter-spacing: -0.01em;
+}
+
+.db-cc-subtitle {
+    color: var(--db-text-dim);
+    font-size: 0.92rem;
+    margin-top: 4px;
+}
+
+.db-cc-subtitle strong {
+    color: var(--db-accent);
+    font-weight: 600;
+}
+
+.db-cc-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.db-cc-stat-card {
+    background: var(--db-surface);
+    border: 1px solid var(--db-border);
+    border-radius: 14px;
+    padding: 22px 24px;
+}
+
+.db-cc-stat-card--ok {
+    border-color: rgba(43, 212, 160, 0.3);
+}
+
+.db-cc-stat-card--danger {
+    border-color: rgba(239, 83, 80, 0.3);
+}
+
+.db-cc-stat-number {
+    font-family: var(--db-mono);
+    font-size: 2.2rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--db-text);
+}
+
+.db-cc-stat-card--ok .db-cc-stat-number { color: var(--db-success); }
+.db-cc-stat-card--danger .db-cc-stat-number { color: var(--db-danger); }
+
+.db-cc-stat-label {
+    display: block;
+    color: var(--db-text-dim);
+    font-size: 0.85rem;
+    margin-top: 4px;
+}
+
+.db-cc-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.db-cc-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--db-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    margin-bottom: 16px;
+}
+
+.db-cc-list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--db-border);
+    text-decoration: none;
+    color: var(--db-text);
+}
+
+.db-cc-list-item:last-child {
+    border-bottom: none;
+}
+
+.db-cc-item-icon {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.db-cc-item-icon--pago {
+    background: var(--db-success-bg);
+    color: var(--db-success);
+}
+
+.db-cc-item-icon--check {
+    background: var(--db-danger-bg);
+    color: var(--db-accent);
+}
+
+.db-cc-item-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.db-cc-item-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.db-cc-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.db-cc-item-meta {
+    font-size: 0.78rem;
+    color: var(--db-text-dim);
+}
+
+.db-cc-item-amount {
+    font-family: var(--db-mono);
+    font-size: 0.9rem;
+    color: var(--db-success);
+    white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+    .db-cc-stats, .db-cc-columns {
+        grid-template-columns: 1fr;
+    }
+}

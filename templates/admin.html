@@ -10,9 +10,10 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    {% include 'partials/navbar.html' %}
-
-    <div class="db-wrapper">
+    <div class="db-app-shell">
+        {% include 'partials/sidebar.html' %}
+        <div class="db-main-content">
+            <div class="db-wrapper">
         <p class="db-eyebrow">Configuración</p>
         <h1 class="db-page-title">Ajustes</h1>
 
@@ -133,6 +134,8 @@
                 </div>
 
             </div>
+        </div>
+    </div>
         </div>
     </div>
 </body>

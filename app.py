@@ -100,7 +100,6 @@ def login_requerido(vista):
 @app.route('/')
 @login_requerido
 def index():
-    """Página inicial: dashboard con buscador de DNI y estadísticas generales."""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -114,18 +113,42 @@ def index():
     """, (hoy, session['id_gimnasio']))
     stats = cursor.fetchone()
 
-    cursor.close()
-    conn.close()
-
     total_socios = stats['total'] or 0
     total_al_dia = stats['al_dia'] or 0
     total_vencidos = total_socios - total_al_dia
+
+    cursor.execute("""
+        SELECT USUARIO.nombre, USUARIO.apellido, PAGO.fecha_pago, PAGO.metodo_pago, PRECIO.monto
+        FROM PAGO
+        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.id_gimnasio = %s
+        ORDER BY PAGO.fecha_pago DESC, PAGO.id_pago DESC
+        LIMIT 6
+    """, (session['id_gimnasio'],))
+    flujo_economico = cursor.fetchall()
+
+    cursor.execute("""
+        SELECT ASISTENCIA.fecha_hora, USUARIO.nombre, USUARIO.apellido, CLASE.nombre AS nombre_clase
+        FROM ASISTENCIA
+        JOIN USUARIO ON ASISTENCIA.dni = USUARIO.dni AND ASISTENCIA.id_gimnasio = USUARIO.id_gimnasio
+        LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
+        WHERE ASISTENCIA.id_gimnasio = %s
+        ORDER BY ASISTENCIA.fecha_hora DESC
+        LIMIT 6
+    """, (session['id_gimnasio'],))
+    ultimos_checkins = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
 
     return render_template(
         'index.html',
         total_socios=total_socios,
         total_al_dia=total_al_dia,
-        total_vencidos=total_vencidos
+        total_vencidos=total_vencidos,
+        flujo_economico=flujo_economico,
+        ultimos_checkins=ultimos_checkins
     )
 
 @app.route('/login', methods=['GET', 'POST'])

@@ -10,83 +10,86 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="db-wrapper">
-            {% include 'partials/navbar.html' %}
+    <div class="db-app-shell">
+        {% include 'partials/sidebar.html' %}
+        <div class="db-main-content">
+            <div class="db-wrapper">
 
-    <div class="db-wrapper">
+                <p class="db-eyebrow">Padrón</p>
+                <h1 class="db-page-title">Socios</h1>
 
-        <p class="db-eyebrow">Padrón</p>
-        <h1 class="db-page-title">Socios</h1>
+                {% if request.args.get('mensaje') == 'baja' %}
+                    <p class="db-alert-success">✅ Socio dado de baja correctamente.</p>
+                {% endif %}
 
-        {% if request.args.get('mensaje') == 'baja' %}
-            <p class="db-alert-success">✅ Socio dado de baja correctamente.</p>
-        {% endif %}
+                <div class="db-socios-toolbar">
+                    <form action="{{ url_for('listado_socios') }}" method="GET" class="db-socios-buscador">
+                        <input type="text" name="buscar" class="db-input" placeholder="Nombre, apellido o DNI" value="{{ busqueda }}">
+                        <input type="hidden" name="filtro" value="{{ filtro }}">
+                    </form>
 
-        <div class="db-socios-toolbar">
-            <form action="{{ url_for('listado_socios') }}" method="GET" class="db-socios-buscador">
-                <input type="text" name="buscar" class="db-input" placeholder="Nombre, apellido o DNI" value="{{ busqueda }}">
-                <input type="hidden" name="filtro" value="{{ filtro }}">
-            </form>
+                    <div class="db-filter-pills">
+                        <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='todos') }}" class="db-pill {% if filtro == 'todos' %}db-pill-active{% endif %}">
+                            Todos · {{ total_socios }}
+                        </a>
+                        <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='al_dia') }}" class="db-pill {% if filtro == 'al_dia' %}db-pill-active-ok{% endif %}">
+                            Al día · {{ total_al_dia }}
+                        </a>
+                        <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='vencidos') }}" class="db-pill {% if filtro == 'vencidos' %}db-pill-active-danger{% endif %}">
+                            Vencidos · {{ total_vencidos }}
+                        </a>
+                    </div>
 
-            <div class="db-filter-pills">
-                <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='todos') }}" class="db-pill {% if filtro == 'todos' %}db-pill-active{% endif %}">
-                    Todos · {{ total_socios }}
-                </a>
-                <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='al_dia') }}" class="db-pill {% if filtro == 'al_dia' %}db-pill-active-ok{% endif %}">
-                    Al día · {{ total_al_dia }}
-                </a>
-                <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='vencidos') }}" class="db-pill {% if filtro == 'vencidos' %}db-pill-active-danger{% endif %}">
-                    Vencidos · {{ total_vencidos }}
-                </a>
-            </div>
-
-            <a href="{{ url_for('nuevo_socio') }}" class="db-btn db-btn-primary db-socios-alta-btn">Alta de socio</a>
-        </div>
-
-        {% if socios %}
-            <div class="db-socios-tabla">
-                <div class="db-socios-header">
-                    <span>Socio</span>
-                    <span>DNI</span>
-                    <span>Plan</span>
-                    <span>Vencimiento</span>
-                    <span>Estado</span>
+                    <a href="{{ url_for('nuevo_socio') }}" class="db-btn db-btn-primary db-socios-alta-btn">Alta de socio</a>
                 </div>
 
-                {% for socio in socios %}
-                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-socios-row">
-                        <span class="db-socios-nombre">
-                            <span class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</span>
-                            {{ socio.nombre }} {{ socio.apellido }}
-                        </span>
-                        <span>{{ socio.dni }}</span>
-                        <span>{{ socio.plan or '—' }}</span>
-                        <span>{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') if socio.fecha_proximo_vencimiento else '—' }}</span>
-                        <span>
-                            {% if socio.al_dia == 1 %}
-                                <span class="db-badge db-badge-ok">Al día</span>
-                            {% else %}
-                                <span class="db-badge db-badge-danger">Vencido</span>
-                            {% endif %}
-                        </span>
-                    </a>
-                {% endfor %}
-            </div>
+                {% if socios %}
+                    <div class="db-socios-tabla">
+                        <div class="db-socios-header">
+                            <span>Socio</span>
+                            <span>DNI</span>
+                            <span>Plan</span>
+                            <span>Vencimiento</span>
+                            <span>Estado</span>
+                        </div>
 
-            <div class="db-paginacion">
-                {% if pagina > 1 %}
-                    <a href="{{ url_for('listado_socios', buscar=busqueda, filtro=filtro, pagina=pagina-1) }}" class="db-btn db-btn-secondary">← Anterior</a>
+                        {% for socio in socios %}
+                            <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-socios-row">
+                                <span class="db-socios-nombre">
+                                    <span class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</span>
+                                    {{ socio.nombre }} {{ socio.apellido }}
+                                </span>
+                                <span>{{ socio.dni }}</span>
+                                <span>{{ socio.plan or '—' }}</span>
+                                <span>{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') if socio.fecha_proximo_vencimiento else '—' }}</span>
+                                <span>
+                                    {% if socio.al_dia == 1 %}
+                                        <span class="db-badge db-badge-ok">Al día</span>
+                                    {% else %}
+                                        <span class="db-badge db-badge-danger">Vencido</span>
+                                    {% endif %}
+                                </span>
+                            </a>
+                        {% endfor %}
+                    </div>
+
+                    <div class="db-paginacion">
+                        {% if pagina > 1 %}
+                            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro=filtro, pagina=pagina-1) }}" class="db-btn db-btn-secondary">← Anterior</a>
+                        {% endif %}
+
+                        <span class="db-paginacion-info">Página {{ pagina }} de {{ total_paginas }}</span>
+
+                        {% if pagina < total_paginas %}
+                            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro=filtro, pagina=pagina+1) }}" class="db-btn db-btn-secondary">Siguiente →</a>
+                        {% endif %}
+                    </div>
+                {% else %}
+                    <p class="db-empty">No se encontraron socios con esos criterios.</p>
                 {% endif %}
 
-                <span class="db-paginacion-info">Página {{ pagina }} de {{ total_paginas }}</span>
-
-                {% if pagina < total_paginas %}
-                    <a href="{{ url_for('listado_socios', buscar=busqueda, filtro=filtro, pagina=pagina+1) }}" class="db-btn db-btn-secondary">Siguiente →</a>
-                {% endif %}
             </div>
-        {% else %}
-            <p class="db-empty">No se encontraron socios con esos criterios.</p>
-        {% endif %}
+        </div>
     </div>
 </body>
 </html>

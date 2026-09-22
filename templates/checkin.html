@@ -55,7 +55,7 @@
                                 <div class="db-status db-status-danger">❌ Membresía vencida</div>
                             {% endif %}
 
-                            <p class="db-status-note">Ingreso registrado a las {{ resultado_validacion.hora_ingreso }} hs.</p>
+                            <p class="db-alert-success db-alert-autodismiss" style="text-align:center; margin-top:14px;">Ingreso registrado a las {{ resultado_validacion.hora_ingreso }} hs.</p>
 
                             {% if resultado_validacion.plan_actual %}
                                 <p class="db-profile-meta" style="margin-top:10px;"><strong>Plan:</strong> {{ resultado_validacion.plan_actual.tipo_membresia }}</p>

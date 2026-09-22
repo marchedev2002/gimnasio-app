@@ -25,7 +25,7 @@
                 </div>
 
                 {% if request.args.get('mensaje') == 'baja' %}
-                    <p class="db-alert-success">✅ Socio dado de baja correctamente.</p>
+                    <p class="db-alert-success db-alert-autodismiss">✅ Socio dado de baja correctamente.</p>
                 {% endif %}
 
                 <form action="{{ url_for('listado_socios') }}" method="GET" class="db-alumnos-buscador">

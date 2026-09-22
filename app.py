@@ -66,7 +66,33 @@ def calcular_siguiente_vencimiento(fecha_base, dia_vencimiento):
     dia = min(dia_vencimiento, ultimo_dia_del_mes)  # por si el día no existe en ese mes (ej: 31 en febrero)
     return date(anio, mes, dia)
 
+def calcular_resumen_pagos(cursor, id_gimnasio, fecha_desde, fecha_hasta=None):
+    if fecha_hasta:
+        cursor.execute("""
+            SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
+            FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            WHERE PAGO.fecha_pago BETWEEN %s AND %s AND PAGO.id_gimnasio = %s
+            GROUP BY PAGO.metodo_pago
+        """, (fecha_desde, fecha_hasta, id_gimnasio))
+    else:
+        cursor.execute("""
+            SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
+            FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
+            GROUP BY PAGO.metodo_pago
+        """, (fecha_desde, id_gimnasio))
+    filas = cursor.fetchall()
+    total = sum(float(f['total']) for f in filas)
+    cantidad = sum(f['cantidad'] for f in filas)
+    efectivo = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Efectivo'), 0)
+    debito = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Debito'), 0)
+    return {'total': total, 'cantidad': cantidad, 'efectivo': efectivo, 'debito': debito}
 
+
+def calcular_variacion(actual, anterior):
+    if not anterior:
+        return None
+    return round(((actual - anterior) / anterior) * 100)
 
 pool_conexiones = None
 
@@ -652,54 +678,17 @@ def reportes():
     cursor = conn.cursor(dictionary=True)
 
     hoy = date.today()
-    inicio_semana = hoy - timedelta(days=hoy.weekday())  # lunes de esta semana
     inicio_mes = date(hoy.year, hoy.month, 1)
 
-    def resumen_desde(fecha_desde):
-        cursor.execute("""
-            SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
-            FROM PAGO
-            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-            WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
-            GROUP BY PAGO.metodo_pago
-        """, (fecha_desde, session['id_gimnasio']))
-        filas = cursor.fetchall()
+    cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
+    meses = cursor.fetchall()
 
-        total = sum(float(f['total']) for f in filas)
-        cantidad = sum(f['cantidad'] for f in filas)
-        efectivo = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Efectivo'), 0)
-        debito = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Debito'), 0)
+    nombres_meses_completo = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
+                               'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+    nombre_mes_actual = f"{nombres_meses_completo[hoy.month]} {hoy.year}"
 
-        return {'total': total, 'cantidad': cantidad, 'efectivo': efectivo, 'debito': debito}
-
-    resumen_dia = resumen_desde(hoy)
-    cursor.execute("""
-        SELECT USUARIO.nombre, USUARIO.apellido, PRECIO.monto, PAGO.metodo_pago
-        FROM PAGO
-        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
-        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
-        ORDER BY USUARIO.apellido, USUARIO.nombre
-    """, (hoy, session['id_gimnasio']))
-    todos_los_pagos_hoy = cursor.fetchall()
-
-    pagos_efectivo_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Efectivo']
-    pagos_debito_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Debito']
-    resumen_semana = resumen_desde(inicio_semana)
-    resumen_mes = resumen_desde(inicio_mes)
-
-    cursor.execute("""
-        SELECT SUM(monto) AS total FROM COSTO
-        WHERE id_gimnasio = %s AND id_mes = %s AND anio = %s
-    """, (session['id_gimnasio'], hoy.month, hoy.year))
-    total_egresos = float(cursor.fetchone()['total'] or 0)
-
-    total_ingresos_mes = resumen_mes['total']
-    resultante = total_ingresos_mes - total_egresos
-
-        # --- Cobrado por día (mes actual) ---
+    # --- Cobrado por día (mes actual) ---
     ultimo_dia_mes_actual = calendar.monthrange(hoy.year, hoy.month)[1]
-
     cursor.execute("""
         SELECT DAY(PAGO.fecha_pago) AS dia, SUM(PRECIO.monto) AS total
         FROM PAGO
@@ -709,25 +698,8 @@ def reportes():
     """, (inicio_mes, session['id_gimnasio']))
     filas_dia = cursor.fetchall()
     mapa_dia = {f['dia']: float(f['total']) for f in filas_dia}
-
     dias_labels = [str(d) for d in range(1, ultimo_dia_mes_actual + 1)]
     dias_valores = [mapa_dia.get(d, 0) for d in range(1, ultimo_dia_mes_actual + 1)]
-
-    # --- Comparación vs mes anterior completo ---
-    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
-    fin_mes_anterior = inicio_mes - timedelta(days=1)
-
-    cursor.execute("""
-        SELECT SUM(PRECIO.monto) AS total
-        FROM PAGO
-        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE PAGO.fecha_pago BETWEEN %s AND %s AND PAGO.id_gimnasio = %s
-    """, (inicio_mes_anterior, fin_mes_anterior, session['id_gimnasio']))
-    total_mes_anterior = float(cursor.fetchone()['total'] or 0)
-
-    variacion_mes = None
-    if total_mes_anterior > 0:
-        variacion_mes = round(((resumen_mes['total'] - total_mes_anterior) / total_mes_anterior) * 100, 1)
 
     # --- Mix por plan (mes actual) ---
     cursor.execute("""
@@ -749,20 +721,14 @@ def reportes():
             'porcentaje': round((monto / total_mix * 100), 1) if total_mix else 0
         })
 
-    nombres_meses_completo = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
-                               'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
-    nombre_mes_actual = f"{nombres_meses_completo[hoy.month]} {hoy.year}"
-
-    # --- Distribución de ingresos por profesor (para el gráfico de torta) ---
+    # --- Distribución de ingresos por profesor (pie chart) ---
     meses_grafico = request.args.get('meses', 1)
     try:
         meses_grafico = int(meses_grafico)
     except ValueError:
         meses_grafico = 1
-    meses_grafico = max(1, min(12, meses_grafico))  # entre 1 y 12
+    meses_grafico = max(1, min(12, meses_grafico))
 
-    # Calcular desde qué fecha mirar hacia atrás (ej: si meses_grafico=3, arranca
-    # el día 1 del mes de hace 2 meses, incluyendo el mes actual)
     mes_desde = hoy.month - (meses_grafico - 1)
     anio_desde = hoy.year
     while mes_desde <= 0:
@@ -772,7 +738,7 @@ def reportes():
 
     cursor.execute("""
         SELECT COALESCE(CONCAT(PROFESOR.nombre, ' ', PROFESOR.apellido), 'Musculación libre / Sin clase') AS categoria,
-            COUNT(*) AS cantidad
+               COUNT(*) AS cantidad
         FROM ASISTENCIA
         LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
         LEFT JOIN PROFESOR ON CLASE.id_profesor = PROFESOR.id_profesor
@@ -781,12 +747,11 @@ def reportes():
         ORDER BY cantidad DESC
     """, (fecha_desde_grafico, session['id_gimnasio']))
     distribucion_profesores = cursor.fetchall()
+    total_ingresos_periodo = sum(f['cantidad'] for f in distribucion_profesores)
+    for f in distribucion_profesores:
+        f['porcentaje'] = round((f['cantidad'] / total_ingresos_periodo * 100), 1) if total_ingresos_periodo else 0
 
-    total_ingresos_periodo = sum(fila['cantidad'] for fila in distribucion_profesores)
-    for fila in distribucion_profesores:
-        fila['porcentaje'] = round((fila['cantidad'] / total_ingresos_periodo * 100), 1) if total_ingresos_periodo else 0
-
-    #Tendencia de ingresos: ultimos 12 meses
+    # --- Tendencia de ingresos (12 meses) ---
     fecha_hace_12_meses = hoy.replace(day=1)
     for _ in range(11):
         fecha_hace_12_meses = (fecha_hace_12_meses - timedelta(days=1)).replace(day=1)
@@ -800,9 +765,7 @@ def reportes():
         ORDER BY periodo
     """, (fecha_hace_12_meses, session['id_gimnasio']))
     filas_tendencia = cursor.fetchall()
-
-    #Rellenamos los meses sin pagos con $0
-    mapa_totales = {fila['periodo']: float(fila['total']) for fila in filas_tendencia}
+    mapa_totales = {f['periodo']: float(f['total']) for f in filas_tendencia}
     tendencia_labels = []
     tendencia_valores = []
     cursor_mes = fecha_hace_12_meses
@@ -811,17 +774,17 @@ def reportes():
         tendencia_labels.append(cursor_mes.strftime('%b %Y'))
         tendencia_valores.append(mapa_totales.get(clave, 0))
         cursor_mes = date(cursor_mes.year + (1 if cursor_mes.month == 12 else 0),
-                          1 if cursor_mes.month == 12 else cursor_mes.month + 1, 1)
+                           1 if cursor_mes.month == 12 else cursor_mes.month + 1, 1)
 
-    #Porcentaje de Retencion: % de socios que renuevan mes a mes, los ultimos 6 periodos
+    # --- Retención mes a mes (6 meses) ---
     periodos = []
     anio_iter, mes_iter = hoy.year, hoy.month
     for _ in range(7):
         periodos.insert(0, (anio_iter, mes_iter))
         mes_iter -= 1
         if mes_iter == 0:
-            mes_iter == 12
-            anio_iter -=1
+            mes_iter = 12
+            anio_iter -= 1
 
     anio_min, mes_min = periodos[0]
     cursor.execute("""
@@ -844,43 +807,33 @@ def reportes():
         base = socios_por_periodo.get(periodo_anterior, set())
         actuales = socios_por_periodo.get(periodo_actual, set())
         renovaron = base & actuales
-
         tasa = round((len(renovaron) / len(base) * 100), 1) if base else None
         retencion_labels.append(f"{nombres_meses[periodo_actual[1]]} {periodo_actual[0]}")
         retencion_valores.append(tasa)
-
-
-    cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
-    meses = cursor.fetchall()
 
     cursor.close()
     conn.close()
 
     return render_template(
         'reportes.html',
-        resumen_dia=resumen_dia,
-        pagos_efectivo_hoy=pagos_efectivo_hoy,
-        pagos_debito_hoy=pagos_debito_hoy,
-        meses=meses, mes_actual=hoy.month, anio_actual=hoy.year, distribucion_profesores = distribucion_profesores, meses_grafico=meses_grafico,
-        total_ingresos_periodo = total_ingresos_periodo,
-        tendencia_labels=tendencia_labels,
-        tendencia_valores=tendencia_valores,
-        retencion_labels=retencion_labels,
-        retencion_valores=retencion_valores,
-                dias_labels=dias_labels,
-        dias_valores=dias_valores,
-        dia_actual=hoy.day,
-        variacion_mes=variacion_mes,
-        mix_por_plan=mix_por_plan,
+        meses=meses, mes_actual=hoy.month, anio_actual=hoy.year,
         nombre_mes_actual=nombre_mes_actual,
-        total_egresos=total_egresos,
-        resultante=resultante,
+        dias_labels=dias_labels, dias_valores=dias_valores, dia_actual=hoy.day,
+        mix_por_plan=mix_por_plan,
+        distribucion_profesores=distribucion_profesores,
+        meses_grafico=meses_grafico,
+        total_ingresos_periodo=total_ingresos_periodo,
+        tendencia_labels=tendencia_labels, tendencia_valores=tendencia_valores,
+        retencion_labels=retencion_labels, retencion_valores=retencion_valores,
+        hoy_dia=hoy.day, hoy_mes=hoy.month,
+        inicio_semana_str=(hoy - timedelta(days=hoy.weekday())).strftime('%d/%m'),
+        hoy_str=hoy.strftime('%d/%m')
     )
+
 @app.route('/reportes/desbloquear', methods=['POST'])
 @login_requerido
 def desbloquear_reportes():
     clave_ingresada = request.form.get('clave', '')
-
     if clave_ingresada != CLAVE_REPORTES:
         return {'error': 'Clave incorrecta'}, 403
 
@@ -888,41 +841,67 @@ def desbloquear_reportes():
     cursor = conn.cursor(dictionary=True)
 
     hoy = date.today()
+    ayer = hoy - timedelta(days=1)
     inicio_semana = hoy - timedelta(days=hoy.weekday())
+    inicio_semana_anterior = inicio_semana - timedelta(days=7)
+    fin_semana_anterior = inicio_semana - timedelta(days=1)
     inicio_mes = date(hoy.year, hoy.month, 1)
+    inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
+    fin_mes_anterior = inicio_mes - timedelta(days=1)
 
-    def resumen_desde(fecha_desde):
-        cursor.execute("""
-            SELECT PAGO.metodo_pago, SUM(PRECIO.monto) AS total, COUNT(*) AS cantidad
-            FROM PAGO
-            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-            WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
-            GROUP BY PAGO.metodo_pago
-        """, (fecha_desde, session['id_gimnasio']))
-        filas = cursor.fetchall()
+    resumen_dia = calcular_resumen_pagos(cursor, session['id_gimnasio'], hoy)
+    resumen_ayer = calcular_resumen_pagos(cursor, session['id_gimnasio'], ayer, ayer)
+    resumen_semana = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_semana)
+    resumen_semana_anterior = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_semana_anterior, fin_semana_anterior)
+    resumen_mes = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_mes)
+    resumen_mes_anterior = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_mes_anterior, fin_mes_anterior)
 
-        total = sum(float(f['total']) for f in filas)
-        cantidad = sum(f['cantidad'] for f in filas)
-        efectivo = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Efectivo'), 0)
-        debito = next((float(f['total']) for f in filas if f['metodo_pago'] == 'Debito'), 0)
+    cursor.execute("""
+        SELECT USUARIO.nombre, USUARIO.apellido, PRECIO.monto, PAGO.metodo_pago
+        FROM PAGO
+        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (hoy, session['id_gimnasio']))
+    todos_los_pagos_hoy = cursor.fetchall()
+    pagos_efectivo_hoy = [{'nombre': p['nombre'], 'apellido': p['apellido'], 'monto': float(p['monto'])} for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Efectivo']
+    pagos_debito_hoy = [{'nombre': p['nombre'], 'apellido': p['apellido'], 'monto': float(p['monto'])} for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Debito']
 
-        return {'total': total, 'cantidad': cantidad, 'efectivo': efectivo, 'debito': debito}
-
-    resumen_semana = resumen_desde(inicio_semana)
-    resumen_mes = resumen_desde(inicio_mes)
     cursor.execute("""
         SELECT SUM(monto) AS total FROM COSTO
         WHERE id_gimnasio = %s AND id_mes = %s AND anio = %s
     """, (session['id_gimnasio'], hoy.month, hoy.year))
     total_egresos = float(cursor.fetchone()['total'] or 0)
+
     cursor.close()
     conn.close()
-    
 
-    total_ingresos_mes = resumen_mes['total']
-    resultante = total_ingresos_mes - total_egresos
+    resultante = resumen_mes['total'] - total_egresos
+    margen = round((resultante / resumen_mes['total'] * 100), 1) if resumen_mes['total'] else 0
 
-    return {'resumen_semana': resumen_semana, 'resumen_mes': resumen_mes, 'total_egresos': total_egresos, 'resultante': resumen_mes['total'] - total_egresos}
+    def ticket_prom(r):
+        return round(r['total'] / r['cantidad']) if r['cantidad'] else 0
+
+    return {
+        'resumen_dia': resumen_dia,
+        'variacion_dia': calcular_variacion(resumen_dia['total'], resumen_ayer['total']),
+        'ticket_dia': ticket_prom(resumen_dia),
+        'pagos_efectivo_hoy': pagos_efectivo_hoy,
+        'pagos_debito_hoy': pagos_debito_hoy,
+
+        'resumen_semana': resumen_semana,
+        'variacion_semana': calcular_variacion(resumen_semana['total'], resumen_semana_anterior['total']),
+        'ticket_semana': ticket_prom(resumen_semana),
+
+        'resumen_mes': resumen_mes,
+        'variacion_mes': calcular_variacion(resumen_mes['total'], resumen_mes_anterior['total']),
+        'ticket_mes': ticket_prom(resumen_mes),
+
+        'total_egresos': total_egresos,
+        'resultante': resultante,
+        'margen': margen
+    }
 
 @app.route('/admin')
 @login_requerido

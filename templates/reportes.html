@@ -16,185 +16,197 @@
         <div class="db-main-content">
             <div class="db-wrapper">
 
-        <p class="db-eyebrow">Caja</p>
-        <h1 class="db-page-title">Reportes</h1>
-        <p class="db-page-subtitle">Recaudación por período, desglosada por método de pago.</p>
+        <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap">
+            <div style="min-width:0">
+                <div style="display:flex;align-items:center;gap:8px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#ff8f95">Caja <span style="color:#6b6b74">/</span> <span style="color:#a0a0aa">Reportes</span></div>
+                <h1 style="margin:5px 0 0;font-size:25px;font-weight:600;letter-spacing:-0.015em;line-height:1.15;color:#f4f4f5">Recaudación</h1>
+                <p style="margin:5px 0 0;font-size:13px;color:#a0a0aa">Ingresos por período, desglosados por medio de pago.</p>
+            </div>
+            <button type="button" id="btn-toggle-todos" style="min-height:40px;padding:0 13px;display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13px;font-weight:500;color:#f4f4f5;cursor:pointer">
+                <svg id="icono-toggle-todos" width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25.8,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,230.2,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path></svg>
+                <span id="texto-toggle-todos">Mostrar todos los montos</span>
+            </button>
+        </div>
 
-        <div class="db-report-grid">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:14px;margin-top:20px">
 
-            <div class="db-report-card">
-                <p class="db-section-label">Hoy</p>
-                <p class="db-report-total">${{ "%.2f"|format(resumen_dia.total) }}</p>
-                <p class="db-report-count">{{ resumen_dia.cantidad }} pago(s)</p>
-                <div class="db-report-split">
-                    <span>💵 Efectivo</span>
-                    <span>${{ "%.2f"|format(resumen_dia.efectivo) }}</span>
-                </div>
-                <div class="db-report-split">
-                    <span>💳 Débito</span>
-                    <span>${{ "%.2f"|format(resumen_dia.debito) }}</span>
-                </div>
-
-                {% if pagos_efectivo_hoy or pagos_debito_hoy %}
-                    <button type="button" id="btn-toggle-detalle" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">
-                        Ver quién pagó hoy ▾
+            <section class="db-card-reporte" data-card="dia" style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:13px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Hoy</span>
+                    <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ hoy_str }}</span>
+                    <button type="button" class="btn-ocultar-card" data-card="dia" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
                     </button>
+                </div>
 
-                    <div id="detalle-pagos-hoy" style="display:none; margin-top:14px;">
-
-                        <p class="db-detalle-metodo-titulo">💵 Efectivo ({{ pagos_efectivo_hoy|length }})</p>
-                        {% if pagos_efectivo_hoy %}
-                            <table class="db-table">
-                                <thead>
-                                    <tr><th>Nombre</th><th>Apellido</th><th>Monto</th></tr>
-                                </thead>
-                                <tbody>
-                                    {% for pago in pagos_efectivo_hoy %}
-                                        <tr>
-                                            <td>{{ pago.nombre }}</td>
-                                            <td>{{ pago.apellido }}</td>
-                                            <td>${{ "%.2f"|format(pago.monto) }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p class="db-empty" style="padding:10px 0;">Sin pagos en efectivo hoy.</p>
-                        {% endif %}
-
-                        <p class="db-detalle-metodo-titulo" style="margin-top:18px;">💳 Débito ({{ pagos_debito_hoy|length }})</p>
-                        {% if pagos_debito_hoy %}
-                            <table class="db-table">
-                                <thead>
-                                    <tr><th>Nombre</th><th>Apellido</th><th>Monto</th></tr>
-                                </thead>
-                                <tbody>
-                                    {% for pago in pagos_debito_hoy %}
-                                        <tr>
-                                            <td>{{ pago.nombre }}</td>
-                                            <td>{{ pago.apellido }}</td>
-                                            <td>${{ "%.2f"|format(pago.monto) }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p class="db-empty" style="padding:10px 0;">Sin pagos con débito hoy.</p>
-                        {% endif %}
-
+                <div class="contenido-real" data-card="dia" style="display:none">
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                        <span class="valor-total" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:#f4f4f5">$0</span>
+                        <span class="valor-variacion" style="font-size:11.5px;font-weight:600"></span>
                     </div>
-                {% endif %}
-            </div>
-
-            <div class="db-report-card db-report-bloqueado" id="tarjeta-semana">
-                <p class="db-section-label">Esta semana</p>
-                <div class="db-blur-contenido">
-                    <p class="db-report-total">$0.00</p>
-                    <p class="db-report-count">0 pago(s)</p>
-                    <div class="db-report-split"><span>💵 Efectivo</span><span>$0.00</span></div>
-                    <div class="db-report-split"><span>💳 Débito</span><span>$0.00</span></div>
-                </div>
-                <div class="db-overlay-clave">
-                    <span class="db-icono-candado">🔒</span>
-                    <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver monto</button>
-                </div>
-            </div>
-
-            <div class="db-report-card db-report-bloqueado" id="tarjeta-mes">
-                <p class="db-section-label">Este mes</p>
-                <div class="db-blur-contenido">
-                    <p class="db-report-total">$0.00</p>
-                    <p class="db-report-count">0 pago(s)</p>
-                    <div class="db-report-split"><span>💵 Efectivo</span><span>$0.00</span></div>
-                    <div class="db-report-split"><span>💳 Débito</span><span>$0.00</span></div>
-                </div>
-                <div class="db-overlay-clave">
-                    <span class="db-icono-candado">🔒</span>
-                    <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver monto</button>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="db-card db-report-bloqueado db-report-card" id="tarjeta-balance" style="margin-top:20px;">
-            <p class="db-section-label">Balance del mes</p>
-            <div class="db-blur-contenido">
-                <div class="db-balance-grid">
-                    <div>
-                        <span class="db-balance-label">Ingresos</span>
-                        <span class="db-balance-valor db-balance-valor--ok">$0.00</span>
-                    </div>
-                    <div>
-                        <span class="db-balance-label">Egresos</span>
-                        <span class="db-balance-valor db-balance-valor--danger">$0.00</span>
-                    </div>
-                    <div>
-                        <span class="db-balance-label">Resultante</span>
-                        <span class="db-balance-valor" id="balance-resultante">$0.00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="db-overlay-clave">
-                <span class="db-icono-candado">🔒</span>
-                <button type="button" class="db-btn db-btn-secondary db-btn-desbloquear">Ver balance</button>
-            </div>
-        </div>
-
-        <div class="db-card" style="margin-top:36px;">
-            <p class="db-eyebrow" style="margin-bottom:4px;">Caja del mes</p>
-            <h2 class="db-page-title" style="font-size:1.4rem; margin-bottom:20px;">{{ nombre_mes_actual }}</h2>
-
-            <div class="db-caja-mes-grid">
-                <div class="db-caja-mes-chart">
-                    <p class="db-section-label">Cobrado por día</p>
-                    <canvas id="graficoDiario" height="90"></canvas>
-                    <script>
-                        new Chart(document.getElementById('graficoDiario'), {
-                            type: 'bar',
-                            data: {
-                                labels: {{ dias_labels | tojson }},
-                                datasets: [{
-                                    data: {{ dias_valores | tojson }},
-                                    backgroundColor: {{ dias_labels | tojson }}.map(
-                                        (d, i) => (i + 1 === {{ dia_actual }}) ? '#e6493b' : '#3a3f4d'
-                                    ),
-                                    borderRadius: 4
-                                }]
-                            },
-                            options: {
-                                plugins: { legend: { display: false } },
-                                scales: {
-                                    x: { ticks: { color: '#8d94a6', maxRotation: 0 }, grid: { display: false } },
-                                    y: { ticks: { color: '#8d94a6' }, beginAtZero: true }
-                                }
-                            }
-                        });
-                    </script>
-                </div>
-
-                <div class="db-caja-mes-mix">
-                    <p class="db-section-label">Mix por plan</p>
-                    {% if mix_por_plan %}
-                        {% for item in mix_por_plan %}
-                            <div class="db-mix-item">
-                                <div class="db-mix-item-header">
-                                    <span>{{ item.plan }}</span>
-                                    <span>{{ item.porcentaje }}%</span>
-                                </div>
-                                <div class="db-mix-bar-track">
-                                    <div class="db-mix-bar-fill" style="width: {{ item.porcentaje }}%;"></div>
-                                </div>
+                    <div class="valor-detalle" style="font-size:11.5px;color:#a0a0aa;margin-top:6px"></div>
+                    <div style="display:flex;flex-direction:column;gap:9px;margin-top:9px">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M240,72H16a8,8,0,0,0-8,8V176a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V80A8,8,0,0,0,240,72Zm-8,96H24V88H232ZM128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,128,136Z"></path></svg>
+                                Efectivo<span class="valor-efectivo" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
                             </div>
-                        {% endfor %}
-                        <a href="{{ url_for('exportar_reporte', mes=mes_actual, anio=anio_actual) }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:16px;">
-                            Exportar planilla del mes
-                        </a>
-                    {% else %}
-                        <p class="db-empty">Sin pagos registrados este mes.</p>
-                    {% endif %}
+                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-efectivo" style="width:0%;height:100%;border-radius:3px;background:#e2323b"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64ZM32,192V104H224v88Zm176-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Z"></path></svg>
+                                Débito<span class="valor-debito" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
+                            </div>
+                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-debito" style="width:0%;height:100%;border-radius:3px;background:#8f1a21"></div></div>
+                        </div>
+                    </div>
+                    <button type="button" id="btn-ver-pagos-hoy" style="display:none;margin-top:13px;width:100%;min-height:40px;padding:0 13px;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13px;font-weight:500;color:#f4f4f5;cursor:pointer">
+                        <span id="texto-ver-pagos">Ver pagos</span>
+                        <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
+                    </button>
+                    <div id="detalle-pagos-hoy" style="display:none;margin-top:12px"></div>
+                </div>
+
+                <div class="skeleton-card" data-card="dia" style="display:flex;flex-direction:column;gap:11px">
+                    <div aria-hidden="true" style="display:flex;flex-direction:column;gap:9px;filter:blur(5px);opacity:0.5"><div style="width:62%;height:28px;border-radius:6px;background:#2a2a33"></div><div style="width:38%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:100%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:85%;height:11px;border-radius:4px;background:#22222a"></div></div>
+                    <button type="button" class="btn-mostrar-card" data-card="dia" style="min-height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;cursor:pointer">
+                        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
+                        Mostrar monto
+                    </button>
+                </div>
+            </section>
+
+            <section class="db-card-reporte" data-card="semana" style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:13px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Esta semana</span>
+                    <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ inicio_semana_str }}–{{ hoy_str }}</span>
+                    <button type="button" class="btn-ocultar-card" data-card="semana" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
+                    </button>
+                </div>
+
+                <div class="contenido-real" data-card="semana" style="display:none">
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                        <span class="valor-total" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:#f4f4f5">$0</span>
+                        <span class="valor-variacion" style="font-size:11.5px;font-weight:600"></span>
+                    </div>
+                    <div class="valor-detalle" style="font-size:11.5px;color:#a0a0aa;margin-top:6px"></div>
+                    <div style="display:flex;flex-direction:column;gap:9px;margin-top:9px">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M240,72H16a8,8,0,0,0-8,8V176a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V80A8,8,0,0,0,240,72Zm-8,96H24V88H232ZM128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,128,136Z"></path></svg>
+                                Efectivo<span class="valor-efectivo" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
+                            </div>
+                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-efectivo" style="width:0%;height:100%;border-radius:3px;background:#e2323b"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64ZM32,192V104H224v88Zm176-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Z"></path></svg>
+                                Débito<span class="valor-debito" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
+                            </div>
+                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-debito" style="width:0%;height:100%;border-radius:3px;background:#8f1a21"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skeleton-card" data-card="semana" style="display:flex;flex-direction:column;gap:11px">
+                    <div aria-hidden="true" style="display:flex;flex-direction:column;gap:9px;filter:blur(5px);opacity:0.5"><div style="width:62%;height:28px;border-radius:6px;background:#2a2a33"></div><div style="width:38%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:100%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:85%;height:11px;border-radius:4px;background:#22222a"></div></div>
+                    <button type="button" class="btn-mostrar-card" data-card="semana" style="min-height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;cursor:pointer">
+                        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
+                        Mostrar monto
+                    </button>
+                </div>
+            </section>
+
+            <section class="db-card-reporte" data-card="mes" style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:13px">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Este mes</span>
+                    <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ nombre_mes_actual }}</span>
+                    <button type="button" class="btn-ocultar-card" data-card="mes" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
+                    </button>
+                </div>
+
+                <div class="contenido-real" data-card="mes" style="display:none">
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                        <span class="valor-total" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:#f4f4f5">$0</span>
+                        <span class="valor-variacion" style="font-size:11.5px;font-weight:600"></span>
+                    </div>
+                    <div class="valor-detalle" style="font-size:11.5px;color:#a0a0aa;margin-top:6px"></div>
+                    <div style="display:flex;flex-direction:column;gap:9px;margin-top:9px">
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M240,72H16a8,8,0,0,0-8,8V176a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V80A8,8,0,0,0,240,72Zm-8,96H24V88H232ZM128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,128,136Z"></path></svg>
+                                Efectivo<span class="valor-efectivo" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
+                            </div>
+                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-efectivo" style="width:0%;height:100%;border-radius:3px;background:#e2323b"></div></div>
+                        </div>
+                        <div>
+                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64ZM32,192V104H224v88Zm176-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Z"></path></svg>
+                                Débito<span class="valor-debito" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
+                            </div>
+                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-debito" style="width:0%;height:100%;border-radius:3px;background:#8f1a21"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="skeleton-card" data-card="mes" style="display:flex;flex-direction:column;gap:11px">
+                    <div aria-hidden="true" style="display:flex;flex-direction:column;gap:9px;filter:blur(5px);opacity:0.5"><div style="width:62%;height:28px;border-radius:6px;background:#2a2a33"></div><div style="width:38%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:100%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:85%;height:11px;border-radius:4px;background:#22222a"></div></div>
+                    <button type="button" class="btn-mostrar-card" data-card="mes" style="min-height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;cursor:pointer">
+                        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
+                        Mostrar monto
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <section style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+                <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Balance del mes</span>
+                <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ nombre_mes_actual }}</span>
+                <button type="button" class="btn-ocultar-card" data-card="balance" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                    <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
+                </button>
+            </div>
+
+            <div class="contenido-real" data-card="balance" style="display:none">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;align-items:end">
+                    <div>
+                        <div style="font-size:12px;color:#a0a0aa;margin-bottom:4px">Ingresos</div>
+                        <div class="balance-ingresos" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:24px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:#f4f4f5">$0</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#a0a0aa;margin-bottom:4px">Egresos</div>
+                        <div class="balance-egresos" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:24px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:#ff8f95">−$0</div>
+                    </div>
+                    <div style="padding:11px 13px;border:1px solid rgba(72,198,132,0.28);border-radius:10px;background:rgba(62,166,110,0.09)">
+                        <div style="font-size:12px;color:#a9eec6;margin-bottom:4px">Resultado</div>
+                        <div class="balance-resultado" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:24px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:#fff">$0</div>
+                        <div class="balance-margen" style="font-size:11px;color:#a9eec6;margin-top:4px"></div>
+                    </div>
+                </div>
+                <div style="display:flex;height:8px;border-radius:5px;overflow:hidden;margin-top:14px" aria-hidden="true">
+                    <div class="balance-barra-resultado" style="width:0%;background:#48c684"></div>
+                    <div class="balance-barra-egresos" style="width:0%;background:#e2323b"></div>
                 </div>
             </div>
-        </div>
+
+            <div class="skeleton-card" data-card="balance" style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+                <div aria-hidden="true" style="flex:1;min-width:220px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;filter:blur(5px);opacity:0.5">
+                    <div><div style="width:55%;height:10px;border-radius:4px;background:#22222a"></div><div style="width:90%;height:22px;border-radius:6px;background:#2a2a33;margin-top:7px"></div></div>
+                    <div><div style="width:45%;height:10px;border-radius:4px;background:#22222a"></div><div style="width:80%;height:22px;border-radius:6px;background:#3a2126;margin-top:7px"></div></div>
+                    <div><div style="width:60%;height:10px;border-radius:4px;background:#22222a"></div><div style="width:85%;height:22px;border-radius:6px;background:#1f3029;margin-top:7px"></div></div>
+                </div>
+                <button type="button" class="btn-mostrar-card" data-card="balance" style="min-height:40px;padding:0 14px;flex:none;display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;cursor:pointer">
+                    <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
+                    Mostrar balance
+                </button>
+            </div>
+        </section>
+
+        <p style="margin:12px 0 0;font-size:11.5px;color:#9a9aa4">Los montos quedan ocultos por defecto: la pantalla se usa en recepción, a la vista de los socios.</p>
 
         <div class="db-card" style="margin-top:36px;">
             <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
@@ -329,7 +341,7 @@
 
     <div id="modal-clave" class="db-modal-overlay" style="display:none;">
         <div class="db-modal-box">
-            <p class="db-section-label" style="margin-bottom:12px;">Ingresá la clave para ver este monto</p>
+            <p class="db-section-label" style="margin-bottom:12px;">Ingresá la clave para ver los montos</p>
             <input type="password" id="input-clave" class="db-input" placeholder="Clave" autofocus>
             <p id="error-clave" class="db-alert-error" style="display:none; margin-top:10px;">Clave incorrecta.</p>
             <div class="db-btn-row">
@@ -340,20 +352,145 @@
     </div>
 
     <script>
-        let tarjetaObjetivo = null;
+        let datosCache = null;
+        let cardObjetivo = null;
+
         const modal = document.getElementById('modal-clave');
         const inputClave = document.getElementById('input-clave');
         const errorClave = document.getElementById('error-clave');
 
-        document.querySelectorAll('.db-btn-desbloquear').forEach(boton => {
-            boton.addEventListener('click', () => {
-                tarjetaObjetivo = boton.closest('.db-report-card').id;
-                errorClave.style.display = 'none';
-                inputClave.value = '';
-                modal.style.display = 'flex';
-                inputClave.focus();
-            });
+        function fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+
+        function poblarCard(nombreCard, resumen, variacion, ticket, cantidad) {
+            const wrap = document.querySelector('.contenido-real[data-card="' + nombreCard + '"]');
+            wrap.querySelector('.valor-total').textContent = fmt(resumen.total);
+            const spanVar = wrap.querySelector('.valor-variacion');
+            if (variacion !== null && variacion !== undefined) {
+                spanVar.textContent = (variacion >= 0 ? '+' : '') + variacion + '%';
+                spanVar.style.color = variacion >= 0 ? '#7ae0a8' : '#ff9aa0';
+            } else {
+                spanVar.textContent = '';
+            }
+            wrap.querySelector('.valor-detalle').textContent = cantidad + ' pago(s) · ticket promedio ' + fmt(ticket);
+            wrap.querySelector('.valor-efectivo').textContent = fmt(resumen.efectivo);
+            wrap.querySelector('.valor-debito').textContent = fmt(resumen.debito);
+            const pctEf = resumen.total ? (resumen.efectivo / resumen.total * 100) : 0;
+            const pctDb = resumen.total ? (resumen.debito / resumen.total * 100) : 0;
+            wrap.querySelector('.barra-efectivo').style.width = pctEf + '%';
+            wrap.querySelector('.barra-debito').style.width = pctDb + '%';
+        }
+
+        function poblarTarjetas(datos) {
+            poblarCard('dia', datos.resumen_dia, datos.variacion_dia, datos.ticket_dia, datos.resumen_dia.cantidad);
+            poblarCard('semana', datos.resumen_semana, datos.variacion_semana, datos.ticket_semana, datos.resumen_semana.cantidad);
+            poblarCard('mes', datos.resumen_mes, datos.variacion_mes, datos.ticket_mes, datos.resumen_mes.cantidad);
+
+            const wrapBalance = document.querySelector('.contenido-real[data-card="balance"]');
+            wrapBalance.querySelector('.balance-ingresos').textContent = fmt(datos.resumen_mes.total);
+            wrapBalance.querySelector('.balance-egresos').textContent = '−' + fmt(datos.total_egresos);
+            wrapBalance.querySelector('.balance-resultado').textContent = fmt(datos.resultante);
+            wrapBalance.querySelector('.balance-margen').textContent = 'Margen ' + datos.margen + '%';
+            wrapBalance.querySelector('.balance-barra-resultado').style.width = datos.margen + '%';
+            wrapBalance.querySelector('.balance-barra-egresos').style.width = (100 - datos.margen) + '%';
+
+            const totalPagosHoy = datos.pagos_efectivo_hoy.length + datos.pagos_debito_hoy.length;
+            const btnVer = document.getElementById('btn-ver-pagos-hoy');
+            if (totalPagosHoy > 0) {
+                btnVer.style.display = 'inline-flex';
+                document.getElementById('texto-ver-pagos').textContent = 'Ver los ' + totalPagosHoy + ' pagos';
+                btnVer.onclick = () => {
+                    const detalle = document.getElementById('detalle-pagos-hoy');
+                    const abierto = detalle.style.display === 'block';
+                    if (!abierto) {
+                        detalle.innerHTML = construirTablasPagos(datos.pagos_efectivo_hoy, datos.pagos_debito_hoy);
+                    }
+                    detalle.style.display = abierto ? 'none' : 'block';
+                };
+            }
+        }
+
+        function construirTablasPagos(efectivo, debito) {
+            function tabla(lista, titulo) {
+                if (lista.length === 0) return '<p style="font-size:11.5px;color:#6e6e78;margin:6px 0 0;">Sin pagos en ' + titulo.toLowerCase() + '.</p>';
+                let filas = lista.map(p => '<tr><td style="padding:6px 4px;font-size:12px;color:#dcdce2;">' + p.nombre + ' ' + p.apellido + '</td><td style="padding:6px 4px;font-size:12px;color:#dcdce2;text-align:right;font-family:\'IBM Plex Mono\', monospace;">' + fmt(p.monto) + '</td></tr>').join('');
+                return '<p style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;margin:10px 0 4px;">' + titulo + '</p><table style="width:100%;border-collapse:collapse;">' + filas + '</table>';
+            }
+            return tabla(efectivo, 'Efectivo') + tabla(debito, 'Débito');
+        }
+
+        function mostrarCard(nombreCard) {
+            document.querySelector('.skeleton-card[data-card="' + nombreCard + '"]').style.display = 'none';
+            document.querySelector('.contenido-real[data-card="' + nombreCard + '"]').style.display = 'block';
+            const btnOcultar = document.querySelector('.btn-ocultar-card[data-card="' + nombreCard + '"]');
+            if (btnOcultar) btnOcultar.style.display = 'grid';
+            actualizarBotonGlobal();
+        }
+
+        function ocultarCard(nombreCard) {
+            document.querySelector('.skeleton-card[data-card="' + nombreCard + '"]').style.display = 'flex';
+            document.querySelector('.contenido-real[data-card="' + nombreCard + '"]').style.display = 'none';
+            const btnOcultar = document.querySelector('.btn-ocultar-card[data-card="' + nombreCard + '"]');
+            if (btnOcultar) btnOcultar.style.display = 'none';
+            actualizarBotonGlobal();
+        }
+
+        function todasVisibles() {
+            return ['dia', 'semana', 'mes', 'balance'].every(c =>
+                document.querySelector('.contenido-real[data-card="' + c + '"]').style.display === 'block'
+            );
+        }
+
+        function actualizarBotonGlobal() {
+            const btn = document.getElementById('btn-toggle-todos');
+            const texto = document.getElementById('texto-toggle-todos');
+            if (todasVisibles()) {
+                texto.textContent = 'Ocultar todos los montos';
+                btn.style.background = 'rgba(226,50,59,0.12)';
+                btn.style.borderColor = 'rgba(226,50,59,0.45)';
+                btn.style.color = '#ff9aa0';
+            } else {
+                texto.textContent = 'Mostrar todos los montos';
+                btn.style.background = 'transparent';
+                btn.style.borderColor = 'rgba(255,255,255,0.14)';
+                btn.style.color = '#f4f4f5';
+            }
+        }
+
+        document.querySelectorAll('.btn-mostrar-card').forEach(btn => {
+            btn.addEventListener('click', () => abrirFlujoClave(btn.dataset.card));
         });
+
+        document.querySelectorAll('.btn-ocultar-card').forEach(btn => {
+            btn.addEventListener('click', () => ocultarCard(btn.dataset.card));
+        });
+
+        document.getElementById('btn-toggle-todos').addEventListener('click', () => {
+            if (todasVisibles()) {
+                ['dia', 'semana', 'mes', 'balance'].forEach(ocultarCard);
+            } else {
+                abrirFlujoClave('todos');
+            }
+        });
+
+        function abrirFlujoClave(objetivo) {
+            cardObjetivo = objetivo;
+            if (datosCache) {
+                aplicarObjetivo(objetivo);
+                return;
+            }
+            errorClave.style.display = 'none';
+            inputClave.value = '';
+            modal.style.display = 'flex';
+            inputClave.focus();
+        }
+
+        function aplicarObjetivo(objetivo) {
+            if (objetivo === 'todos') {
+                ['dia', 'semana', 'mes', 'balance'].forEach(mostrarCard);
+            } else {
+                mostrarCard(objetivo);
+            }
+        }
 
         document.getElementById('btn-cancelar-clave').addEventListener('click', () => {
             modal.style.display = 'none';
@@ -361,7 +498,6 @@
 
         document.getElementById('btn-confirmar-clave').addEventListener('click', async () => {
             const clave = inputClave.value;
-
             const respuesta = await fetch("{{ url_for('desbloquear_reportes') }}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -373,47 +509,11 @@
                 return;
             }
 
-            const datos = await respuesta.json();
-
-            document.querySelectorAll('#tarjeta-semana, #tarjeta-mes').forEach(tarjeta => {
-                const key = tarjeta.id === 'tarjeta-semana' ? 'resumen_semana' : 'resumen_mes';
-                const resumen = datos[key];
-                const contenido = tarjeta.querySelector('.db-blur-contenido');
-
-                contenido.querySelector('.db-report-total').textContent =
-                    '$' + resumen.total.toFixed(2);
-                contenido.querySelector('.db-report-count').textContent =
-                    resumen.cantidad + ' pago(s)';
-                const splits = contenido.querySelectorAll('.db-report-split span:last-child');
-                splits[0].textContent = '$' + resumen.efectivo.toFixed(2);
-                splits[1].textContent = '$' + resumen.debito.toFixed(2);
-
-                tarjeta.classList.remove('db-report-bloqueado');
-            });
-
-            const tarjetaBalance = document.getElementById('tarjeta-balance');
-            if (tarjetaBalance) {
-                const contenidoBalance = tarjetaBalance.querySelector('.db-blur-contenido');
-                const valores = contenidoBalance.querySelectorAll('.db-balance-valor');
-                valores[0].textContent = '$' + datos.resumen_mes.total.toFixed(2);
-                valores[1].textContent = '$' + datos.total_egresos.toFixed(2);
-                valores[2].textContent = '$' + datos.resultante.toFixed(2);
-                valores[2].classList.add(datos.resultante >= 0 ? 'db-balance-valor--ok' : 'db-balance-valor--danger');
-                tarjetaBalance.classList.remove('db-report-bloqueado');
-            }
-
+            datosCache = await respuesta.json();
+            poblarTarjetas(datosCache);
+            aplicarObjetivo(cardObjetivo);
             modal.style.display = 'none';
         });
-
-        const btnToggle = document.getElementById('btn-toggle-detalle');
-        if (btnToggle) {
-            btnToggle.addEventListener('click', () => {
-                const detalle = document.getElementById('detalle-pagos-hoy');
-                const visible = detalle.style.display === 'block';
-                detalle.style.display = visible ? 'none' : 'block';
-                btnToggle.textContent = visible ? 'Ver quién pagó hoy ▾' : 'Ocultar detalle ▴';
-            });
-        }
     </script>
 </body>
 </html>

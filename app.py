@@ -540,10 +540,9 @@ def listado_socios():
     )
 
 
-@app.route('/eliminar/<dni>', methods=['GET','POST'])
+@app.route('/eliminar/<dni>', methods=['GET', 'POST'])
 @login_requerido
 def eliminar_socio(dni):
-    """Elmina un socio y sus pagos de la base"""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -556,9 +555,26 @@ def eliminar_socio(dni):
         return render_template('index.html', error=f"No se encontró ningún socio con DNI {dni}.")
 
     if request.method == 'GET':
+        cursor.execute("""
+            SELECT COUNT(*) AS cantidad, COALESCE(SUM(PRECIO.monto), 0) AS total
+            FROM PAGO
+            JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+            WHERE PAGO.dni = %s AND PAGO.id_gimnasio = %s
+        """, (dni, session['id_gimnasio']))
+        pagos_info = cursor.fetchone()
+
+        cursor.execute("SELECT COUNT(*) AS cantidad FROM ASISTENCIA WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
+        asistencias_info = cursor.fetchone()
+
         cursor.close()
         conn.close()
-        return render_template('confirmar_eliminar.html', usuario=usuario)
+        return render_template(
+            'confirmar_eliminar.html',
+            usuario=usuario,
+            cantidad_pagos=pagos_info['cantidad'],
+            total_pagos=float(pagos_info['total']),
+            cantidad_asistencias=asistencias_info['cantidad']
+        )
 
     cursor.execute("DELETE FROM ASISTENCIA WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
     cursor.execute("DELETE FROM PAGO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))

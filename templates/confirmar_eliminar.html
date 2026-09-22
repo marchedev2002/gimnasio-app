@@ -6,35 +6,101 @@
     <title>Confirmar baja · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>*{box-sizing:border-box}body{margin:0;background:#08080a}input,button{font-family:inherit}input::placeholder{color:#8e8e99}</style>
 </head>
 <body>
     {% include 'partials/navbar_simple.html' %}
-    <div class="db-wrapper db-wrapper--narrow">
-        <p class="db-eyebrow" style="text-align:center;">Acción irreversible</p>
-        <h1 class="db-page-title" style="text-align:center;">Confirmar baja</h1>
 
-        <div class="db-card">
-            <div class="db-profile">
-                <img class="db-avatar"
-                     src="{{ url_for('static', filename='fotos/' + (usuario.foto if usuario.foto else 'sin-foto.png')) }}"
-                     alt="Foto de {{ usuario.nombre }}">
-                <p class="db-profile-name">{{ usuario.nombre }} {{ usuario.apellido }}</p>
-                <p class="db-profile-meta">DNI {{ usuario.dni }}</p>
+    <div style="min-height:calc(100vh - 60px);display:grid;place-items:center;padding:28px;background:radial-gradient(120% 90% at 50% -20%, #17090c 0%, #08080a 62%);font-family:Inter, system-ui, sans-serif;color:#f4f4f5;-webkit-font-smoothing:antialiased">
+    <div role="alertdialog" aria-labelledby="dm-title" style="width:min(560px,100%);background:#101013;border:1px solid rgba(226,50,59,0.28);border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(226,50,59,0.1);overflow:hidden">
+
+        <header style="display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.07);background:linear-gradient(180deg, rgba(226,50,59,0.12), rgba(226,50,59,0))">
+            <span aria-hidden="true" style="width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;background:rgba(226,50,59,0.16);border:1px solid rgba(226,50,59,0.4);color:#ff8f95">
+                <svg width="17" height="17" viewBox="0 0 256 256" fill="currentColor"><path d="M236.8,188.09,149.35,36.22h0a24.76,24.76,0,0,0-42.7,0L19.2,188.09a23.51,23.51,0,0,0,0,23.72A24.35,24.35,0,0,0,40.55,224h174.9a24.35,24.35,0,0,0,21.33-12.19A23.51,23.51,0,0,0,236.8,188.09ZM222.93,203.8a8.5,8.5,0,0,1-7.48,4.2H40.55a8.5,8.5,0,0,1-7.48-4.2,7.59,7.59,0,0,1,0-7.72L120.52,44.21a8.75,8.75,0,0,1,15,0l87.46,151.87A7.59,7.59,0,0,1,222.93,203.8ZM120,144V104a8,8,0,0,1,16,0v40a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,180Z"></path></svg>
+            </span>
+            <div style="min-width:0">
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#ff8f95">Acción irreversible</div>
+                <h1 id="dm-title" style="margin:2px 0 0;font-size:18px;font-weight:600;letter-spacing:-0.01em;line-height:1.25">Dar de baja a {{ usuario.nombre }} {{ usuario.apellido }}</h1>
+            </div>
+            <a href="{{ url_for('ver_socio', dni=usuario.dni) }}" aria-label="Cerrar" style="margin-left:auto;width:36px;height:36px;flex:none;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#b6b6bf;text-decoration:none">
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+            </a>
+        </header>
+
+        <form action="{{ url_for('eliminar_socio', dni=usuario.dni) }}" method="POST">
+        <div style="padding:18px;display:flex;flex-direction:column;gap:16px">
+
+            <div style="display:flex;align-items:center;gap:11px;padding:10px 11px;border:1px solid rgba(255,255,255,0.09);border-radius:10px;background:#15151a">
+                <span aria-hidden="true" style="width:36px;height:36px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:600;color:#ffdfe1;background:linear-gradient(160deg, #8f1a21, #4a0d11)">{{ usuario.nombre[0]|upper }}{{ usuario.apellido[0]|upper }}</span>
+                <div style="min-width:0;flex:1">
+                    <div style="font-size:13.5px;font-weight:500">{{ usuario.nombre }} {{ usuario.apellido }}</div>
+                    <div style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11px;color:#a0a0aa;letter-spacing:0.03em">DNI {{ usuario.dni }}</div>
+                </div>
             </div>
 
-            <p class="db-warning-text">
-                Esta acción eliminará al socio y todo su historial de pagos de forma permanente. No se puede deshacer.
-            </p>
+            <div>
+                <p style="margin:0 0 9px;font-size:13.5px;line-height:1.5;color:#dcdce2">Se eliminarán de forma permanente:</p>
+                <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:7px">
+                    <li style="display:flex;align-items:center;gap:9px;font-size:13px;color:#cfcfd6">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="#ff8f95" aria-hidden="true" style="flex:none"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                        La ficha del socio y sus datos de contacto
+                    </li>
+                    <li style="display:flex;align-items:center;gap:9px;font-size:13px;color:#cfcfd6">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="#ff8f95" aria-hidden="true" style="flex:none"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                        <span><strong style="font-weight:600;color:#fff">{{ cantidad_pagos }} pago{{ 's' if cantidad_pagos != 1 else '' }}</strong> por <span style="font-family:'IBM Plex Mono', ui-monospace, monospace">${{ "%.0f"|format(total_pagos) }}</span> — saldrán de los reportes de caja</span>
+                    </li>
+                    <li style="display:flex;align-items:center;gap:9px;font-size:13px;color:#cfcfd6">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="#ff8f95" aria-hidden="true" style="flex:none"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                        {{ cantidad_asistencias }} asistencia{{ 's' if cantidad_asistencias != 1 else '' }} registrada{{ 's' if cantidad_asistencias != 1 else '' }}
+                    </li>
+                </ul>
+            </div>
 
-            <div class="db-btn-row">
-                <form action="{{ url_for('eliminar_socio', dni=usuario.dni) }}" method="POST" style="flex:1;">
-                    <button type="submit" class="db-btn db-btn-danger" style="width:100%;">Sí, dar de baja</button>
-                </form>
-                <a href="{{ url_for('ver_socio', dni=usuario.dni) }}" class="db-btn db-btn-secondary">Cancelar</a>
+            <div style="display:flex;flex-direction:column;gap:6px">
+                <label for="dm-confirm" style="font-size:12.5px;color:#dcdce2">Para confirmar, escribí el DNI <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-weight:500;color:#fff">{{ usuario.dni }}</span></label>
+                <input id="dm-confirm" type="text" inputmode="numeric" placeholder="DNI del socio" autocomplete="off" style="width:100%;min-height:44px;padding:10px 12px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;letter-spacing:0.05em;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.12);border-radius:10px;outline:none">
             </div>
         </div>
+
+        <footer style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.07);background:#0c0c0f">
+            <span style="font-size:11.5px;color:#9a9aa4">La baja queda en el registro de actividad</span>
+            <a href="{{ url_for('ver_socio', dni=usuario.dni) }}" style="margin-left:auto;min-height:44px;padding:0 16px;display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(255,255,255,0.2);border-radius:10px;font-size:13.5px;font-weight:600;color:#f4f4f5;text-decoration:none">Cancelar</a>
+            <button type="submit" id="btn-eliminar" disabled style="min-height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:7px;background:rgba(226,50,59,0.22);border:1px solid rgba(226,50,59,0.4);border-radius:10px;font-size:13.5px;font-weight:600;color:#ffd7d9;cursor:not-allowed;opacity:0.7">
+                <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Zm-80-104v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Zm48,0v64a8,8,0,0,1-16,0V104a8,8,0,0,1,16,0Z"></path></svg>
+                Eliminar socio
+            </button>
+        </footer>
+        </form>
     </div>
+    </div>
+
+    <script>
+        const inputConfirm = document.getElementById('dm-confirm');
+        const btnEliminar = document.getElementById('btn-eliminar');
+        const dniReal = "{{ usuario.dni }}";
+
+        inputConfirm.addEventListener('input', () => {
+            const coincide = inputConfirm.value.trim() === dniReal;
+            btnEliminar.disabled = !coincide;
+
+            if (coincide) {
+                btnEliminar.style.background = '#e2323b';
+                btnEliminar.style.borderColor = '#e2323b';
+                btnEliminar.style.color = '#fff';
+                btnEliminar.style.cursor = 'pointer';
+                btnEliminar.style.opacity = '1';
+                btnEliminar.style.boxShadow = '0 6px 18px -8px rgba(226,50,59,0.9)';
+            } else {
+                btnEliminar.style.background = 'rgba(226,50,59,0.22)';
+                btnEliminar.style.borderColor = 'rgba(226,50,59,0.4)';
+                btnEliminar.style.color = '#ffd7d9';
+                btnEliminar.style.cursor = 'not-allowed';
+                btnEliminar.style.opacity = '0.7';
+                btnEliminar.style.boxShadow = 'none';
+            }
+        });
+    </script>
 </body>
 </html>

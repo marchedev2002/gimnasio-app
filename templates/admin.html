@@ -6,136 +6,181 @@
     <title>Ajustes · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>*{box-sizing:border-box}body{margin:0;background:#08080a}input,select,button{font-family:inherit}</style>
 </head>
 <body>
     <div class="db-app-shell">
         {% include 'partials/sidebar.html' %}
         <div class="db-main-content">
-            <div class="db-wrapper">
-        <p class="db-eyebrow">Configuración</p>
-        <h1 class="db-page-title">Ajustes</h1>
+            <div style="padding:22px 26px 32px;color:#f4f4f5;font-family:Inter, system-ui, sans-serif;-webkit-font-smoothing:antialiased">
 
-        {% if request.args.get('error') %}
-            <p class="db-alert-error">{{ request.args.get('error') }}</p>
-        {% endif %}
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#ff8f95">Configuración</div>
+                <h1 style="margin:5px 0 0;font-size:25px;font-weight:600;letter-spacing:-0.015em">Ajustes</h1>
+                <p style="margin:5px 0 22px;font-size:13px;color:#a0a0aa">Planes, turnos y costos fijos del gimnasio.</p>
 
-        <div class="db-ajustes-grid">
+                {% if request.args.get('error') %}
+                    <p class="db-alert-error" style="margin-bottom:16px;">{{ request.args.get('error') }}</p>
+                {% endif %}
 
-            <div class="db-card">
-                <div class="db-ajustes-card-header">
-                    <p class="db-section-label" style="margin-bottom:0;">Planes y precios</p>
-                    <a href="{{ url_for('nuevo_precio') }}" class="db-link">+ Nuevo</a>
-                </div>
+                <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:14px;align-items:start">
 
-                <table class="db-table" style="margin-top:14px;">
-                    <thead>
-                        <tr><th>Plan</th><th>Monto</th><th>Socios</th><th></th></tr>
-                    </thead>
-                    <tbody>
-                        {% for precio in precios %}
-                            <tr>
-                                <td>{{ precio.tipo_membresia }}</td>
-                                <td>${{ "%.0f"|format(precio.monto) }}</td>
-                                <td>{{ precio.cantidad_socios }}</td>
-                                <td style="text-align:right; white-space:nowrap;">
-                                    <a href="#" class="db-pill-editar" onclick="document.getElementById('editar-precio-{{ precio.id_precio }}').classList.toggle('db-hidden'); return false;">Editar</a>
-                                </td>
-                            </tr>
-                            <tr id="editar-precio-{{ precio.id_precio }}" class="db-hidden">
-                                <td colspan="4">
-                                    <div class="db-ajustes-inline-form">
-                                        <form action="{{ url_for('editar_precio', id_precio=precio.id_precio) }}" method="POST" style="display:flex; gap:8px; flex:1;">
-                                            <input type="number" step="0.01" name="monto" class="db-input" placeholder="Nuevo monto" style="flex:1;">
-                                            <button type="submit" class="db-btn db-btn-primary">Actualizar precio</button>
-                                        </form>
-                                        <form action="{{ url_for('eliminar_precio', id_precio=precio.id_precio) }}" method="POST">
-                                            <button type="submit" class="db-btn db-btn-danger">Eliminar plan</button>
-                                        </form>
+                    <div style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+                            <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Planes y precios <span style="color:#6e6e78;text-transform:none;letter-spacing:0;font-weight:400">· {{ precios|length }} planes · {{ total_socios_activos }} socios</span></span>
+                            <a href="{{ url_for('nuevo_precio') }}" style="min-height:36px;padding:0 13px;display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:9px;font-size:12.5px;font-weight:600;color:#f4f4f5;text-decoration:none">+ Nuevo plan</a>
+                        </div>
+
+                        <div style="overflow-x:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:13px">
+                            <thead>
+                                <tr>
+                                    <th style="text-align:left;padding:6px 8px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;border-bottom:1px solid rgba(255,255,255,0.1)">Plan</th>
+                                    <th style="text-align:right;padding:6px 8px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;border-bottom:1px solid rgba(255,255,255,0.1)">Cuota</th>
+                                    <th style="text-align:right;padding:6px 8px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;border-bottom:1px solid rgba(255,255,255,0.1)">Socios</th>
+                                    <th style="text-align:right;padding:6px 8px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;border-bottom:1px solid rgba(255,255,255,0.1)">Ingreso mensual</th>
+                                    <th style="border-bottom:1px solid rgba(255,255,255,0.1)"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for precio in precios %}
+                                    <tr>
+                                        <td style="padding:9px 8px;font-weight:500">{{ precio.tipo_membresia }}</td>
+                                        <td style="padding:9px 8px;text-align:right;font-family:'IBM Plex Mono', monospace">${{ "%.0f"|format(precio.monto) }}</td>
+                                        <td style="padding:9px 8px;text-align:right;color:#a0a0aa">
+                                            {% if precio.cantidad_socios == 0 %}
+                                                <span style="font-size:10.5px;padding:2px 7px;border-radius:6px;background:#1c1c22;color:#6e6e78">sin socios</span>
+                                            {% else %}
+                                                {{ precio.cantidad_socios }}
+                                            {% endif %}
+                                        </td>
+                                        <td style="padding:9px 8px;text-align:right;font-family:'IBM Plex Mono', monospace">${{ "%.0f"|format(precio.monto * precio.cantidad_socios) }}</td>
+                                        <td style="padding:9px 4px;text-align:right;white-space:nowrap">
+                                            <a href="#" onclick="document.getElementById('editar-precio-{{ precio.id_precio }}').classList.toggle('db-hidden'); return false;" style="display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;text-decoration:none">
+                                                <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr id="editar-precio-{{ precio.id_precio }}" class="db-hidden">
+                                        <td colspan="5" style="padding:0 8px 12px">
+                                            <div style="display:flex;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px dashed rgba(255,255,255,0.1)">
+                                                <form action="{{ url_for('editar_precio', id_precio=precio.id_precio) }}" method="POST" style="display:flex;gap:8px;flex:1;min-width:220px">
+                                                    <input type="number" step="0.01" name="monto" class="db-input" placeholder="Nuevo monto" style="flex:1">
+                                                    <button type="submit" style="padding:0 14px;background:#e2323b;border:1px solid #e2323b;border-radius:8px;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer">Actualizar</button>
+                                                </form>
+                                                <form action="{{ url_for('eliminar_precio', id_precio=precio.id_precio) }}" method="POST">
+                                                    <button type="submit" style="padding:0 14px;min-height:38px;background:transparent;border:1px solid rgba(226,50,59,0.4);border-radius:8px;color:#ff8f95;font-size:12.5px;font-weight:600;cursor:pointer">Eliminar plan</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
+
+                        <div style="display:flex;justify-content:space-between;align-items:baseline;padding:12px 8px 0;margin-top:6px;border-top:1px solid rgba(255,255,255,0.1)">
+                            <span style="font-size:12px;color:#a0a0aa">Ingreso teórico mensual</span>
+                            <span style="font-family:'IBM Plex Mono', monospace;font-size:16px;font-weight:600">${{ "%.0f"|format(ingreso_teorico_mensual) }}</span>
+                        </div>
+                    </div>
+
+                    <div style="display:flex;flex-direction:column;gap:14px">
+
+                        <div style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+                                <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Turnos de clase</span>
+                            </div>
+
+                            {% for clase in clases %}
+                                <div style="display:flex;align-items:center;gap:11px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+                                    <span style="width:3px;align-self:stretch;border-radius:2px;background:#e2323b;flex:none"></span>
+                                    <div style="flex:1;min-width:0">
+                                        <div style="font-family:'IBM Plex Mono', monospace;font-size:13px;font-weight:500">{{ '%02d:%02d'|format(clase.hora_inicio.seconds // 3600 if clase.hora_inicio.seconds is defined else clase.hora_inicio.hour, (clase.hora_inicio.seconds // 60 % 60) if clase.hora_inicio.seconds is defined else clase.hora_inicio.minute) }} – {{ '%02d:%02d'|format(clase.hora_fin.seconds // 3600 if clase.hora_fin.seconds is defined else clase.hora_fin.hour, (clase.hora_fin.seconds // 60 % 60) if clase.hora_fin.seconds is defined else clase.hora_fin.minute) }}</div>
+                                        <div style="font-size:11.5px;color:#a0a0aa;margin-top:1px">{{ clase.turno }} · {{ clase.nombre }} · Prof. {{ clase.profesor_apellido }}</div>
                                     </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                                    <a href="{{ url_for('form_clase_ruta', id_clase=clase.id_clase) }}" style="display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;text-decoration:none">
+                                        <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+                                    </a>
+                                    <form action="{{ url_for('eliminar_clase', id_clase=clase.id_clase) }}" method="POST" onsubmit="return confirm('¿Eliminar esta clase?');">
+                                        <button type="submit" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;cursor:pointer">
+                                            <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <p style="font-size:12.5px;color:#6e6e78;padding:8px 0">Todavía no hay clases cargadas.</p>
+                            {% endfor %}
+
+                            <a href="{{ url_for('form_clase_ruta') }}" style="margin-top:12px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13px;font-weight:500;color:#f4f4f5;text-decoration:none">+ Nuevo turno</a>
+                        </div>
+
+                        <div style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px">
+                                <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Equipo <span style="color:#6e6e78;text-transform:none;letter-spacing:0;font-weight:400">· {{ profesores|length }} profesores</span></span>
+                            </div>
+
+                            {% for profesor in profesores %}
+                                <div style="display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+                                    <span style="width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:12.5px;font-weight:600;color:#ffdfe1;background:linear-gradient(160deg, #8f1a21, #4a0d11)">{{ profesor.nombre[0]|upper }}{{ profesor.apellido[0]|upper }}</span>
+                                    <div style="flex:1;min-width:0">
+                                        <div style="font-size:13px;font-weight:500">{{ profesor.nombre }} {{ profesor.apellido }}</div>
+                                        <div style="font-size:11.5px;color:{{ '#a0a0aa' if profesor.turno else '#6e6e78' }}">{{ 'Turno ' + profesor.turno|lower if profesor.turno else 'Sin turno asignado' }}</div>
+                                    </div>
+                                    <a href="{{ url_for('form_profesor_ruta', id_profesor=profesor.id_profesor) }}" style="display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;text-decoration:none">
+                                        <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+                                    </a>
+                                    <form action="{{ url_for('eliminar_profesor', id_profesor=profesor.id_profesor) }}" method="POST" onsubmit="return confirm('¿Eliminar este profesor?');">
+                                        <button type="submit" style="width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;cursor:pointer">
+                                            <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <p style="font-size:12.5px;color:#6e6e78;padding:8px 0">Todavía no hay profesores cargados.</p>
+                            {% endfor %}
+
+                            <a href="{{ url_for('form_profesor_ruta') }}" style="margin-top:12px;min-height:40px;display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13px;font-weight:500;color:#f4f4f5;text-decoration:none">+ Nuevo profesor</a>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px">
+                        <div>
+                            <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Costos fijos del mes</div>
+                            <div style="font-family:'IBM Plex Mono', monospace;font-size:26px;font-weight:500;letter-spacing:-0.02em;color:#ff8f95;margin-top:4px">${{ "%.0f"|format(total_costos) }}</div>
+                            <div style="font-size:11.5px;color:#a0a0aa;margin-top:2px">{{ costos|length }} concepto{{ 's' if costos|length != 1 else '' }} · {{ porcentaje_costos }}% del ingreso</div>
+                        </div>
+                        <a href="{{ url_for('nuevo_costo') }}" style="min-height:38px;padding:0 14px;display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:9px;font-size:12.5px;font-weight:600;color:#f4f4f5;text-decoration:none">+ Nuevo costo</a>
+                    </div>
+
+                    {% if costos %}
+                        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px">
+                            {% for costo in costos %}
+                                <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;border:1px solid rgba(255,255,255,0.08);border-radius:10px;background:#15151a">
+                                    <div style="min-width:0">
+                                        <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ costo.concepto }}</div>
+                                        <div style="font-family:'IBM Plex Mono', monospace;font-size:12.5px;color:#a0a0aa;margin-top:2px">${{ "%.0f"|format(costo.monto) }}</div>
+                                    </div>
+                                    <form action="{{ url_for('eliminar_costo', id_costo=costo.id_costo) }}" method="POST" onsubmit="return confirm('¿Eliminar este costo?');">
+                                        <button type="submit" style="width:28px;height:28px;flex:none;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;cursor:pointer">
+                                            <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p style="font-size:12.5px;color:#6e6e78">Sin costos cargados este mes.</p>
+                    {% endif %}
+
+                    <p style="margin:14px 0 0;font-size:11.5px;color:#6e6e78">Estos conceptos alimentan los egresos del balance en Caja.</p>
+                </div>
+
             </div>
-
-            <div class="db-ajustes-columna">
-
-                <div class="db-card">
-                    <div class="db-ajustes-card-header">
-                        <p class="db-section-label" style="margin-bottom:0;">Clases y profesores</p>
-                    </div>
-
-                    {% for clase in clases %}
-                        <div class="db-ajustes-clase-item">
-                            <div>
-                                <p class="db-ajustes-clase-nombre">{{ clase.nombre }}</p>
-                                <p class="db-ajustes-clase-meta">
-                                    {{ clase.dias + ' · ' if clase.dias else '' }}{{ clase.hora_inicio }}–{{ clase.hora_fin }}
-                                </p>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                <span class="db-badge db-badge-profesor">Prof. {{ clase.profesor_apellido }}</span>
-                                <a href="{{ url_for('form_clase_ruta', id_clase=clase.id_clase) }}" class="db-link">Editar</a>
-                                <form action="{{ url_for('eliminar_clase', id_clase=clase.id_clase) }}" method="POST" onsubmit="return confirm('¿Eliminar esta clase?');">
-                                    <button type="submit" class="db-link-danger">Eliminar</button>
-                                </form>
-                            </div>
-                        </div>
-                    {% else %}
-                        <p class="db-empty">Todavía no hay clases cargadas.</p>
-                    {% endfor %}
-
-                    <a href="{{ url_for('form_clase_ruta') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Nueva clase</a>
-                </div>
-
-                <div class="db-card" style="margin-top:20px;">
-                    <div class="db-ajustes-card-header">
-                        <p class="db-section-label" style="margin-bottom:0;">Profesores</p>
-                    </div>
-
-                    {% for profesor in profesores %}
-                        <div class="db-ajustes-clase-item">
-                            <p class="db-ajustes-clase-nombre">{{ profesor.nombre }} {{ profesor.apellido }}</p>
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <a href="{{ url_for('form_profesor_ruta', id_profesor=profesor.id_profesor) }}" class="db-link">Editar</a>
-                                <form action="{{ url_for('eliminar_profesor', id_profesor=profesor.id_profesor) }}" method="POST" onsubmit="return confirm('¿Eliminar este profesor?');">
-                                    <button type="submit" class="db-link-danger">Eliminar</button>
-                                </form>
-                            </div>
-                        </div>
-                    {% else %}
-                        <p class="db-empty">Todavía no hay profesores cargados.</p>
-                    {% endfor %}
-
-                    <a href="{{ url_for('form_profesor_ruta') }}" class="db-btn db-btn-secondary" style="width:100%; margin-top:14px;">Nuevo profesor</a>
-                </div>
-                <div class="db-card" style="margin-top:20px;">
-                    <div class="db-ajustes-card-header">
-                        <p class="db-section-label" style="margin-bottom:0;">Costos del mes</p>
-                        <a href="{{ url_for('nuevo_costo') }}" class="db-link">+ Nuevo</a>
-                    </div>
-
-                    {% for costo in costos %}
-                        <div class="db-ajustes-clase-item">
-                            <div>
-                                <p class="db-ajustes-clase-nombre">{{ costo.concepto }}</p>
-                                <p class="db-ajustes-clase-meta">${{ "%.2f"|format(costo.monto) }}</p>
-                            </div>
-                            <form action="{{ url_for('eliminar_costo', id_costo=costo.id_costo) }}" method="POST" onsubmit="return confirm('¿Eliminar este costo?');">
-                                <button type="submit" class="db-link-danger">Eliminar</button>
-                            </form>
-                        </div>
-                    {% else %}
-                        <p class="db-empty">Sin costos cargados este mes.</p>
-                    {% endfor %}
-                </div>
-
-            </div>
-        </div>
-    </div>
         </div>
     </div>
 </body>

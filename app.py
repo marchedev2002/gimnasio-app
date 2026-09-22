@@ -927,8 +927,8 @@ def admin_general():
     """, (session['id_gimnasio'], session['id_gimnasio'], session['id_gimnasio']))
     precios = cursor.fetchall()
 
-    cursor.execute("SELECT * FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
-    profesores = cursor.fetchall()
+    ingreso_teorico_mensual = sum(float(p['monto']) * p['cantidad_socios'] for p in precios)
+    total_socios_activos = sum(p['cantidad_socios'] for p in precios)
 
     cursor.execute("""
         SELECT CLASE.*, PROFESOR.nombre AS profesor_nombre, PROFESOR.apellido AS profesor_apellido
@@ -939,20 +939,46 @@ def admin_general():
     """, (session['id_gimnasio'],))
     clases = cursor.fetchall()
 
+    def hora_a_entero(valor):
+        return valor.seconds // 3600 if hasattr(valor, 'seconds') else valor.hour
+
+    for c in clases:
+        h = hora_a_entero(c['hora_inicio'])
+        c['turno'] = 'Mañana' if h < 12 else ('Tarde' if h < 18 else 'Noche')
+
+    cursor.execute("SELECT * FROM PROFESOR WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
+    profesores = cursor.fetchall()
+
+    for p in profesores:
+        clases_del_profe = [c for c in clases if c['id_profesor'] == p['id_profesor']]
+        p['turno'] = clases_del_profe[0]['turno'] if clases_del_profe else None
+
     hoy = date.today()
+    inicio_mes = date(hoy.year, hoy.month, 1)
+
     cursor.execute("""
-        SELECT COSTO.id_costo, COSTO.concepto, COSTO.monto, MES.nombre_mes, COSTO.anio
+        SELECT COSTO.id_costo, COSTO.concepto, COSTO.monto
         FROM COSTO
-        JOIN MES ON COSTO.id_mes = MES.id_mes
         WHERE COSTO.id_gimnasio = %s AND COSTO.id_mes = %s AND COSTO.anio = %s
-        ORDER BY COSTO.id_costo DESC
+        ORDER BY COSTO.monto DESC
     """, (session['id_gimnasio'], hoy.month, hoy.year))
     costos = cursor.fetchall()
+
+    total_costos = sum(float(c['monto']) for c in costos)
+    ingreso_mes_real = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_mes)['total']
+    porcentaje_costos = round((total_costos / ingreso_mes_real * 100), 1) if ingreso_mes_real else 0
 
     cursor.close()
     conn.close()
 
-    return render_template('admin.html', precios=precios, profesores=profesores, clases=clases, costos=costos)
+    return render_template(
+        'admin.html',
+        precios=precios, clases=clases, profesores=profesores, costos=costos,
+        ingreso_teorico_mensual=ingreso_teorico_mensual,
+        total_socios_activos=total_socios_activos,
+        total_costos=total_costos,
+        porcentaje_costos=porcentaje_costos
+    )
 
 @app.route('/admin/costo/nuevo', methods=['GET', 'POST'])
 @login_requerido

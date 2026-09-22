@@ -209,9 +209,15 @@ def buscar():
 @app.route('/nuevo', methods=['GET', 'POST'])
 @login_requerido
 def nuevo_socio():
-    """Formulario para dar de alta un nuevo socio."""
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+
     if request.method == 'GET':
-        return render_template('form_socio.html', modo='nuevo', usuario=None)
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY monto", (session['id_gimnasio'],))
+        precios = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('form_socio.html', modo='nuevo', usuario=None, precios=precios)
 
     dni = request.form.get('dni', '').strip()
     nombre = request.form.get('nombre', '').strip()
@@ -220,29 +226,27 @@ def nuevo_socio():
     email = request.form.get('email', '').strip()
 
     if not dni or not nombre or not apellido:
-        return render_template(
-            'form_socio.html',
-            modo='nuevo',
-            usuario=None,
-            error="DNI, nombre y apellido son obligatorios."
-        )
-
-    conn = get_connection()
-    cursor = conn.cursor(dictionary=True)
-
-    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
-    if cursor.fetchone():
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY monto", (session['id_gimnasio'],))
+        precios = cursor.fetchall()
         cursor.close()
         conn.close()
         return render_template(
-            'form_socio.html',
-            modo='nuevo',
-            usuario=None,
-            error="Ya existe un socio con ese DNI."
+            'form_socio.html', modo='nuevo', usuario=None, precios=precios,
+            error="DNI, nombre y apellido son obligatorios."
+        )
+
+    cursor.execute("SELECT dni FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, session['id_gimnasio']))
+    if cursor.fetchone():
+        cursor.execute("SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY monto", (session['id_gimnasio'],))
+        precios = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template(
+            'form_socio.html', modo='nuevo', usuario=None, precios=precios,
+            error=f"Ya existe un socio con DNI {dni}."
         )
 
     nombre_foto = guardar_foto(dni, request.files.get('foto'))
-
     dia_vencimiento_nuevo = int(request.form.get('dia_vencimiento', date.today().day))
 
     cursor.execute("""
@@ -254,7 +258,7 @@ def nuevo_socio():
     cursor.close()
     conn.close()
 
-    return redirect(url_for('ver_socio', dni=dni, mensaje="Socio dado de alta correctamente."))
+    return redirect(url_for('ver_socio', dni=dni, mensaje='alta'))
 
 @app.route('/editar/<dni>', methods=['GET', 'POST'])
 @login_requerido
@@ -415,7 +419,7 @@ def nuevo_pago():
     metodo_pago = request.form.get('metodo_pago', '').strip()
 
     if not dni or not id_mes or not anio or not id_precio or not fecha_pago or not metodo_pago:
-        cursor.execute("SELECT dni, nombre, apellido FROM USUARIO WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
+        cursor.execute("SELECT dni, nombre, apellido, dia_vencimiento FROM USUARIO WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         socios = cursor.fetchall()
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()

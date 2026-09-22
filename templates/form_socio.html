@@ -6,75 +6,205 @@
     <title>{{ 'Nuevo Socio' if modo == 'nuevo' else 'Editar Socio' }} · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>*{box-sizing:border-box}body{margin:0;background:#08080a}input,select,button{font-family:inherit}input::placeholder{color:#5e5e68}</style>
 </head>
 <body>
-    <div class="db-wrapper db-wrapper--narrow">
-        {% include 'partials/navbar_simple.html' %}
+    {% include 'partials/navbar_simple.html' %}
 
-        <p class="db-eyebrow">{{ 'Alta de socio' if modo == 'nuevo' else 'Edición de socio' }}</p>
-        <h1 class="db-page-title">{{ 'Nuevo socio' if modo == 'nuevo' else 'Editar datos' }}</h1>
-        <p class="db-page-subtitle">Completá los datos {{ 'del nuevo socio' if modo == 'nuevo' else 'a actualizar' }}.</p>
+    <div style="min-height:calc(100vh - 60px);display:grid;place-items:center;padding:28px;background:radial-gradient(120% 90% at 50% -20%, #17090c 0%, #08080a 62%);font-family:Inter, system-ui, sans-serif;color:#f4f4f5;-webkit-font-smoothing:antialiased">
+    <div role="dialog" aria-labelledby="nm-title" style="width:min(820px,100%);background:#101013;border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(226,50,59,0.07);overflow:hidden">
 
-        <div class="db-card">
-            {% if error %}
-                <p class="db-alert-error">{{ error }}</p>
-            {% endif %}
+        <header style="display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.07);background:linear-gradient(180deg, rgba(226,50,59,0.07), rgba(226,50,59,0))">
+            <span style="width:3px;height:34px;border-radius:2px;background:#e2323b;flex:none;margin-top:2px"></span>
+            <div style="min-width:0">
+                <h1 id="nm-title" style="margin:0;font-size:18px;font-weight:600;letter-spacing:-0.01em;line-height:1.25">{{ 'Nuevo socio' if modo == 'nuevo' else 'Editar socio' }}</h1>
+                <p style="margin:3px 0 0;font-size:12.5px;color:#8a8a93">{{ 'Alta de membresía · el DNI es el único dato obligatorio para empezar' if modo == 'nuevo' else 'Modificá los datos de contacto del socio' }}</p>
+            </div>
+            <a href="{{ url_for('ver_socio', dni=usuario.dni) if usuario else url_for('index') }}" aria-label="Cerrar" style="margin-left:auto;width:36px;height:36px;flex:none;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#b6b6bf;text-decoration:none">
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+            </a>
+        </header>
 
-            <form action="{{ url_for('nuevo_socio') if modo == 'nuevo' else url_for('editar_socio', dni=usuario.dni) }}"
-                  method="POST" enctype="multipart/form-data">
+        {% if error %}
+            <p class="db-alert-error" style="margin:16px 18px 0;">{{ error }}</p>
+        {% endif %}
 
-                <div class="db-field">
-                    <label>DNI</label>
-                    {% if modo == 'nuevo' %}
-                        <input type="text" name="dni" class="db-input" placeholder="Ej: 40123456" required autofocus>
-                    {% else %}
-                        <input type="text" class="db-input" value="{{ usuario.dni }}" disabled>
-                    {% endif %}
+        <form action="{{ url_for('nuevo_socio') if modo == 'nuevo' else url_for('editar_socio', dni=usuario.dni) }}" method="POST">
+        <div style="display:grid;grid-template-columns:{{ '1fr 282px' if modo == 'nuevo' else '1fr' }};align-items:stretch">
+
+            <div style="padding:20px;display:flex;flex-direction:column;gap:18px;min-width:0">
+
+                <div>
+                    <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78;margin-bottom:9px">Identidad</div>
+                    <div style="display:grid;grid-template-columns:168px 1fr;gap:10px">
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <label for="nm-dni" style="font-size:12px;color:#a8a8b2">DNI {% if modo == 'nuevo' %}<span style="color:#ff8f95">*</span>{% endif %}</label>
+                            {% if modo == 'nuevo' %}
+                                <input name="dni" id="nm-dni" type="text" inputmode="numeric" placeholder="40123456" style="width:100%;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;letter-spacing:0.03em;color:#f4f4f5;background:#15151a;border:1px solid rgba(226,50,59,0.45);border-radius:10px;outline:none" required autofocus>
+                                <span style="font-size:11px;color:#6e6e78">Sin puntos. Se valida al guardar.</span>
+                            {% else %}
+                                <input type="text" id="nm-dni" value="{{ usuario.dni }}" disabled style="width:100%;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;letter-spacing:0.03em;color:#8a8a93;background:#0c0c0f;border:1px solid rgba(255,255,255,0.08);border-radius:10px;outline:none">
+                            {% endif %}
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start">
+                            <div style="display:flex;flex-direction:column;gap:5px">
+                                <label for="nm-nombre" style="font-size:12px;color:#a8a8b2">Nombre</label>
+                                <input name="nombre" id="nm-nombre" type="text" placeholder="Franco" value="{{ usuario.nombre if usuario else '' }}" style="width:100%;min-height:42px;padding:9px 11px;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none" required>
+                            </div>
+                            <div style="display:flex;flex-direction:column;gap:5px">
+                                <label for="nm-apellido" style="font-size:12px;color:#a8a8b2">Apellido</label>
+                                <input name="apellido" id="nm-apellido" type="text" placeholder="Abba" value="{{ usuario.apellido if usuario else '' }}" style="width:100%;min-height:42px;padding:9px 11px;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none" required>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="db-field">
-                    <label>Nombre</label>
-                    <input type="text" name="nombre" class="db-input" placeholder="Nombre" value="{{ usuario.nombre if usuario else '' }}" required>
+                <div>
+                    <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78;margin-bottom:9px">Contacto</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <label for="nm-tel" style="font-size:12px;color:#a8a8b2">Teléfono</label>
+                            <input name="telefono" id="nm-tel" type="tel" placeholder="341 555-1234" value="{{ usuario.telefono if usuario else '' }}" style="width:100%;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none">
+                            <span style="font-size:11px;color:#6e6e78">Se usa para los avisos de vencimiento.</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <label for="nm-email" style="font-size:12px;color:#a8a8b2">Email</label>
+                            <input name="email" id="nm-email" type="email" placeholder="socio@mail.com" value="{{ usuario.email if usuario else '' }}" style="width:100%;min-height:42px;padding:9px 11px;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none">
+                            <span style="font-size:11px;color:#6e6e78">Recibe el recibo de cada cuota.</span>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="db-field">
-                    <label>Apellido</label>
-                    <input type="text" name="apellido" class="db-input" placeholder="Apellido" value="{{ usuario.apellido if usuario else '' }}" required>
-                </div>
-
-                <div class="db-field">
-                    <label>Teléfono</label>
-                    <input type="text" name="telefono" class="db-input" placeholder="Ej: 341-5551234" value="{{ usuario.telefono if usuario else '' }}">
-                </div>
-
-                <div class="db-field">
-                    <label>Email</label>
-                    <input type="email" name="email" class="db-input" placeholder="ejemplo@mail.com" value="{{ usuario.email if usuario else '' }}">
-                </div>
                 {% if modo == 'nuevo' %}
-                <div class="db-field">
-                    <label>Día de vencimiento de la cuota</label>
-                    <select name="dia_vencimiento" class="db-input" required>
+                <fieldset style="margin:0;padding:0;border:0;min-width:0">
+                    <legend style="padding:0;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78;margin-bottom:8px">Plan inicial <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#5e5e68">(estimativo, se confirma al primer pago)</span></legend>
+                    <div id="grid-planes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px">
+                        {% for precio in precios %}
+                            <label class="opcion-plan" data-monto="{{ precio.monto }}" data-nombre="{{ precio.tipo_membresia }}"
+                                   style="display:flex;flex-direction:column;gap:5px;padding:11px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#15151a;cursor:pointer;min-height:44px">
+                                <span style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500">
+                                    <input type="radio" name="plan_estimado" {% if loop.first %}checked{% endif %} style="accent-color:#e2323b;width:15px;height:15px;margin:0">
+                                    {{ precio.tipo_membresia }}
+                                </span>
+                                <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:13px;color:#a8a8b2">${{ "%.0f"|format(precio.monto) }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                </fieldset>
+
+                <div>
+                    <label for="nm-dia" style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78">Día de cobro</label>
+                    <select name="dia_vencimiento" id="nm-dia" style="width:100%;min-height:42px;padding:9px 11px;margin-top:5px;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none" required>
                         {% for dia in range(1, 32) %}
-                            <option value="{{ dia }}" {% if dia == 1 %}selected{% endif %}>{{ dia }}</option>
+                            <option value="{{ dia }}" {% if dia == 1 %}selected{% endif %}>{{ dia }} de cada mes</option>
                         {% endfor %}
                     </select>
+                    <span style="font-size:11px;color:#6e6e78;display:block;margin-top:5px">Define el vencimiento mensual de la cuota, de forma fija.</span>
                 </div>
                 {% endif %}
+            </div>
 
-                <div class="db-field">
-                    <label>Foto {{ '(opcional)' if modo == 'nuevo' else '(dejar vacío para no cambiarla)' }}</label>
-                    <input type="file" name="foto" class="db-input" accept=".jpg,.jpeg,.png">
+            {% if modo == 'nuevo' %}
+            <aside style="padding:20px 18px;border-left:1px solid rgba(255,255,255,0.07);background:#0c0c0f;display:flex;flex-direction:column;gap:14px">
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78">Resumen del alta</div>
+                <div style="display:flex;align-items:center;gap:11px">
+                    <span aria-hidden="true" id="resumen-avatar" style="width:40px;height:40px;flex:none;border-radius:10px;display:grid;place-items:center;font-size:13px;font-weight:600;color:#8a8a93;background:#1c1c22;border:1px dashed rgba(255,255,255,0.14)">?</span>
+                    <div id="resumen-nombre" style="font-size:13.5px;font-weight:500;color:#8a8a93">Socio sin nombre</div>
                 </div>
-
-                <div class="db-btn-row">
-                    <button type="submit" class="db-btn db-btn-primary">{{ 'Dar de alta' if modo == 'nuevo' else 'Guardar cambios' }}</button>
-                    <a href="{{ url_for('ver_socio', dni=usuario.dni) if usuario else url_for('index') }}" class="db-btn db-btn-secondary">Cancelar</a>
+                <div style="height:1px;background:linear-gradient(to right, transparent, rgba(255,255,255,0.12) 24px, rgba(255,255,255,0.12) calc(100% - 24px), transparent)"></div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Plan</span><span id="resumen-plan" style="font-size:12.5px;font-weight:500;text-align:right">—</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Cuota</span><span id="resumen-cuota" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12.5px">—</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Alta</span><span id="resumen-inicio" style="font-size:12.5px;text-align:right">—</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">1er vencimiento est.</span><span id="resumen-vencimiento" style="font-size:12.5px;text-align:right">—</span></div>
                 </div>
-            </form>
+                <div style="display:flex;gap:9px;padding:10px 11px;border-radius:10px;border:1px solid rgba(226,50,59,0.3);background:rgba(226,50,59,0.08)">
+                    <svg width="15" height="15" viewBox="0 0 256 256" fill="#ff8f95" aria-hidden="true" style="flex:none;margin-top:1px"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z"></path></svg>
+                    <p style="margin:0;font-size:12px;line-height:1.45;color:#dcdce2">El alta queda <strong style="font-weight:600;color:#fff">pendiente de pago</strong> hasta que registres la primera cuota desde la ficha.</p>
+                </div>
+            </aside>
+            {% endif %}
         </div>
+
+        <footer style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.07);background:#0c0c0f;flex-wrap:wrap">
+            {% if modo == 'nuevo' %}
+                <span style="font-size:11.5px;color:#6e6e78">Podés completar el resto de los datos más tarde desde la ficha</span>
+            {% endif %}
+            <a href="{{ url_for('ver_socio', dni=usuario.dni) if usuario else url_for('index') }}" style="margin-left:auto;min-height:40px;padding:0 14px;display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13.5px;font-weight:500;color:#f4f4f5;text-decoration:none">Cancelar</a>
+            <button type="submit" style="min-height:40px;padding:0 18px;display:inline-flex;align-items:center;gap:7px;background:#e2323b;border:1px solid #e2323b;border-radius:10px;font-size:13.5px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 6px 18px -8px rgba(226,50,59,0.9)">
+                <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M256,136a8,8,0,0,1-8,8H232v16a8,8,0,0,1-16,0V144H200a8,8,0,0,1,0-16h16V112a8,8,0,0,1,16,0v16h16A8,8,0,0,1,256,136Zm-57.87,58.85a8,8,0,0,1-12.26,10.3C165.75,181.19,138.09,168,108,168s-57.75,13.19-77.87,37.15a8,8,0,0,1-12.26-10.3c14.94-17.78,33.52-30.41,54.17-37.17a68,68,0,1,1,71.92,0C164.61,164.44,183.19,177.07,198.13,194.85ZM108,152a52,52,0,1,0-52-52A52.06,52.06,0,0,0,108,152Z"></path></svg>
+                {{ 'Dar de alta' if modo == 'nuevo' else 'Guardar cambios' }}
+            </button>
+        </footer>
+        </form>
     </div>
+    </div>
+
+    {% if modo == 'nuevo' %}
+    <script>
+        const inputNombre = document.getElementById('nm-nombre');
+        const inputApellido = document.getElementById('nm-apellido');
+        const selectDia = document.getElementById('nm-dia');
+
+        function ultimoDiaDelMes(anio, mes) {
+            return new Date(anio, mes, 0).getDate();
+        }
+
+        function actualizarResumen() {
+            const nombre = inputNombre.value.trim();
+            const apellido = inputApellido.value.trim();
+
+            if (nombre || apellido) {
+                document.getElementById('resumen-avatar').textContent = ((nombre[0] || '') + (apellido[0] || '')).toUpperCase() || '?';
+                document.getElementById('resumen-avatar').style.color = '#ffdfe1';
+                document.getElementById('resumen-avatar').style.background = 'linear-gradient(160deg, #8f1a21, #4a0d11)';
+                document.getElementById('resumen-avatar').style.border = 'none';
+                document.getElementById('resumen-nombre').textContent = (nombre + ' ' + apellido).trim() || 'Socio sin nombre';
+                document.getElementById('resumen-nombre').style.color = '#f4f4f5';
+            } else {
+                document.getElementById('resumen-nombre').textContent = 'Socio sin nombre';
+                document.getElementById('resumen-nombre').style.color = '#8a8a93';
+            }
+
+            const hoy = new Date();
+            document.getElementById('resumen-inicio').textContent = hoy.toLocaleDateString('es-AR');
+
+            const diaVenc = parseInt(selectDia.value, 10);
+            let mesSig = hoy.getMonth() + 2;
+            let anioSig = hoy.getFullYear();
+            if (mesSig > 12) { mesSig = 1; anioSig++; }
+            const diaFinal = Math.min(diaVenc, ultimoDiaDelMes(anioSig, mesSig));
+            const fechaVenc = new Date(anioSig, mesSig - 1, diaFinal);
+            document.getElementById('resumen-vencimiento').textContent = fechaVenc.toLocaleDateString('es-AR');
+        }
+
+        document.querySelectorAll('.opcion-plan').forEach(label => {
+            label.addEventListener('click', () => {
+                document.querySelectorAll('.opcion-plan').forEach(l => {
+                    l.style.border = '1px solid rgba(255,255,255,0.1)';
+                    l.style.background = '#15151a';
+                });
+                label.style.border = '1px solid rgba(226,50,59,0.55)';
+                label.style.background = 'rgba(226,50,59,0.09)';
+                label.querySelector('input').checked = true;
+                document.getElementById('resumen-plan').textContent = label.dataset.nombre;
+                document.getElementById('resumen-cuota').textContent = '$' + parseFloat(label.dataset.monto).toLocaleString('es-AR');
+            });
+        });
+
+        inputNombre.addEventListener('input', actualizarResumen);
+        inputApellido.addEventListener('input', actualizarResumen);
+        selectDia.addEventListener('change', actualizarResumen);
+
+        const planInicial = document.querySelector('.opcion-plan');
+        if (planInicial) {
+            document.getElementById('resumen-plan').textContent = planInicial.dataset.nombre;
+            document.getElementById('resumen-cuota').textContent = '$' + parseFloat(planInicial.dataset.monto).toLocaleString('es-AR');
+        }
+        actualizarResumen();
+    </script>
+    {% endif %}
 </body>
 </html>

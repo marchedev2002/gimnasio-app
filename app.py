@@ -12,6 +12,7 @@ from config import DB_CONFIG, SECRET_KEY, NOMBRE_GIMNASIO, CLAVE_REPORTES
 from io import BytesIO
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
+from collections import Counter
 
 app = Flask(__name__)
 intentos_fallidos = {}
@@ -315,7 +316,6 @@ def editar_socio(dni):
 @app.route('/socio/<dni>')
 @login_requerido
 def ver_socio(dni):
-    """Muestra la ficha de un socio, usando su día de vencimiento fijo."""
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -333,9 +333,13 @@ def ver_socio(dni):
         and usuario['fecha_proximo_vencimiento'] >= hoy
     )
 
+    dias_diferencia = None
+    if usuario['fecha_proximo_vencimiento']:
+        dias_diferencia = (usuario['fecha_proximo_vencimiento'] - hoy).days
+
     cursor.execute("""
         SELECT PAGO.id_pago, PAGO.fecha_pago, MES.nombre_mes, PAGO.anio,
-               PRECIO.tipo_membresia, PRECIO.monto
+               PRECIO.tipo_membresia, PRECIO.monto, PAGO.metodo_pago
         FROM PAGO
         JOIN MES ON PAGO.id_mes = MES.id_mes
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
@@ -343,6 +347,23 @@ def ver_socio(dni):
         ORDER BY PAGO.fecha_pago DESC
     """, (dni, session['id_gimnasio']))
     historial_pagos = cursor.fetchall()
+
+    # --- Métricas de uso: últimos 30 días ---
+    hace_30_dias = hoy - timedelta(days=30)
+    cursor.execute("""
+        SELECT fecha_hora FROM ASISTENCIA
+        WHERE dni = %s AND id_gimnasio = %s AND fecha_hora >= %s
+    """, (dni, session['id_gimnasio'], hace_30_dias))
+    asistencias_30d = cursor.fetchall()
+
+    total_asistencias_30d = len(asistencias_30d)
+    frecuencia_semanal = round(total_asistencias_30d / (30 / 7), 1) if total_asistencias_30d else 0
+
+    horario_habitual = None
+    if asistencias_30d:
+        horas = [a['fecha_hora'].hour for a in asistencias_30d]
+        hora_mas_comun = Counter(horas).most_common(1)[0][0]
+        horario_habitual = f"{hora_mas_comun:02d}:00"
 
     cursor.close()
     conn.close()
@@ -353,8 +374,12 @@ def ver_socio(dni):
         'resultado.html',
         usuario=usuario,
         membresia_al_dia=membresia_al_dia,
+        dias_diferencia=dias_diferencia,
         historial_pagos=historial_pagos,
-        mensaje=mensaje
+        mensaje=mensaje,
+        total_asistencias_30d=total_asistencias_30d,
+        frecuencia_semanal=frecuencia_semanal,
+        horario_habitual=horario_habitual
     )
 
 @app.route('/pago/nuevo', methods=['GET', 'POST'])

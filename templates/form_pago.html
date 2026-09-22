@@ -6,80 +6,263 @@
     <title>Registrar Pago · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>*{box-sizing:border-box}body{margin:0;background:#08080a}input,select,button{font-family:inherit}</style>
 </head>
 <body>
-    <div class="db-wrapper db-wrapper--narrow">
-        {% include 'partials/navbar_simple.html' %}
+    {% include 'partials/navbar_simple.html' %}
 
-        <p class="db-eyebrow">Pagos</p>
-        <h1 class="db-page-title">Registrar pago</h1>
-        <p class="db-page-subtitle">Elegí el socio, el mes y el plan.</p>
+    <div style="min-height:calc(100vh - 60px);display:grid;place-items:center;padding:28px;background:radial-gradient(120% 90% at 50% -20%, #17090c 0%, #08080a 62%);font-family:Inter, system-ui, sans-serif;color:#f4f4f5;-webkit-font-smoothing:antialiased">
+    <div role="dialog" aria-labelledby="rp-title" style="width:min(820px,100%);background:#101013;border:1px solid rgba(255,255,255,0.09);border-radius:14px;box-shadow:0 30px 80px -20px rgba(0,0,0,0.9), 0 0 0 1px rgba(226,50,59,0.07);overflow:hidden">
 
-        <div class="db-card">
-            {% if error %}
-                <p class="db-alert-error">{{ error }}</p>
-            {% endif %}
+        <header style="display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border-bottom:1px solid rgba(255,255,255,0.07);background:linear-gradient(180deg, rgba(226,50,59,0.07), rgba(226,50,59,0))">
+            <span style="width:3px;height:34px;border-radius:2px;background:#e2323b;flex:none;margin-top:2px"></span>
+            <div style="min-width:0">
+                <h1 id="rp-title" style="margin:0;font-size:18px;font-weight:600;letter-spacing:-0.01em;line-height:1.25">Registrar pago</h1>
+                <p style="margin:3px 0 0;font-size:12.5px;color:#8a8a93">Cobro de cuota mensual · se acredita al instante en la ficha del socio</p>
+            </div>
+            <a href="{{ url_for('index') }}" aria-label="Cerrar" style="margin-left:auto;width:36px;height:36px;flex:none;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#b6b6bf;text-decoration:none">
+                <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"></path></svg>
+            </a>
+        </header>
 
-            <form action="{{ url_for('nuevo_pago') }}" method="POST">
-                <div class="db-field">
-                    <label>Socio</label>
-                    <select name="dni" class="db-input" required>
+        {% if error %}
+            <p class="db-alert-error" style="margin:16px 18px 0;">{{ error }}</p>
+        {% endif %}
+
+        <form action="{{ url_for('nuevo_pago') }}" method="POST" id="form-pago">
+        <div style="display:grid;grid-template-columns:1fr 282px;align-items:stretch">
+
+            <div style="padding:20px;display:flex;flex-direction:column;gap:18px;min-width:0">
+
+                <div style="display:flex;flex-direction:column;gap:7px">
+                    <label style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78">Socio</label>
+
+                    <div id="chip-socio" style="{% if not dni_preseleccionado %}display:none;{% endif %}display:flex;align-items:center;gap:11px;padding:9px 11px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#15151a">
+                        <span aria-hidden="true" id="chip-avatar" style="width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:12.5px;font-weight:600;color:#ffdfe1;background:linear-gradient(160deg, #8f1a21, #4a0d11)"></span>
+                        <div style="min-width:0;flex:1">
+                            <div id="chip-nombre" style="font-size:13.5px;font-weight:500"></div>
+                            <div id="chip-dni" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11px;color:#8a8a93;letter-spacing:0.03em"></div>
+                        </div>
+                        <button type="button" id="btn-cambiar-socio" style="min-height:34px;padding:0 11px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:8px;font-size:12.5px;font-weight:500;color:#f4f4f5;cursor:pointer">Cambiar</button>
+                    </div>
+
+                    <select name="dni" id="select-socio" class="db-input" style="{% if dni_preseleccionado %}display:none;{% endif %}width:100%;min-height:42px;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#f4f4f5" required>
                         <option value="">-- Seleccioná un socio --</option>
                         {% for socio in socios %}
-                            <option value="{{ socio.dni }}" {% if socio.dni == dni_preseleccionado %}selected{% endif %}>
+                            <option value="{{ socio.dni }}"
+                                    data-nombre="{{ socio.nombre }}"
+                                    data-apellido="{{ socio.apellido }}"
+                                    data-dia-venc="{{ socio.dia_vencimiento }}"
+                                    {% if socio.dni == dni_preseleccionado %}selected{% endif %}>
                                 {{ socio.apellido }}, {{ socio.nombre }} (DNI {{ socio.dni }})
                             </option>
                         {% endfor %}
                     </select>
                 </div>
 
-                <div class="db-field">
-                    <label>Mes que paga</label>
-                    <select name="id_mes" class="db-input" required>
-                        {% for mes in meses %}
-                            <option value="{{ mes.id_mes }}" {% if mes.id_mes == mes_actual %}selected{% endif %}>
-                                {{ mes.nombre_mes }}
-                            </option>
-                        {% endfor %}
-                    </select>
+                <div>
+                    <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78;margin-bottom:8px">Período que cubre</div>
+                    <div style="display:grid;grid-template-columns:1fr 116px;gap:10px">
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <label for="rp-mes" style="font-size:12px;color:#a8a8b2">Mes</label>
+                            <select name="id_mes" id="rp-mes" style="width:100%;min-height:42px;padding:9px 11px;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none" required>
+                                {% for mes in meses %}
+                                    <option value="{{ mes.id_mes }}" {% if mes.id_mes == mes_actual %}selected{% endif %}>{{ mes.nombre_mes }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:5px">
+                            <label for="rp-anio" style="font-size:12px;color:#a8a8b2">Año</label>
+                            <input name="anio" id="rp-anio" type="number" value="{{ anio_actual }}" style="width:100%;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none" required>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="db-field">
-                    <label>Año</label>
-                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}" required>
-                </div>
-
-                <div class="db-field">
-                    <label>Plan / Membresía</label>
-                    <select name="id_precio" class="db-input" required>
-                        <option value="">-- Seleccioná un plan --</option>
+                <fieldset style="margin:0;padding:0;border:0;min-width:0">
+                    <legend style="padding:0;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78;margin-bottom:8px">Plan</legend>
+                    <div id="grid-planes" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:9px">
                         {% for precio in precios %}
-                            <option value="{{ precio.id_precio }}">{{ precio.tipo_membresia }} — ${{ precio.monto }}</option>
+                            <label class="opcion-plan" data-monto="{{ precio.monto }}" data-nombre="{{ precio.tipo_membresia }}"
+                                   style="display:flex;flex-direction:column;gap:5px;padding:11px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#15151a;cursor:pointer;min-height:44px">
+                                <span style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:500">
+                                    <input type="radio" name="id_precio" value="{{ precio.id_precio }}" {% if loop.first %}checked{% endif %} style="accent-color:#e2323b;width:15px;height:15px;margin:0">
+                                    {{ precio.tipo_membresia }}
+                                </span>
+                                <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:13px;color:#a8a8b2">${{ "%.0f"|format(precio.monto) }}</span>
+                            </label>
                         {% endfor %}
-                    </select>
+                    </div>
+                </fieldset>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                    <div style="display:flex;flex-direction:column;gap:5px">
+                        <label for="rp-monto" style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78">Monto cobrado</label>
+                        <div style="display:flex;align-items:center;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#15151a;overflow:hidden">
+                            <span style="padding:0 10px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;color:#8a8a93;border-right:1px solid rgba(255,255,255,0.09);align-self:stretch;display:grid;place-items:center">ARS $</span>
+                            <input id="rp-monto" type="number" step="0.01" style="flex:1;min-width:0;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;color:#f4f4f5;background:transparent;border:0;outline:none">
+                        </div>
+                        <span style="font-size:11px;color:#6e6e78">El monto se toma del precio del plan seleccionado.</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:5px">
+                        <label for="rp-fecha" style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78">Fecha de pago</label>
+                        <input name="fecha_pago" id="rp-fecha" type="date" value="{{ fecha_hoy }}" style="width:100%;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none;color-scheme:dark" required>
+                    </div>
                 </div>
 
-                <div class="db-field">
-                    <label>Fecha de pago</label>
-                    <input type="date" name="fecha_pago" class="db-input" value="{{ fecha_hoy }}" required>
-                </div>
+                <fieldset style="margin:0;padding:0;border:0;min-width:0">
+                    <legend style="padding:0;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78;margin-bottom:8px">Medio de pago</legend>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                        <label class="opcion-medio" data-nombre="Efectivo" style="display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 13px;border:1px solid rgba(226,50,59,0.55);border-radius:10px;background:rgba(226,50,59,0.09);font-size:13px;font-weight:500;cursor:pointer">
+                            <input type="radio" name="metodo_pago" value="Efectivo" checked style="accent-color:#e2323b;width:15px;height:15px;margin:0">
+                            <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M240,72H16a8,8,0,0,0-8,8V176a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V80A8,8,0,0,0,240,72Zm-8,96H24V88H232ZM128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,128,136Z"></path></svg> Efectivo
+                        </label>
+                        <label class="opcion-medio" data-nombre="Debito" style="display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 13px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#15151a;font-size:13px;cursor:pointer">
+                            <input type="radio" name="metodo_pago" value="Debito" style="accent-color:#e2323b;width:15px;height:15px;margin:0">
+                            <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64ZM32,192V104H224v88Zm176-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Z"></path></svg> Débito
+                        </label>
+                    </div>
+                </fieldset>
+            </div>
 
-                <div class="db-field">
-                    <label>Método de pago</label>
-                    <select name="metodo_pago" class="db-input" required>
-                        <option value="Efectivo">💵 Efectivo</option>
-                        <option value="Debito">💳 Débito</option>
-                    </select>
+            <aside style="padding:20px 18px;border-left:1px solid rgba(255,255,255,0.07);background:#0c0c0f;display:flex;flex-direction:column;gap:14px">
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#6e6e78">Resumen del cobro</div>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Socio</span><span id="resumen-socio" style="font-size:12.5px;font-weight:500;text-align:right">—</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Período</span><span id="resumen-periodo" style="font-size:12.5px;text-align:right">—</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Plan</span><span id="resumen-plan" style="font-size:12.5px;text-align:right">—</span></div>
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:baseline"><span style="font-size:12px;color:#8a8a93">Medio</span><span id="resumen-medio" style="font-size:12.5px;text-align:right">Efectivo</span></div>
                 </div>
-
-                <div class="db-btn-row">
-                    <button type="submit" class="db-btn db-btn-primary">Registrar pago</button>
-                    <a href="{{ url_for('index') }}" class="db-btn db-btn-secondary">Cancelar</a>
+                <div style="height:1px;background:linear-gradient(to right, transparent, rgba(255,255,255,0.12) 24px, rgba(255,255,255,0.12) calc(100% - 24px), transparent)"></div>
+                <div style="display:flex;flex-direction:column;gap:8px">
+                    <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-end;padding-top:6px">
+                        <span style="font-size:12px;color:#cfcfd6">Total</span>
+                        <span id="resumen-total" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:26px;font-weight:500;letter-spacing:-0.02em;line-height:1;color:#fff;font-variant-numeric:tabular-nums">$0</span>
+                    </div>
                 </div>
-            </form>
+                <div style="display:flex;gap:9px;padding:10px 11px;border-radius:10px;border:1px solid rgba(72,198,132,0.28);background:rgba(62,166,110,0.09);margin-top:2px">
+                    <svg width="15" height="15" viewBox="0 0 256 256" fill="#48c684" aria-hidden="true" style="flex:none;margin-top:1px"><path d="M232,128a104,104,0,1,1-104-104A104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128ZM173.66,98.34a8,8,0,0,1,0,11.32l-48,48a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L120,140.69l42.34-42.35A8,8,0,0,1,173.66,98.34Z"></path></svg>
+                    <p style="margin:0;font-size:12px;line-height:1.45;color:#dcdce2">Al registrarlo, la membresía queda al día y el vencimiento pasa al <strong id="resumen-vencimiento" style="font-weight:600;color:#fff">—</strong>.</p>
+                </div>
+            </aside>
         </div>
+
+        <footer style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-top:1px solid rgba(255,255,255,0.07);background:#0c0c0f;flex-wrap:wrap">
+            <span style="font-size:11.5px;color:#6e6e78">Registrará <span id="footer-monto" style="font-family:'IBM Plex Mono', ui-monospace, monospace;color:#cfcfd6">$0</span> a nombre de <span id="footer-nombre">—</span></span>
+            <a href="{{ url_for('index') }}" style="margin-left:auto;min-height:40px;padding:0 14px;display:inline-flex;align-items:center;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13.5px;font-weight:500;color:#f4f4f5;text-decoration:none">Cancelar</a>
+            <button type="submit" style="min-height:40px;padding:0 18px;display:inline-flex;align-items:center;gap:7px;background:#e2323b;border:1px solid #e2323b;border-radius:10px;font-size:13.5px;font-weight:600;color:#fff;cursor:pointer;box-shadow:0 6px 18px -8px rgba(226,50,59,0.9)">
+                <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M219.31,80,176,36.69A15.86,15.86,0,0,0,164.69,32H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V91.31A15.86,15.86,0,0,0,219.31,80ZM168,208H88V152h80Zm40,0H184V152a16,16,0,0,0-16-16H88a16,16,0,0,0-16,16v56H48V48h16V88a8,8,0,0,0,8,8h88a8,8,0,0,0,0-16H80V48h84.69L208,91.31Z"></path></svg>
+                Registrar pago
+            </button>
+        </footer>
+        </form>
     </div>
+    </div>
+
+    <script>
+        const selectSocio = document.getElementById('select-socio');
+        const chipSocio = document.getElementById('chip-socio');
+        const btnCambiar = document.getElementById('btn-cambiar-socio');
+        const mesSelect = document.getElementById('rp-mes');
+        const anioInput = document.getElementById('rp-anio');
+        const montoInput = document.getElementById('rp-monto');
+
+        function actualizarChipSocio() {
+            const opt = selectSocio.selectedOptions[0];
+            if (!opt || !opt.value) return;
+            const nombre = opt.dataset.nombre;
+            const apellido = opt.dataset.apellido;
+            document.getElementById('chip-avatar').textContent = (nombre[0] + apellido[0]).toUpperCase();
+            document.getElementById('chip-nombre').textContent = nombre + ' ' + apellido;
+            document.getElementById('chip-dni').textContent = 'DNI ' + opt.value;
+            document.getElementById('resumen-socio').textContent = nombre + ' ' + apellido;
+            document.getElementById('footer-nombre').textContent = nombre + ' ' + apellido;
+            chipSocio.style.display = 'flex';
+            selectSocio.style.display = 'none';
+            actualizarVencimiento();
+        }
+
+        btnCambiar.addEventListener('click', () => {
+            chipSocio.style.display = 'none';
+            selectSocio.style.display = 'block';
+            selectSocio.focus();
+        });
+
+        selectSocio.addEventListener('change', actualizarChipSocio);
+
+        document.querySelectorAll('.opcion-plan').forEach(label => {
+            label.addEventListener('click', () => {
+                document.querySelectorAll('.opcion-plan').forEach(l => {
+                    l.style.border = '1px solid rgba(255,255,255,0.1)';
+                    l.style.background = '#15151a';
+                });
+                label.style.border = '1px solid rgba(226,50,59,0.55)';
+                label.style.background = 'rgba(226,50,59,0.09)';
+                label.querySelector('input').checked = true;
+                montoInput.value = label.dataset.monto;
+                document.getElementById('resumen-plan').textContent = label.dataset.nombre;
+                actualizarResumen();
+            });
+        });
+
+        document.querySelectorAll('.opcion-medio').forEach(label => {
+            label.addEventListener('click', () => {
+                document.querySelectorAll('.opcion-medio').forEach(l => {
+                    l.style.border = '1px solid rgba(255,255,255,0.1)';
+                    l.style.background = '#15151a';
+                });
+                label.style.border = '1px solid rgba(226,50,59,0.55)';
+                label.style.background = 'rgba(226,50,59,0.09)';
+                label.querySelector('input').checked = true;
+                document.getElementById('resumen-medio').textContent = label.dataset.nombre;
+            });
+        });
+
+        function ultimoDiaDelMes(anio, mes) {
+            return new Date(anio, mes, 0).getDate();
+        }
+
+        function actualizarVencimiento() {
+            const opt = selectSocio.selectedOptions[0];
+            if (!opt || !opt.value) return;
+            const diaVenc = parseInt(opt.dataset.diaVenc, 10);
+            const mes = parseInt(mesSelect.value, 10);
+            const anio = parseInt(anioInput.value, 10);
+            if (!mes || !anio || !diaVenc) return;
+
+            let mesSiguiente = mes + 1;
+            let anioSiguiente = anio;
+            if (mesSiguiente > 12) { mesSiguiente = 1; anioSiguiente++; }
+
+            const diaFinal = Math.min(diaVenc, ultimoDiaDelMes(anioSiguiente, mesSiguiente));
+            const fecha = new Date(anioSiguiente, mesSiguiente - 1, diaFinal);
+            document.getElementById('resumen-vencimiento').textContent = fecha.toLocaleDateString('es-AR');
+        }
+
+        function actualizarResumen() {
+            const monto = parseFloat(montoInput.value) || 0;
+            const montoFmt = '$' + monto.toLocaleString('es-AR');
+            document.getElementById('resumen-total').textContent = montoFmt;
+            document.getElementById('footer-monto').textContent = montoFmt;
+
+            const mesTexto = mesSelect.selectedOptions[0].textContent;
+            document.getElementById('resumen-periodo').textContent = mesTexto + ' ' + anioInput.value;
+            actualizarVencimiento();
+        }
+
+        mesSelect.addEventListener('change', actualizarResumen);
+        anioInput.addEventListener('input', actualizarResumen);
+        montoInput.addEventListener('input', actualizarResumen);
+
+        // Inicialización
+        if (selectSocio.value) actualizarChipSocio();
+        const planInicial = document.querySelector('.opcion-plan');
+        if (planInicial) {
+            montoInput.value = planInicial.dataset.monto;
+            document.getElementById('resumen-plan').textContent = planInicial.dataset.nombre;
+        }
+        actualizarResumen();
+    </script>
 </body>
 </html>

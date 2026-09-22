@@ -389,7 +389,7 @@ def nuevo_pago():
     cursor = conn.cursor(dictionary=True)
 
     if request.method == 'GET':
-        cursor.execute("SELECT dni, nombre, apellido FROM USUARIO WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
+        cursor.execute("SELECT dni, nombre, apellido, dia_vencimiento FROM USUARIO WHERE id_gimnasio = %s ORDER BY apellido, nombre", (session['id_gimnasio'],))
         socios = cursor.fetchall()
         cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
         meses = cursor.fetchall()

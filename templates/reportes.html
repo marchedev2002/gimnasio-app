@@ -30,51 +30,62 @@
 
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(272px,1fr));gap:14px;margin-top:20px">
 
-            <section class="db-card-reporte" data-card="dia" style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:13px">
+            <section style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:13px">
                 <div style="display:flex;align-items:center;gap:8px">
                     <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Hoy</span>
                     <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ hoy_str }}</span>
-                    <button type="button" class="btn-ocultar-card" data-card="dia" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
-                        <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
-                    </button>
                 </div>
 
-                <div class="contenido-real" data-card="dia" style="display:none">
-                    <div style="display:flex;align-items:baseline;gap:8px">
-                        <span class="valor-total" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:#f4f4f5">$0</span>
-                        <span class="valor-variacion" style="font-size:11.5px;font-weight:600"></span>
-                    </div>
-                    <div class="valor-detalle" style="font-size:11.5px;color:#a0a0aa;margin-top:6px"></div>
-                    <div style="display:flex;flex-direction:column;gap:9px;margin-top:9px">
-                        <div>
-                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
-                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M240,72H16a8,8,0,0,0-8,8V176a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V80A8,8,0,0,0,240,72Zm-8,96H24V88H232ZM128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,128,136Z"></path></svg>
-                                Efectivo<span class="valor-efectivo" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
-                            </div>
-                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-efectivo" style="width:0%;height:100%;border-radius:3px;background:#e2323b"></div></div>
+                <div>
+                    <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;font-variant-numeric:tabular-nums;color:#f4f4f5">${{ "%.0f"|format(resumen_dia.total) }}</span>
+                    <div style="font-size:11.5px;color:#a0a0aa;margin-top:6px">{{ resumen_dia.cantidad }} pago(s) · ticket promedio ${{ "%.0f"|format(ticket_dia) }}</div>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:9px">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                            <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M240,72H16a8,8,0,0,0-8,8V176a8,8,0,0,0,8,8H240a8,8,0,0,0,8-8V80A8,8,0,0,0,240,72Zm-8,96H24V88H232ZM128,104a24,24,0,1,0,24,24A24,24,0,0,0,128,104Zm0,32a8,8,0,1,1,8-8A8,8,0,0,1,128,136Z"></path></svg>
+                            Efectivo<span style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">${{ "%.0f"|format(resumen_dia.efectivo) }}</span>
                         </div>
-                        <div>
-                            <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
-                                <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64ZM32,192V104H224v88Zm176-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Z"></path></svg>
-                                Débito<span class="valor-debito" style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">$0</span>
-                            </div>
-                            <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div class="barra-debito" style="width:0%;height:100%;border-radius:3px;background:#8f1a21"></div></div>
-                        </div>
+                        <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div style="width:{{ (resumen_dia.efectivo / resumen_dia.total * 100) if resumen_dia.total else 0 }}%;height:100%;border-radius:3px;background:#e2323b"></div></div>
                     </div>
-                    <button type="button" id="btn-ver-pagos-hoy" style="display:none;margin-top:13px;width:100%;min-height:40px;padding:0 13px;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13px;font-weight:500;color:#f4f4f5;cursor:pointer">
-                        <span id="texto-ver-pagos">Ver pagos</span>
+                    <div>
+                        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:#dcdce2">
+                            <svg width="14" height="14" viewBox="0 0 256 256" fill="#a0a0aa" aria-hidden="true" style="flex:none"><path d="M224,48H32A16,16,0,0,0,16,64V192a16,16,0,0,0,16,16H224a16,16,0,0,0,16-16V64A16,16,0,0,0,224,48Zm0,16V88H32V64ZM32,192V104H224v88Zm176-24a8,8,0,0,1-8,8H168a8,8,0,0,1,0-16h32A8,8,0,0,1,208,168Z"></path></svg>
+                            Débito<span style="margin-left:auto;font-family:'IBM Plex Mono', ui-monospace, monospace">${{ "%.0f"|format(resumen_dia.debito) }}</span>
+                        </div>
+                        <div style="height:4px;border-radius:3px;background:#22222a;margin-top:6px"><div style="width:{{ (resumen_dia.debito / resumen_dia.total * 100) if resumen_dia.total else 0 }}%;height:100%;border-radius:3px;background:#8f1a21"></div></div>
+                    </div>
+                </div>
+
+                {% if pagos_efectivo_hoy or pagos_debito_hoy %}
+                    <button type="button" id="btn-ver-pagos-hoy" style="width:100%;min-height:40px;padding:0 13px;display:flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.14);border-radius:10px;font-size:13px;font-weight:500;color:#f4f4f5;cursor:pointer">
+                        Ver los {{ pagos_efectivo_hoy|length + pagos_debito_hoy|length }} pagos
                         <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg>
                     </button>
-                    <div id="detalle-pagos-hoy" style="display:none;margin-top:12px"></div>
-                </div>
-
-                <div class="skeleton-card" data-card="dia" style="display:flex;flex-direction:column;gap:11px">
-                    <div aria-hidden="true" style="display:flex;flex-direction:column;gap:9px;filter:blur(5px);opacity:0.5"><div style="width:62%;height:28px;border-radius:6px;background:#2a2a33"></div><div style="width:38%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:100%;height:11px;border-radius:4px;background:#22222a"></div><div style="width:85%;height:11px;border-radius:4px;background:#22222a"></div></div>
-                    <button type="button" class="btn-mostrar-card" data-card="dia" style="min-height:40px;padding:0 14px;display:inline-flex;align-items:center;justify-content:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;cursor:pointer">
-                        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
-                        Mostrar monto
-                    </button>
-                </div>
+                    <div id="detalle-pagos-hoy" style="display:none;">
+                        <p style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;margin:10px 0 4px;">Efectivo</p>
+                        {% if pagos_efectivo_hoy %}
+                            <table style="width:100%;border-collapse:collapse;">
+                                {% for p in pagos_efectivo_hoy %}
+                                    <tr><td style="padding:6px 4px;font-size:12px;color:#dcdce2;">{{ p.nombre }} {{ p.apellido }}</td><td style="padding:6px 4px;font-size:12px;color:#dcdce2;text-align:right;font-family:'IBM Plex Mono', monospace;">${{ "%.0f"|format(p.monto) }}</td></tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            <p style="font-size:11.5px;color:#6e6e78;">Sin pagos en efectivo.</p>
+                        {% endif %}
+                        <p style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;margin:10px 0 4px;">Débito</p>
+                        {% if pagos_debito_hoy %}
+                            <table style="width:100%;border-collapse:collapse;">
+                                {% for p in pagos_debito_hoy %}
+                                    <tr><td style="padding:6px 4px;font-size:12px;color:#dcdce2;">{{ p.nombre }} {{ p.apellido }}</td><td style="padding:6px 4px;font-size:12px;color:#dcdce2;text-align:right;font-family:'IBM Plex Mono', monospace;">${{ "%.0f"|format(p.monto) }}</td></tr>
+                                {% endfor %}
+                            </table>
+                        {% else %}
+                            <p style="font-size:11.5px;color:#6e6e78;">Sin pagos con débito.</p>
+                        {% endif %}
+                    </div>
+                {% endif %}
             </section>
 
             <section class="db-card-reporte" data-card="semana" style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:13px">
@@ -381,7 +392,6 @@
         }
 
         function poblarTarjetas(datos) {
-            poblarCard('dia', datos.resumen_dia, datos.variacion_dia, datos.ticket_dia, datos.resumen_dia.cantidad);
             poblarCard('semana', datos.resumen_semana, datos.variacion_semana, datos.ticket_semana, datos.resumen_semana.cantidad);
             poblarCard('mes', datos.resumen_mes, datos.variacion_mes, datos.ticket_mes, datos.resumen_mes.cantidad);
 
@@ -392,30 +402,6 @@
             wrapBalance.querySelector('.balance-margen').textContent = 'Margen ' + datos.margen + '%';
             wrapBalance.querySelector('.balance-barra-resultado').style.width = datos.margen + '%';
             wrapBalance.querySelector('.balance-barra-egresos').style.width = (100 - datos.margen) + '%';
-
-            const totalPagosHoy = datos.pagos_efectivo_hoy.length + datos.pagos_debito_hoy.length;
-            const btnVer = document.getElementById('btn-ver-pagos-hoy');
-            if (totalPagosHoy > 0) {
-                btnVer.style.display = 'inline-flex';
-                document.getElementById('texto-ver-pagos').textContent = 'Ver los ' + totalPagosHoy + ' pagos';
-                btnVer.onclick = () => {
-                    const detalle = document.getElementById('detalle-pagos-hoy');
-                    const abierto = detalle.style.display === 'block';
-                    if (!abierto) {
-                        detalle.innerHTML = construirTablasPagos(datos.pagos_efectivo_hoy, datos.pagos_debito_hoy);
-                    }
-                    detalle.style.display = abierto ? 'none' : 'block';
-                };
-            }
-        }
-
-        function construirTablasPagos(efectivo, debito) {
-            function tabla(lista, titulo) {
-                if (lista.length === 0) return '<p style="font-size:11.5px;color:#6e6e78;margin:6px 0 0;">Sin pagos en ' + titulo.toLowerCase() + '.</p>';
-                let filas = lista.map(p => '<tr><td style="padding:6px 4px;font-size:12px;color:#dcdce2;">' + p.nombre + ' ' + p.apellido + '</td><td style="padding:6px 4px;font-size:12px;color:#dcdce2;text-align:right;font-family:\'IBM Plex Mono\', monospace;">' + fmt(p.monto) + '</td></tr>').join('');
-                return '<p style="font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#6e6e78;margin:10px 0 4px;">' + titulo + '</p><table style="width:100%;border-collapse:collapse;">' + filas + '</table>';
-            }
-            return tabla(efectivo, 'Efectivo') + tabla(debito, 'Débito');
         }
 
         function mostrarCard(nombreCard) {
@@ -435,7 +421,7 @@
         }
 
         function todasVisibles() {
-            return ['dia', 'semana', 'mes', 'balance'].every(c =>
+            return ['semana', 'mes', 'balance'].every(c =>
                 document.querySelector('.contenido-real[data-card="' + c + '"]').style.display === 'block'
             );
         }
@@ -466,7 +452,7 @@
 
         document.getElementById('btn-toggle-todos').addEventListener('click', () => {
             if (todasVisibles()) {
-                ['dia', 'semana', 'mes', 'balance'].forEach(ocultarCard);
+                ['semana', 'mes', 'balance'].forEach(ocultarCard);
             } else {
                 abrirFlujoClave('todos');
             }
@@ -486,7 +472,7 @@
 
         function aplicarObjetivo(objetivo) {
             if (objetivo === 'todos') {
-                ['dia', 'semana', 'mes', 'balance'].forEach(mostrarCard);
+                ['semana', 'mes', 'balance'].forEach(mostrarCard);
             } else {
                 mostrarCard(objetivo);
             }
@@ -514,6 +500,14 @@
             aplicarObjetivo(cardObjetivo);
             modal.style.display = 'none';
         });
+
+        const btnVerPagosHoy = document.getElementById('btn-ver-pagos-hoy');
+        if (btnVerPagosHoy) {
+            btnVerPagosHoy.addEventListener('click', () => {
+                const detalle = document.getElementById('detalle-pagos-hoy');
+                detalle.style.display = detalle.style.display === 'block' ? 'none' : 'block';
+            });
+        }
     </script>
 </body>
 </html>

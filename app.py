@@ -811,6 +811,21 @@ def reportes():
         retencion_labels.append(f"{nombres_meses[periodo_actual[1]]} {periodo_actual[0]}")
         retencion_valores.append(tasa)
 
+    resumen_dia = calcular_resumen_pagos(cursor, session['id_gimnasio'], hoy)
+    ticket_dia = round(resumen_dia['total'] / resumen_dia['cantidad']) if resumen_dia['cantidad'] else 0
+
+    cursor.execute("""
+        SELECT USUARIO.nombre, USUARIO.apellido, PRECIO.monto, PAGO.metodo_pago
+        FROM PAGO
+        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (hoy, session['id_gimnasio']))
+    todos_los_pagos_hoy = cursor.fetchall()
+    pagos_efectivo_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Efectivo']
+    pagos_debito_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Debito']
+
     cursor.close()
     conn.close()
 
@@ -826,6 +841,10 @@ def reportes():
         tendencia_labels=tendencia_labels, tendencia_valores=tendencia_valores,
         retencion_labels=retencion_labels, retencion_valores=retencion_valores,
         hoy_dia=hoy.day, hoy_mes=hoy.month,
+        resumen_dia=resumen_dia,
+        ticket_dia=ticket_dia,
+        pagos_efectivo_hoy=pagos_efectivo_hoy,
+        pagos_debito_hoy=pagos_debito_hoy,
         inicio_semana_str=(hoy - timedelta(days=hoy.weekday())).strftime('%d/%m'),
         hoy_str=hoy.strftime('%d/%m')
     )
@@ -841,7 +860,6 @@ def desbloquear_reportes():
     cursor = conn.cursor(dictionary=True)
 
     hoy = date.today()
-    ayer = hoy - timedelta(days=1)
     inicio_semana = hoy - timedelta(days=hoy.weekday())
     inicio_semana_anterior = inicio_semana - timedelta(days=7)
     fin_semana_anterior = inicio_semana - timedelta(days=1)
@@ -849,8 +867,6 @@ def desbloquear_reportes():
     inicio_mes_anterior = (inicio_mes - timedelta(days=1)).replace(day=1)
     fin_mes_anterior = inicio_mes - timedelta(days=1)
 
-    resumen_dia = calcular_resumen_pagos(cursor, session['id_gimnasio'], hoy)
-    resumen_ayer = calcular_resumen_pagos(cursor, session['id_gimnasio'], ayer, ayer)
     resumen_semana = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_semana)
     resumen_semana_anterior = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_semana_anterior, fin_semana_anterior)
     resumen_mes = calcular_resumen_pagos(cursor, session['id_gimnasio'], inicio_mes)
@@ -884,11 +900,6 @@ def desbloquear_reportes():
         return round(r['total'] / r['cantidad']) if r['cantidad'] else 0
 
     return {
-        'resumen_dia': resumen_dia,
-        'variacion_dia': calcular_variacion(resumen_dia['total'], resumen_ayer['total']),
-        'ticket_dia': ticket_prom(resumen_dia),
-        'pagos_efectivo_hoy': pagos_efectivo_hoy,
-        'pagos_debito_hoy': pagos_debito_hoy,
 
         'resumen_semana': resumen_semana,
         'variacion_semana': calcular_variacion(resumen_semana['total'], resumen_semana_anterior['total']),

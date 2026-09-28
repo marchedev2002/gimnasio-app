@@ -7,7 +7,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
@@ -92,7 +91,7 @@
                 <div style="display:flex;align-items:center;gap:8px">
                     <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Esta semana</span>
                     <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ inicio_semana_str }}–{{ hoy_str }}</span>
-                    <button type="button" class="btn-ocultar-card" data-card="semana" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                    <button type="button" class="btn-ocultar-card" data-card="semana" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
                         <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
                     </button>
                 </div>
@@ -134,7 +133,7 @@
                 <div style="display:flex;align-items:center;gap:8px">
                     <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Este mes</span>
                     <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ nombre_mes_actual }}</span>
-                    <button type="button" class="btn-ocultar-card" data-card="mes" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                    <button type="button" class="btn-ocultar-card" data-card="mes" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
                         <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
                     </button>
                 </div>
@@ -173,11 +172,11 @@
             </section>
         </div>
 
-        <section style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+        <section class="db-card-reporte" data-card="balance" style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
             <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
                 <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Balance del mes</span>
                 <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa;white-space:nowrap">{{ nombre_mes_actual }}</span>
-                <button type="button" class="btn-ocultar-card" data-card="balance" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                <button type="button" class="btn-ocultar-card" data-card="balance" aria-label="Ocultar" style="display:none;margin-left:auto;width:30px;height:30px;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
                     <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
                 </button>
             </div>
@@ -219,133 +218,196 @@
 
         <p style="margin:12px 0 0;font-size:11.5px;color:#9a9aa4">Los montos quedan ocultos por defecto: la pantalla se usa en recepción, a la vista de los socios.</p>
 
-        <div class="db-card" style="margin-top:36px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:18px;">
-                <p class="db-section-label" style="margin-bottom:0;">Ingresos por profesor</p>
-                <form method="GET" style="display:flex; gap:8px; align-items:center;">
-                    <label style="color:var(--db-text-dim); font-size:0.85rem;">Período:</label>
-                    <select name="meses" class="db-input" style="width:auto;" onchange="this.form.submit()">
-                        {% for n in range(1, 13) %}
-                            <option value="{{ n }}" {% if n == meses_grafico %}selected{% endif %}>
-                                {{ 'Mes actual' if n == 1 else 'Últimos ' + n|string + ' meses' }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                </form>
-            </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:14px;margin-top:14px;align-items:stretch">
 
-            {% if distribucion_profesores %}
-                <div style="display:flex; gap:28px; flex-wrap:wrap; align-items:center;">
-                    <div style="flex:1; min-width:220px; max-width:320px;">
-                        <canvas id="graficoProfesores"></canvas>
+            <section style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <div>
+                        <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Ingresos por profesor</div>
+                        <div style="font-size:12px;color:#a0a0aa;margin-top:3px">Check-ins por profesor a cargo de la clase</div>
                     </div>
-                    <div style="flex:1; min-width:220px;">
-                        {% for fila in distribucion_profesores %}
-                            <div class="db-report-split">
-                                <span>{{ fila.categoria }}</span>
-                                <span>{{ fila.cantidad }} ({{ fila.porcentaje }}%)</span>
+                    <form method="GET" style="margin-left:auto">
+                        <select name="meses" onchange="this.form.submit()" style="min-height:36px;padding:0 10px;font-size:12.5px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.14);border-radius:9px;outline:none">
+                            {% for n in range(1, 13) %}
+                                <option value="{{ n }}" {% if n == meses_grafico %}selected{% endif %}>{{ 'Este mes' if n == 1 else 'Últimos ' ~ n ~ ' meses' }}</option>
+                            {% endfor %}
+                        </select>
+                    </form>
+                </div>
+
+                <div style="display:flex;flex-direction:column;gap:13px">
+                    {% for p in ranking_profesores %}
+                        <div style="display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:11px;align-items:center;{% if p.cantidad == 0 %}opacity:0.7{% endif %}">
+                            <span aria-hidden="true" style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:11.5px;font-weight:600;{% if p.cantidad == 0 %}color:#a0a0aa;background:#1c1c22;border:1px dashed rgba(255,255,255,0.16){% else %}color:#fff;background:linear-gradient(160deg, #e2323b, #8f1a21){% endif %}">{{ p.iniciales }}</span>
+                            <div style="min-width:0">
+                                <div style="display:flex;justify-content:space-between;gap:8px;font-size:13.5px;min-width:0">
+                                    <span style="font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.nombre }}</span>
+                                    <span style="font-size:12px;color:#a0a0aa;white-space:nowrap">{{ p.turno or 'Sin turno' }}</span>
+                                </div>
+                                <div style="height:6px;border-radius:4px;background:#22222a;margin-top:7px"><div style="width:{{ p.porcentaje }}%;height:100%;border-radius:4px;background:#e2323b"></div></div>
+                            </div>
+                            <div style="text-align:right;min-width:62px">
+                                <div style="font-family:'IBM Plex Mono', monospace;font-size:15px;font-weight:500">{{ p.cantidad }}</div>
+                                <div style="font-size:11.5px;color:#a0a0aa">{{ (p.porcentaje ~ '%') if p.cantidad else '—' }}</div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <p style="font-size:12.5px;color:#6e6e78">Todavía no hay profesores cargados.</p>
+                    {% endfor %}
+
+                    <div style="display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:11px;align-items:center;opacity:0.85">
+                        <span aria-hidden="true" style="width:32px;height:32px;border-radius:9px;display:grid;place-items:center;font-size:11.5px;color:#a0a0aa;background:#1c1c22;border:1px dashed rgba(255,255,255,0.16)">—</span>
+                        <div style="min-width:0">
+                            <div style="font-size:13.5px;font-weight:500">Musculación libre / sin clase</div>
+                            <div style="height:6px;border-radius:4px;background:#22222a;margin-top:7px"><div style="width:{{ sin_clase_pct }}%;height:100%;border-radius:4px;background:#8f1a21"></div></div>
+                        </div>
+                        <div style="text-align:right;min-width:62px">
+                            <div style="font-family:'IBM Plex Mono', monospace;font-size:15px;font-weight:500">{{ sin_clase }}</div>
+                            <div style="font-size:11.5px;color:#a0a0aa">{{ (sin_clase_pct ~ '%') if sin_clase else '—' }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% if insight_profesor %}
+                    <p style="margin:auto 0 0;padding-top:4px;font-size:12px;color:#a0a0aa">{{ insight_profesor }}</p>
+                {% endif %}
+            </section>
+
+            <section style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;display:flex;flex-direction:column;gap:14px">
+                <div style="display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+                    <div>
+                        <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Retención mes a mes</div>
+                        <div style="font-size:12px;color:#a0a0aa;margin-top:3px">Socios que pagaron el mes anterior y volvieron a pagar</div>
+                    </div>
+                    <div style="margin-left:auto;text-align:right">
+                        <div style="font-family:'IBM Plex Mono', monospace;font-size:22px;font-weight:500;letter-spacing:-0.02em;line-height:1">{{ (retencion_actual ~ '%') if retencion_actual is not none else '—' }}</div>
+                        {% if retencion_delta is not none %}
+                            <div style="font-size:11.5px;font-weight:600;color:{{ '#7ae0a8' if retencion_delta >= 0 else '#ff8f95' }};margin-top:4px;white-space:nowrap">{{ '+' if retencion_delta >= 0 else '−' }}{{ retencion_delta|abs }} pt vs mes anterior</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div style="position:relative;height:168px;margin-top:14px">
+                    <div aria-hidden="true" style="position:absolute;left:0;right:0;top:0;border-top:1px dashed rgba(255,255,255,0.08)"></div>
+                    <div aria-hidden="true" style="position:absolute;left:0;right:0;top:50%;border-top:1px dashed rgba(255,255,255,0.08)"></div>
+                    <div aria-hidden="true" style="position:absolute;left:0;right:0;bottom:0;border-top:1px solid rgba(255,255,255,0.14)"></div>
+                    <span aria-hidden="true" style="position:absolute;right:0;top:-7px;font-family:'IBM Plex Mono', monospace;font-size:10px;color:#8e8e99;background:#101013;padding-left:4px">100%</span>
+                    <span aria-hidden="true" style="position:absolute;right:0;top:calc(50% - 7px);font-family:'IBM Plex Mono', monospace;font-size:10px;color:#8e8e99;background:#101013;padding-left:4px">50%</span>
+                    <div style="position:absolute;inset:0 34px 0 0;display:flex;align-items:flex-end;gap:14px">
+                        {% for r in retencion %}
+                            <div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center">
+                                {% if r.valor is none %}
+                                    <span style="font-size:10.5px;color:#8e8e99;margin-bottom:6px">—</span>
+                                    <div style="width:100%;max-width:44px;height:2px;border-top:2px dashed #2a2a33"></div>
+                                {% else %}
+                                    <span style="font-family:'IBM Plex Mono', monospace;font-size:11.5px;color:{{ '#fff' if r.es_actual else '#dcdce2' }};margin-bottom:5px">{{ r.valor }}%</span>
+                                    <div style="width:100%;max-width:44px;height:{{ r.valor }}%;border-radius:5px 5px 0 0;background:{{ '#e2323b' if r.es_actual else '#8f1a21' }}"></div>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
                 </div>
-
-                <script>
-                    const ctxProfesores = document.getElementById('graficoProfesores');
-                    new Chart(ctxProfesores, {
-                        type: 'pie',
-                        data: {
-                            labels: {{ distribucion_profesores | map(attribute='categoria') | list | tojson }},
-                            datasets: [{
-                                data: {{ distribucion_profesores | map(attribute='cantidad') | list | tojson }},
-                                backgroundColor: ['#e6493b', '#2bd4a0', '#d98f3c', '#5b8def', '#a45be6', '#e65ba1', '#5be6c4']
-                            }]
-                        },
-                        options: {
-                            plugins: {
-                                legend: { labels: { color: '#f2f4f8' } }
-                            }
-                        }
-                    });
-                </script>
-            {% else %}
-                <p class="db-empty">Todavía no hay check-ins registrados en este período.</p>
-            {% endif %}
+                <div style="display:flex;gap:14px;margin-right:34px;font-size:11.5px;color:#a0a0aa;text-align:center" aria-hidden="true">
+                    {% for r in retencion %}<span style="flex:1;{% if r.es_actual %}color:#fff;font-weight:500{% endif %}">{{ r.label }}</span>{% endfor %}
+                </div>
+                {% if labels_sin_datos %}
+                    <p style="margin:0;font-size:12px;color:#a0a0aa">{{ labels_sin_datos|join(', ') }} sin datos: se necesitan dos meses de pagos registrados para calcular la retención.</p>
+                {% endif %}
+            </section>
         </div>
 
-        <div class="db-card" style="margin-top:36px;">
-            <p class="db-section-label">Tendencia de ingresos (últimos 12 meses)</p>
-            <canvas id="graficoTendencia" height="90"></canvas>
-            <script>
-                new Chart(document.getElementById('graficoTendencia'), {
-                    type: 'line',
-                    data: {
-                        labels: {{ tendencia_labels | tojson }},
-                        datasets: [{
-                            label: 'Ingresos',
-                            data: {{ tendencia_valores | tojson }},
-                            borderColor: '#e6493b',
-                            backgroundColor: 'rgba(230, 73, 59, 0.15)',
-                            fill: true,
-                            tension: 0.3
-                        }]
-                    },
-                    options: {
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { ticks: { color: '#f2f4f8' } },
-                            y: { ticks: { color: '#f2f4f8' }, beginAtZero: true }
-                        }
-                    }
-                });
-            </script>
+        <section style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+            <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+                <div>
+                    <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Tendencia de ingresos</div>
+                    <div style="font-size:12px;color:#a0a0aa;margin-top:3px">Últimos 12 meses</div>
+                </div>
+                <div id="tendencia-resumen" style="display:none;margin-left:auto;align-items:center;gap:18px;flex-wrap:wrap">
+                    <div style="text-align:right"><div style="font-size:11.5px;color:#a0a0aa">Acumulado</div><div id="tendencia-acumulado" style="font-family:'IBM Plex Mono', monospace;font-size:16px;font-weight:500;margin-top:2px">$0</div></div>
+                    <div style="text-align:right"><div style="font-size:11.5px;color:#a0a0aa">vs mes anterior</div><div id="tendencia-variacion" style="font-family:'IBM Plex Mono', monospace;font-size:16px;font-weight:500;margin-top:2px">—</div></div>
+                    <button type="button" class="btn-ocultar-card" data-card="tendencia" aria-label="Ocultar la tendencia" style="display:none;width:30px;height:30px;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#a0a0aa;cursor:pointer">
+                        <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M53.92,34.62A8,8,0,1,0,42.08,45.38L61.32,66.55C25,88.84,9.38,123.2,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208a127.11,127.11,0,0,0,52.07-10.83l22,24.21a8,8,0,1,0,11.84-10.76Zm47.33,75.4,41.75,45.92a32,32,0,0,1-41.75-45.92ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.16,133.16,0,0,1,25.8,128c4.71-8.79,19.94-33.39,48.14-49.48l20.5,22.55a48,48,0,0,0,63.09,69.4l14.19,15.61A113,113,0,0,1,128,192Zm118.61-60.75c-.42.94-10.55,23.35-33.36,43.8a8,8,0,1,1-10.67-11.92A132.71,132.71,0,0,0,230.2,128c-6.36-13.46-37.77-64-102.2-64-3.29,0-6.52.13-9.7.37a8,8,0,1,1-1.2-16c3.59-.27,7.24-.41,10.9-.41,34.88,0,66.57,13.26,91.66,38.35,18.83,18.83,27.3,37.62,27.65,38.41A8,8,0,0,1,246.61,131.25Z"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="contenido-real" data-card="tendencia" style="display:none">
+                <div style="position:relative;height:200px;margin-top:22px">
+                    <div aria-hidden="true" style="position:absolute;left:44px;right:0;top:0;border-top:1px dashed rgba(255,255,255,0.08)"></div>
+                    <div aria-hidden="true" style="position:absolute;left:44px;right:0;top:50%;border-top:1px dashed rgba(255,255,255,0.08)"></div>
+                    <div aria-hidden="true" style="position:absolute;left:44px;right:0;bottom:0;border-top:1px solid rgba(255,255,255,0.14)"></div>
+                    <span id="tend-eje-max" aria-hidden="true" style="position:absolute;left:0;top:-7px;font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:#8e8e99"></span>
+                    <span id="tend-eje-mid" aria-hidden="true" style="position:absolute;left:0;top:calc(50% - 7px);font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:#8e8e99"></span>
+                    <span aria-hidden="true" style="position:absolute;left:0;bottom:-6px;font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:#8e8e99">0</span>
+                    <div id="tend-sin-registros" aria-hidden="true" style="display:none;position:absolute;left:44px;top:0;bottom:0;place-items:center;background:repeating-linear-gradient(135deg, rgba(255,255,255,0.018) 0 8px, transparent 8px 16px);border-radius:6px 6px 0 0"><span id="tend-sin-registros-texto" style="font-size:12px;color:#8e8e99;background:#101013;padding:3px 9px;border-radius:6px;border:1px solid rgba(255,255,255,0.08);white-space:nowrap"></span></div>
+                    <div id="tend-barras" style="position:absolute;left:44px;right:0;top:0;bottom:0;display:flex;align-items:flex-end;gap:10px"></div>
+                </div>
+                <div id="tend-etiquetas" aria-hidden="true" style="display:flex;gap:10px;margin:9px 0 0 44px;font-size:11.5px;color:#a0a0aa;text-align:center"></div>
+            </div>
+
+            <div class="skeleton-card" data-card="tendencia" style="position:relative;height:200px;margin-top:22px;display:grid;place-items:center">
+                <div aria-hidden="true" style="position:absolute;inset:0;display:flex;align-items:flex-end;gap:10px;padding-left:44px;filter:blur(6px);opacity:0.45">
+                    <div style="flex:1;height:4%;background:#2a2a33"></div><div style="flex:1;height:4%;background:#2a2a33"></div><div style="flex:1;height:4%;background:#2a2a33"></div><div style="flex:1;height:4%;background:#2a2a33"></div><div style="flex:1;height:4%;background:#2a2a33"></div><div style="flex:1;height:4%;background:#2a2a33"></div><div style="flex:1;height:6%;background:#3a2126"></div><div style="flex:1;height:45%;background:#3a2126"></div><div style="flex:1;height:65%;background:#4a1418"></div><div style="flex:1;height:75%;background:#4a1418"></div><div style="flex:1;height:70%;background:#4a1418"></div><div style="flex:1;height:78%;background:#4a1418"></div>
+                </div>
+                <button type="button" class="btn-mostrar-card" data-card="tendencia" style="position:relative;min-height:40px;padding:0 14px;display:inline-flex;align-items:center;gap:7px;background:#101013;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;cursor:pointer">
+                    <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M208,80H176V56a48,48,0,0,0-96,0V80H48A16,16,0,0,0,32,96V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V96A16,16,0,0,0,208,80ZM96,56a32,32,0,0,1,64,0V80H96ZM208,208H48V96H208V208Z"></path></svg>
+                    Mostrar tendencia
+                </button>
+            </div>
+        </section>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:14px;margin-top:14px;align-items:stretch">
+            <section style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Cobrado por día</div>
+                <div style="font-size:12px;color:#a0a0aa;margin-top:3px">{{ nombre_mes_actual }}</div>
+                <div style="display:flex;align-items:flex-end;gap:3px;height:120px;margin-top:16px">
+                    {% for d in dias_barras %}
+                        <div title="Día {{ d.dia }}" style="flex:1;height:{{ [d.alto, 3]|max }}%;border-radius:3px 3px 0 0;background:{{ '#e2323b' if d.es_hoy else '#3a3f4d' }}"></div>
+                    {% endfor %}
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:6px;font-family:'IBM Plex Mono', monospace;font-size:10.5px;color:#8e8e99"><span>1</span><span>{{ dias_barras|length }}</span></div>
+            </section>
+
+            <section style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Mix por plan</div>
+                <div style="font-size:12px;color:#a0a0aa;margin-top:3px">% de lo cobrado este mes</div>
+                <div style="display:flex;flex-direction:column;gap:12px;margin-top:16px">
+                    {% for item in mix_por_plan %}
+                        <div>
+                            <div style="display:flex;justify-content:space-between;font-size:12.5px"><span>{{ item.plan }}</span><span style="font-family:'IBM Plex Mono', monospace">{{ item.porcentaje }}%</span></div>
+                            <div style="height:5px;border-radius:3px;background:#22222a;margin-top:6px"><div style="width:{{ item.porcentaje }}%;height:100%;border-radius:3px;background:#e2323b"></div></div>
+                        </div>
+                    {% else %}
+                        <p style="font-size:12.5px;color:#6e6e78">Sin pagos registrados este mes.</p>
+                    {% endfor %}
+                </div>
+            </section>
         </div>
 
-        <div class="db-card" style="margin-top:36px;">
-            <p class="db-section-label">Retención mes a mes (últimos 6 meses)</p>
-            <p style="color:var(--db-text-dim); font-size:0.85rem; margin-bottom:14px;">
-                % de socios que pagaron el mes anterior y volvieron a pagar el mes indicado.
-            </p>
-            <canvas id="graficoRetencion" height="90"></canvas>
-            <script>
-                new Chart(document.getElementById('graficoRetencion'), {
-                    type: 'bar',
-                    data: {
-                        labels: {{ retencion_labels | tojson }},
-                        datasets: [{
-                            label: 'Retención %',
-                            data: {{ retencion_valores | tojson }},
-                            backgroundColor: '#2bd4a0'
-                        }]
-                    },
-                    options: {
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            x: { ticks: { color: '#f2f4f8' } },
-                            y: { ticks: { color: '#f2f4f8' }, beginAtZero: true, max: 100 }
-                        }
-                    }
-                });
-            </script>
-        </div>
-
-        <div class="db-card" style="margin-top:36px;">
-            <p class="db-section-label">Descargar Excel de un mes puntual</p>
-            <form action="{{ url_for('exportar_reporte') }}" method="GET" style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
-                <div class="db-field" style="flex:1; min-width:140px; margin-bottom:0;">
-                    <label>Mes</label>
-                    <select name="mes" class="db-input">
-                        {% for m in meses %}
-                            <option value="{{ m.id_mes }}" {% if m.id_mes == mes_actual %}selected{% endif %}>{{ m.nombre_mes }}</option>
-                        {% endfor %}
+        <section style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+            <form action="{{ url_for('exportar_reporte') }}" method="GET" style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+                <div style="flex:1 1 220px;min-width:0;display:flex;align-items:center;gap:9px">
+                    <span aria-hidden="true" style="width:32px;height:32px;flex:none;border-radius:9px;display:grid;place-items:center;background:rgba(72,198,132,0.1);border:1px solid rgba(72,198,132,0.3);color:#7ae0a8">
+                        <svg width="16" height="16" viewBox="0 0 256 256" fill="currentColor"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,106.34a8,8,0,0,0-11.32,11.32Z"></path></svg>
+                    </span>
+                    <div>
+                        <div style="font-size:14px;font-weight:600">Exportar un mes a Excel</div>
+                        <div style="font-size:12px;color:#a0a0aa;margin-top:1px">Pagos con fecha, socio, plan, monto y medio de pago</div>
+                    </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;flex:0 1 190px">
+                    <label for="rp-x-mes" style="font-size:12px;color:#a0a0aa">Mes</label>
+                    <select name="mes" id="rp-x-mes" style="width:100%;min-height:42px;padding:9px 11px;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none">
+                        {% for m in meses %}<option value="{{ m.id_mes }}" {% if m.id_mes == mes_actual %}selected{% endif %}>{{ m.nombre_mes }}</option>{% endfor %}
                     </select>
                 </div>
-                <div class="db-field" style="flex:1; min-width:100px; margin-bottom:0;">
-                    <label>Año</label>
-                    <input type="number" name="anio" class="db-input" value="{{ anio_actual }}">
+                <div style="display:flex;flex-direction:column;gap:5px;flex:0 1 110px">
+                    <label for="rp-x-anio" style="font-size:12px;color:#a0a0aa">Año</label>
+                    <input name="anio" id="rp-x-anio" type="number" value="{{ anio_actual }}" style="width:100%;min-height:42px;padding:9px 11px;font-family:'IBM Plex Mono', monospace;font-size:14px;color:#f4f4f5;background:#15151a;border:1px solid rgba(255,255,255,0.1);border-radius:10px;outline:none">
                 </div>
-                <button type="submit" class="db-btn db-btn-primary">📥 Descargar</button>
+                <button type="submit" style="min-height:42px;padding:0 16px;display:inline-flex;align-items:center;gap:7px;background:transparent;border:1px solid rgba(255,255,255,0.18);border-radius:10px;font-size:13.5px;font-weight:600;color:#f4f4f5;cursor:pointer;white-space:nowrap">Descargar .xlsx</button>
             </form>
-        </div>
+        </section>
+
             </div>
         </div>
     </div>
@@ -363,6 +425,8 @@
     </div>
 
     <script>
+        const TARJETAS_PROTEGIDAS = ['semana', 'mes', 'balance', 'tendencia'];
+
         let datosCache = null;
         let cardObjetivo = null;
 
@@ -371,6 +435,12 @@
         const errorClave = document.getElementById('error-clave');
 
         function fmt(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
+
+        function fmtM(n) {
+            if (n >= 1000000) return '$' + (n / 1000000).toFixed(1).replace('.', ',') + 'M';
+            if (n >= 1000) return '$' + Math.round(n / 1000) + 'k';
+            return '$' + Math.round(n);
+        }
 
         function poblarCard(nombreCard, resumen, variacion, ticket, cantidad) {
             const wrap = document.querySelector('.contenido-real[data-card="' + nombreCard + '"]');
@@ -391,6 +461,50 @@
             wrap.querySelector('.barra-debito').style.width = pctDb + '%';
         }
 
+        function poblarTendencia(datos) {
+            const t = datos.tendencia;
+            if (!t) return;
+
+            const max = Math.max(...t.map(x => x.valor), 1);
+            const primerConDatos = t.findIndex(x => x.valor > 0);
+
+            document.getElementById('tend-eje-max').textContent = fmtM(max);
+            document.getElementById('tend-eje-mid').textContent = fmtM(max / 2);
+            document.getElementById('tendencia-acumulado').textContent = fmt(datos.tendencia_acumulado);
+
+            const varEl = document.getElementById('tendencia-variacion');
+            if (datos.variacion_mes !== null && datos.variacion_mes !== undefined) {
+                varEl.textContent = (datos.variacion_mes >= 0 ? '+' : '') + datos.variacion_mes + '%';
+                varEl.style.color = datos.variacion_mes >= 0 ? '#7ae0a8' : '#ff9aa0';
+            } else {
+                varEl.textContent = '—';
+            }
+
+            document.getElementById('tend-barras').innerHTML = t.map((x, i) => {
+                const esActual = i === t.length - 1;
+                const alto = x.valor > 0 ? Math.max(x.valor / max * 100, 3) : 0;
+                const color = esActual ? '#e2323b' : (x.valor / max > 0.6 ? '#8f1a21' : '#6a151b');
+                return '<div style="flex:1;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center">' +
+                    (x.valor > 0 ? '<span style="font-family:\'IBM Plex Mono\',monospace;font-size:11px;color:' + (esActual ? '#fff' : '#c2c2ca') + ';margin-bottom:5px">' + fmtM(x.valor) + '</span>' : '') +
+                    '<div style="width:100%;max-width:52px;height:' + alto + '%;border-radius:5px 5px 0 0;background:' + color + '"></div></div>';
+            }).join('');
+
+            document.getElementById('tend-etiquetas').innerHTML = t.map((x, i) =>
+                '<span style="flex:1;' + (i === t.length - 1 ? 'color:#fff;font-weight:500' : '') + '">' + x.label +
+                (i === 0 || x.label === 'Ene' ? '<br><span style="font-size:10px;color:#8e8e99">' + x.anio + '</span>' : '') +
+                (i === t.length - 1 ? '<br><span style="font-size:10px;color:#ff9aa0;font-weight:400">en curso</span>' : '') + '</span>'
+            ).join('');
+
+            const bloque = document.getElementById('tend-sin-registros');
+            if (primerConDatos > 0) {
+                bloque.style.display = 'grid';
+                bloque.style.width = 'calc((100% - 44px) * ' + (primerConDatos / t.length) + ')';
+                document.getElementById('tend-sin-registros-texto').textContent = 'Sin registros antes de ' + t[primerConDatos].label + ' ' + t[primerConDatos].anio;
+            } else {
+                bloque.style.display = 'none';
+            }
+        }
+
         function poblarTarjetas(datos) {
             poblarCard('semana', datos.resumen_semana, datos.variacion_semana, datos.ticket_semana, datos.resumen_semana.cantidad);
             poblarCard('mes', datos.resumen_mes, datos.variacion_mes, datos.ticket_mes, datos.resumen_mes.cantidad);
@@ -402,6 +516,8 @@
             wrapBalance.querySelector('.balance-margen').textContent = 'Margen ' + datos.margen + '%';
             wrapBalance.querySelector('.balance-barra-resultado').style.width = datos.margen + '%';
             wrapBalance.querySelector('.balance-barra-egresos').style.width = (100 - datos.margen) + '%';
+
+            poblarTendencia(datos);
         }
 
         function mostrarCard(nombreCard) {
@@ -409,19 +525,21 @@
             document.querySelector('.contenido-real[data-card="' + nombreCard + '"]').style.display = 'block';
             const btnOcultar = document.querySelector('.btn-ocultar-card[data-card="' + nombreCard + '"]');
             if (btnOcultar) btnOcultar.style.display = 'grid';
+            if (nombreCard === 'tendencia') document.getElementById('tendencia-resumen').style.display = 'flex';
             actualizarBotonGlobal();
         }
 
         function ocultarCard(nombreCard) {
-            document.querySelector('.skeleton-card[data-card="' + nombreCard + '"]').style.display = 'flex';
+            document.querySelector('.skeleton-card[data-card="' + nombreCard + '"]').style.display = nombreCard === 'tendencia' ? 'grid' : 'flex';
             document.querySelector('.contenido-real[data-card="' + nombreCard + '"]').style.display = 'none';
             const btnOcultar = document.querySelector('.btn-ocultar-card[data-card="' + nombreCard + '"]');
             if (btnOcultar) btnOcultar.style.display = 'none';
+            if (nombreCard === 'tendencia') document.getElementById('tendencia-resumen').style.display = 'none';
             actualizarBotonGlobal();
         }
 
         function todasVisibles() {
-            return ['semana', 'mes', 'balance'].every(c =>
+            return TARJETAS_PROTEGIDAS.every(c =>
                 document.querySelector('.contenido-real[data-card="' + c + '"]').style.display === 'block'
             );
         }
@@ -452,7 +570,7 @@
 
         document.getElementById('btn-toggle-todos').addEventListener('click', () => {
             if (todasVisibles()) {
-                ['semana', 'mes', 'balance'].forEach(ocultarCard);
+                TARJETAS_PROTEGIDAS.forEach(ocultarCard);
             } else {
                 abrirFlujoClave('todos');
             }
@@ -472,7 +590,7 @@
 
         function aplicarObjetivo(objetivo) {
             if (objetivo === 'todos') {
-                ['semana', 'mes', 'balance'].forEach(mostrarCard);
+                TARJETAS_PROTEGIDAS.forEach(mostrarCard);
             } else {
                 mostrarCard(objetivo);
             }

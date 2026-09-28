@@ -676,52 +676,66 @@ def alertas():
 def reportes():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
+    id_gim = session['id_gimnasio']
 
     hoy = date.today()
     inicio_mes = date(hoy.year, hoy.month, 1)
+    inicio_semana = hoy - timedelta(days=hoy.weekday())
 
     cursor.execute("SELECT id_mes, nombre_mes FROM MES ORDER BY id_mes")
     meses = cursor.fetchall()
 
     nombres_meses_completo = ['', 'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio',
-                               'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
+                              'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
     nombre_mes_actual = f"{nombres_meses_completo[hoy.month]} {hoy.year}"
+
+    # --- Hoy (visible sin clave) ---
+    resumen_dia = calcular_resumen_pagos(cursor, id_gim, hoy)
+    ticket_dia = round(resumen_dia['total'] / resumen_dia['cantidad']) if resumen_dia['cantidad'] else 0
+
+    cursor.execute("""
+        SELECT USUARIO.nombre, USUARIO.apellido, PRECIO.monto, PAGO.metodo_pago
+        FROM PAGO
+        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
+        ORDER BY USUARIO.apellido, USUARIO.nombre
+    """, (hoy, id_gim))
+    todos_los_pagos_hoy = cursor.fetchall()
+    pagos_efectivo_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Efectivo']
+    pagos_debito_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Debito']
 
     # --- Cobrado por día (mes actual) ---
     ultimo_dia_mes_actual = calendar.monthrange(hoy.year, hoy.month)[1]
     cursor.execute("""
         SELECT DAY(PAGO.fecha_pago) AS dia, SUM(PRECIO.monto) AS total
-        FROM PAGO
-        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
         WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
         GROUP BY dia
-    """, (inicio_mes, session['id_gimnasio']))
-    filas_dia = cursor.fetchall()
-    mapa_dia = {f['dia']: float(f['total']) for f in filas_dia}
-    dias_labels = [str(d) for d in range(1, ultimo_dia_mes_actual + 1)]
+    """, (inicio_mes, id_gim))
+    mapa_dia = {f['dia']: float(f['total']) for f in cursor.fetchall()}
     dias_valores = [mapa_dia.get(d, 0) for d in range(1, ultimo_dia_mes_actual + 1)]
+    max_dia = max(dias_valores) if dias_valores else 0
+    dias_barras = [
+        {'dia': d, 'valor': v, 'alto': round(v / max_dia * 100) if max_dia else 0, 'es_hoy': d == hoy.day}
+        for d, v in zip(range(1, ultimo_dia_mes_actual + 1), dias_valores)
+    ]
 
     # --- Mix por plan (mes actual) ---
     cursor.execute("""
         SELECT PRECIO.tipo_membresia, SUM(PRECIO.monto) AS total
-        FROM PAGO
-        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
         WHERE PAGO.fecha_pago >= %s AND PAGO.id_gimnasio = %s
-        GROUP BY PRECIO.tipo_membresia
-        ORDER BY total DESC
-    """, (inicio_mes, session['id_gimnasio']))
+        GROUP BY PRECIO.tipo_membresia ORDER BY total DESC
+    """, (inicio_mes, id_gim))
     filas_plan = cursor.fetchall()
     total_mix = sum(float(f['total']) for f in filas_plan)
-    mix_por_plan = []
-    for f in filas_plan:
-        monto = float(f['total'])
-        mix_por_plan.append({
-            'plan': f['tipo_membresia'],
-            'monto': monto,
-            'porcentaje': round((monto / total_mix * 100), 1) if total_mix else 0
-        })
+    mix_por_plan = [{
+        'plan': f['tipo_membresia'],
+        'porcentaje': round(float(f['total']) / total_mix * 100, 1) if total_mix else 0
+    } for f in filas_plan]
 
-    # --- Distribución de ingresos por profesor (pie chart) ---
+    # --- Ingresos por profesor (check-ins del período, con turno) ---
     meses_grafico = request.args.get('meses', 1)
     try:
         meses_grafico = int(meses_grafico)
@@ -737,46 +751,47 @@ def reportes():
     fecha_desde_grafico = date(anio_desde, mes_desde, 1)
 
     cursor.execute("""
-        SELECT COALESCE(CONCAT(PROFESOR.nombre, ' ', PROFESOR.apellido), 'Musculación libre / Sin clase') AS categoria,
-               COUNT(*) AS cantidad
-        FROM ASISTENCIA
-        LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
-        LEFT JOIN PROFESOR ON CLASE.id_profesor = PROFESOR.id_profesor
-        WHERE ASISTENCIA.fecha_hora >= %s AND ASISTENCIA.id_gimnasio = %s
-        GROUP BY categoria
-        ORDER BY cantidad DESC
-    """, (fecha_desde_grafico, session['id_gimnasio']))
-    distribucion_profesores = cursor.fetchall()
-    total_ingresos_periodo = sum(f['cantidad'] for f in distribucion_profesores)
-    for f in distribucion_profesores:
-        f['porcentaje'] = round((f['cantidad'] / total_ingresos_periodo * 100), 1) if total_ingresos_periodo else 0
-
-    # --- Tendencia de ingresos (12 meses) ---
-    fecha_hace_12_meses = hoy.replace(day=1)
-    for _ in range(11):
-        fecha_hace_12_meses = (fecha_hace_12_meses - timedelta(days=1)).replace(day=1)
+        SELECT PROFESOR.id_profesor, PROFESOR.nombre, PROFESOR.apellido,
+               MIN(CLASE_T.hora_inicio) AS primera_hora,
+               (SELECT COUNT(*) FROM ASISTENCIA A
+                  JOIN CLASE C ON A.id_clase = C.id_clase
+                 WHERE C.id_profesor = PROFESOR.id_profesor
+                   AND A.id_gimnasio = %s AND A.fecha_hora >= %s) AS cantidad
+        FROM PROFESOR
+        LEFT JOIN CLASE CLASE_T ON CLASE_T.id_profesor = PROFESOR.id_profesor
+        WHERE PROFESOR.id_gimnasio = %s
+        GROUP BY PROFESOR.id_profesor, PROFESOR.nombre, PROFESOR.apellido
+    """, (id_gim, fecha_desde_grafico, id_gim))
+    filas_prof = cursor.fetchall()
 
     cursor.execute("""
-        SELECT DATE_FORMAT(fecha_pago, '%Y-%m') AS periodo, SUM(PRECIO.monto) AS total
-        FROM PAGO
-        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE fecha_pago >= %s AND PAGO.id_gimnasio = %s
-        GROUP BY periodo
-        ORDER BY periodo
-    """, (fecha_hace_12_meses, session['id_gimnasio']))
-    filas_tendencia = cursor.fetchall()
-    mapa_totales = {f['periodo']: float(f['total']) for f in filas_tendencia}
-    tendencia_labels = []
-    tendencia_valores = []
-    cursor_mes = fecha_hace_12_meses
-    for _ in range(12):
-        clave = cursor_mes.strftime('%Y-%m')
-        tendencia_labels.append(cursor_mes.strftime('%b %Y'))
-        tendencia_valores.append(mapa_totales.get(clave, 0))
-        cursor_mes = date(cursor_mes.year + (1 if cursor_mes.month == 12 else 0),
-                           1 if cursor_mes.month == 12 else cursor_mes.month + 1, 1)
+        SELECT COUNT(*) AS cantidad FROM ASISTENCIA
+        WHERE id_gimnasio = %s AND fecha_hora >= %s AND id_clase IS NULL
+    """, (id_gim, fecha_desde_grafico))
+    sin_clase = cursor.fetchone()['cantidad']
 
-    # --- Retención mes a mes (6 meses) ---
+    def turno_de(hora):
+        if hora is None:
+            return None
+        h = hora.seconds // 3600 if hasattr(hora, 'seconds') else hora.hour
+        return 'Mañana' if h < 12 else ('Tarde' if h < 18 else 'Noche')
+
+    total_checkins = sum(f['cantidad'] for f in filas_prof) + sin_clase
+    ranking_profesores = sorted([{
+        'iniciales': (f['nombre'][0] + f['apellido'][0]).upper(),
+        'nombre': f"{f['nombre']} {f['apellido']}",
+        'turno': turno_de(f['primera_hora']),
+        'cantidad': f['cantidad'],
+        'porcentaje': round(f['cantidad'] / total_checkins * 100, 1) if total_checkins else 0
+    } for f in filas_prof], key=lambda x: -x['cantidad'])
+
+    sin_clase_pct = round(sin_clase / total_checkins * 100, 1) if total_checkins else 0
+    insight_profesor = None
+    if ranking_profesores and ranking_profesores[0]['cantidad'] > 0:
+        top = ranking_profesores[0]
+        insight_profesor = f"{top['nombre']} concentra el {top['porcentaje']}% de los check-ins del período."
+
+    # --- Retención (6 meses) ---
     periodos = []
     anio_iter, mes_iter = hoy.year, hoy.month
     for _ in range(7):
@@ -790,41 +805,24 @@ def reportes():
     cursor.execute("""
         SELECT DISTINCT dni, id_mes, anio FROM PAGO
         WHERE ((anio > %s) OR (anio = %s AND id_mes >= %s)) AND id_gimnasio = %s
-    """, (anio_min, anio_min, mes_min, session['id_gimnasio']))
-    pagos_periodo = cursor.fetchall()
-
+    """, (anio_min, anio_min, mes_min, id_gim))
     socios_por_periodo = {}
-    for fila in pagos_periodo:
-        clave = (fila['anio'], fila['id_mes'])
-        socios_por_periodo.setdefault(clave, set()).add(fila['dni'])
+    for fila in cursor.fetchall():
+        socios_por_periodo.setdefault((fila['anio'], fila['id_mes']), set()).add(fila['dni'])
 
-    nombres_meses = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-    retencion_labels = []
-    retencion_valores = []
+    abrev = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    retencion = []
     for i in range(1, 7):
-        periodo_anterior = periodos[i - 1]
-        periodo_actual = periodos[i]
-        base = socios_por_periodo.get(periodo_anterior, set())
-        actuales = socios_por_periodo.get(periodo_actual, set())
-        renovaron = base & actuales
-        tasa = round((len(renovaron) / len(base) * 100), 1) if base else None
-        retencion_labels.append(f"{nombres_meses[periodo_actual[1]]} {periodo_actual[0]}")
-        retencion_valores.append(tasa)
+        base = socios_por_periodo.get(periodos[i - 1], set())
+        actuales = socios_por_periodo.get(periodos[i], set())
+        tasa = round(len(base & actuales) / len(base) * 100) if base else None
+        retencion.append({'label': abrev[periodos[i][1]], 'valor': tasa, 'es_actual': i == 6})
 
-    resumen_dia = calcular_resumen_pagos(cursor, session['id_gimnasio'], hoy)
-    ticket_dia = round(resumen_dia['total'] / resumen_dia['cantidad']) if resumen_dia['cantidad'] else 0
-
-    cursor.execute("""
-        SELECT USUARIO.nombre, USUARIO.apellido, PRECIO.monto, PAGO.metodo_pago
-        FROM PAGO
-        JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
-        JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
-        WHERE PAGO.fecha_pago = %s AND PAGO.id_gimnasio = %s
-        ORDER BY USUARIO.apellido, USUARIO.nombre
-    """, (hoy, session['id_gimnasio']))
-    todos_los_pagos_hoy = cursor.fetchall()
-    pagos_efectivo_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Efectivo']
-    pagos_debito_hoy = [p for p in todos_los_pagos_hoy if p['metodo_pago'] == 'Debito']
+    retencion_actual = retencion[-1]['valor']
+    retencion_delta = None
+    if retencion[-1]['valor'] is not None and retencion[-2]['valor'] is not None:
+        retencion_delta = retencion[-1]['valor'] - retencion[-2]['valor']
+    labels_sin_datos = [r['label'] for r in retencion if r['valor'] is None]
 
     cursor.close()
     conn.close()
@@ -833,20 +831,16 @@ def reportes():
         'reportes.html',
         meses=meses, mes_actual=hoy.month, anio_actual=hoy.year,
         nombre_mes_actual=nombre_mes_actual,
-        dias_labels=dias_labels, dias_valores=dias_valores, dia_actual=hoy.day,
-        mix_por_plan=mix_por_plan,
-        distribucion_profesores=distribucion_profesores,
+        hoy_str=hoy.strftime('%d/%m'),
+        inicio_semana_str=inicio_semana.strftime('%d/%m'),
+        resumen_dia=resumen_dia, ticket_dia=ticket_dia,
+        pagos_efectivo_hoy=pagos_efectivo_hoy, pagos_debito_hoy=pagos_debito_hoy,
+        dias_barras=dias_barras, mix_por_plan=mix_por_plan,
         meses_grafico=meses_grafico,
-        total_ingresos_periodo=total_ingresos_periodo,
-        tendencia_labels=tendencia_labels, tendencia_valores=tendencia_valores,
-        retencion_labels=retencion_labels, retencion_valores=retencion_valores,
-        hoy_dia=hoy.day, hoy_mes=hoy.month,
-        resumen_dia=resumen_dia,
-        ticket_dia=ticket_dia,
-        pagos_efectivo_hoy=pagos_efectivo_hoy,
-        pagos_debito_hoy=pagos_debito_hoy,
-        inicio_semana_str=(hoy - timedelta(days=hoy.weekday())).strftime('%d/%m'),
-        hoy_str=hoy.strftime('%d/%m')
+        ranking_profesores=ranking_profesores, sin_clase=sin_clase, sin_clase_pct=sin_clase_pct,
+        insight_profesor=insight_profesor,
+        retencion=retencion, retencion_actual=retencion_actual,
+        retencion_delta=retencion_delta, labels_sin_datos=labels_sin_datos
     )
 
 @app.route('/reportes/desbloquear', methods=['POST'])
@@ -890,6 +884,31 @@ def desbloquear_reportes():
     """, (session['id_gimnasio'], hoy.month, hoy.year))
     total_egresos = float(cursor.fetchone()['total'] or 0)
 
+    # --- Tendencia (12 meses), solo se entrega con clave ---
+    fecha_hace_12_meses = hoy.replace(day=1)
+    for _ in range(11):
+        fecha_hace_12_meses = (fecha_hace_12_meses - timedelta(days=1)).replace(day=1)
+
+    cursor.execute("""
+        SELECT DATE_FORMAT(fecha_pago, '%Y-%m') AS periodo, SUM(PRECIO.monto) AS total
+        FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE fecha_pago >= %s AND PAGO.id_gimnasio = %s
+        GROUP BY periodo ORDER BY periodo
+    """, (fecha_hace_12_meses, session['id_gimnasio']))
+    mapa_tend = {f['periodo']: float(f['total']) for f in cursor.fetchall()}
+
+    abrev = ['', 'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
+    tendencia = []
+    cur = fecha_hace_12_meses
+    for _ in range(12):
+        tendencia.append({
+            'label': abrev[cur.month],
+            'anio': cur.year,
+            'valor': mapa_tend.get(cur.strftime('%Y-%m'), 0)
+        })
+        cur = date(cur.year + (1 if cur.month == 12 else 0), 1 if cur.month == 12 else cur.month + 1, 1)
+    tendencia_acumulado = sum(t['valor'] for t in tendencia)
+
     cursor.close()
     conn.close()
 
@@ -911,7 +930,9 @@ def desbloquear_reportes():
 
         'total_egresos': total_egresos,
         'resultante': resultante,
-        'margen': margen
+        'margen': margen,
+        'tendencia': tendencia,
+        'tendencia_acumulado': tendencia_acumulado,
     }
 
 @app.route('/admin')

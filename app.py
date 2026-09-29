@@ -550,78 +550,96 @@ def nuevo_pago():
 def listado_socios():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+    id_gim = session['id_gimnasio']
     hoy = date.today()
+
     cursor.execute("""
         SELECT USUARIO.dni, USUARIO.nombre, USUARIO.apellido, USUARIO.fecha_proximo_vencimiento,
                CASE WHEN USUARIO.fecha_proximo_vencimiento IS NOT NULL AND USUARIO.fecha_proximo_vencimiento >= %s
                     THEN 1 ELSE 0 END AS al_dia,
-               ultimo.tipo_membresia AS plan
+               ultimo.tipo_membresia AS plan, ultimo.monto AS ultimo_monto,
+               (SELECT MAX(fecha_hora) FROM ASISTENCIA
+                 WHERE ASISTENCIA.dni = USUARIO.dni AND ASISTENCIA.id_gimnasio = USUARIO.id_gimnasio) AS ultimo_ingreso
         FROM USUARIO
         LEFT JOIN (
-            SELECT PAGO.dni, PRECIO.tipo_membresia
+            SELECT PAGO.dni, PRECIO.tipo_membresia, PRECIO.monto
             FROM PAGO
             JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
             INNER JOIN (
                 SELECT dni, MAX(fecha_pago) AS ultima_fecha
-                FROM PAGO
-                WHERE id_gimnasio = %s
+                FROM PAGO WHERE id_gimnasio = %s
                 GROUP BY dni
             ) ultima ON PAGO.dni = ultima.dni AND PAGO.fecha_pago = ultima.ultima_fecha
             WHERE PAGO.id_gimnasio = %s
         ) ultimo ON ultimo.dni = USUARIO.dni
         WHERE USUARIO.id_gimnasio = %s
         ORDER BY USUARIO.apellido, USUARIO.nombre
-    """, (hoy, session['id_gimnasio'], session['id_gimnasio'], session['id_gimnasio']))
+    """, (hoy, id_gim, id_gim, id_gim))
     todos = cursor.fetchall()
+
+    cursor.execute("SELECT DISTINCT tipo_membresia FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY tipo_membresia", (id_gim,))
+    planes_disponibles = [p['tipo_membresia'] for p in cursor.fetchall()]
 
     cursor.close()
     conn.close()
 
-    total_al_dia = sum(1 for s in todos if s['al_dia'] == 1)
-    total_vencidos = len(todos) - total_al_dia
+    for s in todos:
+        venc = s['fecha_proximo_vencimiento']
+        if venc is None or venc < hoy:
+            s['estado'] = 'vencido'
+        elif (venc - hoy).days <= 7:
+            s['estado'] = 'por_vencer'
+        else:
+            s['estado'] = 'al_dia'
+        s['vence_rel'] = None
+        if venc:
+            dias = (venc - hoy).days
+            if dias < 0:
+                s['vence_rel'] = f"hace {-dias} día{'s' if dias != -1 else ''}"
+            elif dias == 0:
+                s['vence_rel'] = "hoy"
+            else:
+                s['vence_rel'] = f"en {dias} día{'s' if dias != 1 else ''}"
+
+    total_socios = len(todos)
+    total_al_dia = sum(1 for s in todos if s['estado'] in ('al_dia', 'por_vencer'))
+    total_vencidos = sum(1 for s in todos if s['estado'] == 'vencido')
+    total_por_vencer = sum(1 for s in todos if s['estado'] == 'por_vencer')
 
     busqueda = request.args.get('buscar', '').strip().lower()
     filtro = request.args.get('filtro', 'todos')
+    plan_filtro = request.args.get('plan', '').strip()
 
     socios = todos
-
     if busqueda:
-        socios = [
-            s for s in socios
-            if busqueda in s['nombre'].lower()
-            or busqueda in s['apellido'].lower()
-            or busqueda in s['dni'].lower()
-        ]
-
+        socios = [s for s in socios if busqueda in s['nombre'].lower() or busqueda in s['apellido'].lower() or busqueda in s['dni'].lower()]
     if filtro == 'al_dia':
-        socios = [s for s in socios if s['al_dia'] == 1]
+        socios = [s for s in socios if s['estado'] in ('al_dia', 'por_vencer')]
     elif filtro == 'vencidos':
-        socios = [s for s in socios if s['al_dia'] == 0]
+        socios = [s for s in socios if s['estado'] == 'vencido']
+    elif filtro == 'por_vencer':
+        socios = [s for s in socios if s['estado'] == 'por_vencer']
+    if plan_filtro:
+        socios = [s for s in socios if s['plan'] == plan_filtro]
 
-    # --- Paginación: 10 socios por página ---
     POR_PAGINA = 10
     total_filtrado = len(socios)
     total_paginas = max(1, (total_filtrado + POR_PAGINA - 1) // POR_PAGINA)
-
     pagina = request.args.get('pagina', 1, type=int)
     pagina = max(1, min(pagina, total_paginas))
-
     inicio = (pagina - 1) * POR_PAGINA
     socios_pagina = socios[inicio:inicio + POR_PAGINA]
 
     return render_template(
         'listado.html',
-        socios=socios_pagina,
-        total_al_dia=total_al_dia,
-        total_vencidos=total_vencidos,
-        total_socios=len(todos),
-        busqueda=busqueda,
-        filtro=filtro,
-        pagina=pagina,
-        total_paginas=total_paginas
+        socios=socios_pagina, total_al_dia=total_al_dia, total_vencidos=total_vencidos,
+        total_por_vencer=total_por_vencer, total_socios=total_socios,
+        busqueda=busqueda, filtro=filtro, plan_filtro=plan_filtro,
+        planes_disponibles=planes_disponibles,
+        pagina=pagina, total_paginas=total_paginas,
+        desde=inicio + 1 if socios_pagina else 0, hasta=inicio + len(socios_pagina),
+        total_filtrado=total_filtrado
     )
-
 
 @app.route('/eliminar/<dni>', methods=['GET', 'POST'])
 @login_requerido

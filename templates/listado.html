@@ -6,84 +6,163 @@
     <title>Socios · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>*{box-sizing:border-box}body{margin:0;background:#08080a}input,select,button{font-family:inherit}input::placeholder{color:#6e6e78}</style>
 </head>
 <body>
     <div class="db-app-shell">
         {% include 'partials/sidebar.html' %}
         <div class="db-main-content">
-            <div class="db-wrapper">
+            <main style="min-width:0;padding:22px 26px 32px;max-width:1280px;color:#f4f4f5;font-family:Inter, system-ui, sans-serif;-webkit-font-smoothing:antialiased">
 
-                <div class="db-alumnos-header">
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap">
                     <div>
-                        <p class="db-eyebrow">Padrón</p>
-                        <h1 class="db-page-title">Socios</h1>
-                        <p class="db-page-subtitle" style="margin-top:2px;">Gestioná los socios de {{ nombre_gimnasio }}.</p>
+                        <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#ff8f95">Padrón</div>
+                        <h1 style="margin:5px 0 0;font-size:25px;font-weight:600;letter-spacing:-0.015em;line-height:1.15">Socios</h1>
+                        <p style="margin:5px 0 0;font-size:13px;color:#a0a0aa">{{ total_socios }} socios registrados · {{ total_vencidos }} con la cuota vencida</p>
                     </div>
-                    <a href="{{ url_for('nuevo_socio') }}" class="db-btn db-btn-primary">+ Nuevo socio</a>
+                    <a href="{{ url_for('nuevo_socio') }}" style="min-height:40px;padding:0 15px;display:inline-flex;align-items:center;gap:7px;background:#e2323b;border:1px solid #e2323b;border-radius:10px;font-size:13px;font-weight:600;color:#fff;text-decoration:none;white-space:nowrap;box-shadow:0 6px 18px -8px rgba(226,50,59,0.9)">
+                        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>
+                        Nuevo socio
+                    </a>
                 </div>
 
                 {% if request.args.get('mensaje') == 'baja' %}
-                    <p class="db-alert-success db-alert-autodismiss">✅ Socio dado de baja correctamente.</p>
+                    <p class="db-alert-success" style="margin-top:16px;">✅ Socio dado de baja correctamente.</p>
                 {% endif %}
 
-                <form action="{{ url_for('listado_socios') }}" method="GET" class="db-alumnos-buscador">
-                    <input type="text" name="buscar" class="db-input" placeholder="Buscar por nombre o DNI..." value="{{ busqueda }}">
-                    <input type="hidden" name="filtro" value="{{ filtro }}">
-                </form>
+                <section style="margin-top:20px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;overflow:hidden">
+                    <form id="form-filtros" method="GET" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;border-bottom:1px solid rgba(255,255,255,0.07)">
+                        <input type="hidden" name="filtro" id="input-filtro" value="{{ filtro }}">
 
-                <div class="db-filter-pills" style="margin-top:12px;">
-                    <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='todos') }}" class="db-pill {% if filtro == 'todos' %}db-pill-active{% endif %}">
-                        Todos · {{ total_socios }}
-                    </a>
-                    <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='al_dia') }}" class="db-pill {% if filtro == 'al_dia' %}db-pill-active-ok{% endif %}">
-                        Al día · {{ total_al_dia }}
-                    </a>
-                    <a href="{{ url_for('listado_socios', buscar=busqueda, filtro='vencidos') }}" class="db-pill {% if filtro == 'vencidos' %}db-pill-active-danger{% endif %}">
-                        Vencidos · {{ total_vencidos }}
-                    </a>
-                </div>
+                        <div style="flex:1 1 280px;display:flex;align-items:center;gap:9px;min-height:40px;padding:0 12px;border:1px solid rgba(255,255,255,0.12);border-radius:10px;background:#0c0c0f">
+                            <svg width="15" height="15" viewBox="0 0 256 256" fill="#8e8e99" aria-hidden="true" style="flex:none"><path d="M229.66,218.34l-50.07-50.06a88.11,88.11,0,1,0-11.31,11.31l50.06,50.07a8,8,0,0,0,11.32-11.32ZM40,112a72,72,0,1,1,72,72A72.08,72.08,0,0,1,40,112Z"></path></svg>
+                            <input type="search" name="buscar" placeholder="Buscar por nombre o DNI" value="{{ busqueda }}" style="flex:1;min-width:0;height:38px;background:transparent;border:0;outline:none;font-size:13.5px;color:#f4f4f5">
+                        </div>
 
-                {% if socios %}
-                    <div class="db-alumnos-lista">
-                        {% for socio in socios %}
-                            <div class="db-alumno-item">
-                                <div class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</div>
+                        <div role="tablist" aria-label="Filtrar por estado" style="display:inline-flex;padding:3px;gap:2px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#0c0c0f">
+                            {% for f_id, f_label, f_n in [('todos', 'Todos', total_socios), ('al_dia', 'Al día', total_al_dia), ('por_vencer', 'Por vencer', total_por_vencer), ('vencidos', 'Vencidos', total_vencidos)] %}
+                                <button type="button" class="tab-filtro" data-filtro="{{ f_id }}" role="tab" aria-selected="{{ 'true' if filtro == f_id else 'false' }}"
+                                        style="min-height:34px;padding:0 11px;display:inline-flex;align-items:center;gap:7px;border-radius:7px;font-size:12.5px;cursor:pointer;white-space:nowrap;
+                                        {% if filtro == f_id %}background:#1f1f25;border:1px solid rgba(255,255,255,0.12);font-weight:600;color:#fff;{% else %}background:transparent;border:1px solid transparent;font-weight:500;color:#a0a0aa;{% endif %}">
+                                    {{ f_label }}<span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11px;color:{{ '#c2c2ca' if filtro == f_id else '#8e8e99' }}">{{ f_n }}</span>
+                                </button>
+                            {% endfor %}
+                        </div>
 
-                                <div class="db-alumno-info">
-                                    <span class="db-alumno-nombre">{{ socio.nombre }} {{ socio.apellido }}</span>
-                                    <span class="db-alumno-meta">DNI {{ socio.dni }} · {{ socio.plan or 'Sin plan' }}</span>
-                                </div>
+                        <label style="display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:#a0a0aa;white-space:nowrap">Plan
+                            <select name="plan" onchange="document.getElementById('form-filtros').submit()" style="min-height:40px;padding:0 30px 0 11px;font-size:13px;color:#f4f4f5;background:#0c0c0f;border:1px solid rgba(255,255,255,0.12);border-radius:10px;outline:none;appearance:none;background-image:linear-gradient(45deg,transparent 50%,#8a8a93 50%),linear-gradient(135deg,#8a8a93 50%,transparent 50%);background-position:calc(100% - 15px) 17px, calc(100% - 10px) 17px;background-size:5px 5px, 5px 5px;background-repeat:no-repeat">
+                                <option value="" {% if not plan_filtro %}selected{% endif %}>Todos</option>
+                                {% for p in planes_disponibles %}
+                                    <option value="{{ p }}" {% if p == plan_filtro %}selected{% endif %}>{{ p }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                    </form>
 
-                                <div class="db-alumno-acciones">
-                                    {% if socio.al_dia == 1 %}
-                                        <span class="db-badge db-badge-ok">Al día</span>
-                                    {% else %}
-                                        <span class="db-badge db-badge-danger">Vencido</span>
-                                    {% endif %}
-                                    <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-btn-alumno db-btn-alumno-perfil">Ver Perfil</a>
-                                    <a href="{{ url_for('nuevo_pago', dni=socio.dni) }}" class="db-btn-alumno db-btn-alumno-cobrar">Cobrar</a>
-                                </div>
-                            </div>
-                        {% endfor %}
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:13.5px">
+                            <thead>
+                                <tr style="background:#0c0c0f">
+                                    <th scope="col" style="text-align:left;padding:9px 14px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Socio</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Plan</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Estado</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Vencimiento</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Último ingreso</th>
+                                    <th scope="col" style="text-align:right;padding:9px 14px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in socios %}
+                                    <tr style="border-bottom:1px solid rgba(255,255,255,0.055)">
+                                        <td style="padding:10px 14px">
+                                            <div style="display:flex;align-items:center;gap:11px">
+                                                <span aria-hidden="true" style="width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:11.5px;font-weight:600;color:#ffdfe1;background:linear-gradient(160deg, #8f1a21, #4a0d11)">{{ s.nombre[0]|upper }}{{ s.apellido[0]|upper }}</span>
+                                                <div style="min-width:0">
+                                                    <a href="{{ url_for('ver_socio', dni=s.dni) }}" style="font-weight:500;color:#f4f4f5;text-decoration:none;white-space:nowrap">{{ s.nombre }} {{ s.apellido }}</a>
+                                                    <div style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11.5px;color:#a0a0aa;margin-top:1px">DNI {{ s.dni }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="padding:10px 12px;color:#c2c2ca;white-space:nowrap">{{ s.plan or '—' }}</td>
+                                        <td style="padding:10px 12px">
+                                            {% if s.estado == 'vencido' %}
+                                                <span style="display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid rgba(226,50,59,0.4);background:rgba(226,50,59,0.1);font-size:12px;font-weight:500;color:#ff9aa0;white-space:nowrap"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:#e2323b"></span>Vencido</span>
+                                            {% elif s.estado == 'por_vencer' %}
+                                                <span style="display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid rgba(232,170,72,0.4);background:rgba(232,170,72,0.1);font-size:12px;font-weight:500;color:#f2c47e;white-space:nowrap"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:#e8aa48"></span>Por vencer</span>
+                                            {% else %}
+                                                <span style="display:inline-flex;align-items:center;gap:6px;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid rgba(72,198,132,0.3);background:rgba(62,166,110,0.09);font-size:12px;font-weight:500;color:#a9eec6;white-space:nowrap"><span aria-hidden="true" style="width:6px;height:6px;border-radius:50%;background:#48c684"></span>Al día</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="padding:10px 12px;white-space:nowrap">
+                                            <div style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12.5px;color:#dcdce2">{{ s.fecha_proximo_vencimiento.strftime('%d/%m/%Y') if s.fecha_proximo_vencimiento else '—' }}</div>
+                                            <div style="font-size:11.5px;color:#a0a0aa;margin-top:1px">{{ s.vence_rel or 'sin pagos' }}</div>
+                                        </td>
+                                        <td style="padding:10px 12px;font-size:12.5px;color:#a0a0aa;white-space:nowrap">{{ s.ultimo_ingreso.strftime('%d/%m %H:%M') if s.ultimo_ingreso else 'Nunca' }}</td>
+                                        <td style="padding:10px 14px">
+                                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
+                                                {% if s.estado == 'vencido' %}
+                                                    <a href="{{ url_for('nuevo_pago', dni=s.dni) }}" style="min-height:34px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;background:#e2323b;border:1px solid #e2323b;border-radius:8px;font-size:12.5px;font-weight:600;color:#fff;text-decoration:none;white-space:nowrap">
+                                                        Cobrar {% if s.ultimo_monto %}<span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-weight:500;opacity:0.9">${{ "%.0f"|format(s.ultimo_monto) }}</span>{% endif %}
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{{ url_for('ver_socio', dni=s.dni) }}" title="Ver perfil" style="min-height:34px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;background:transparent;border:1px solid rgba(255,255,255,0.12);border-radius:8px;color:#c2c2ca;text-decoration:none;font-size:12.5px;font-weight:500;white-space:nowrap">
+                                                    <svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25.8,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,230.2,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"></path></svg>
+                                                    Ver perfil
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
 
-                    <div class="db-paginacion">
-                        {% if pagina > 1 %}
-                            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro=filtro, pagina=pagina-1) }}" class="db-btn db-btn-secondary">← Anterior</a>
-                        {% endif %}
-                        <span class="db-paginacion-info">Página {{ pagina }} de {{ total_paginas }}</span>
-                        {% if pagina < total_paginas %}
-                            <a href="{{ url_for('listado_socios', buscar=busqueda, filtro=filtro, pagina=pagina+1) }}" class="db-btn db-btn-secondary">Siguiente →</a>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <p class="db-empty">No se encontraron socios con esos criterios.</p>
-                {% endif %}
+                    {% if not socios %}
+                        <div style="padding:34px 16px;text-align:center">
+                            <div style="font-size:14px;font-weight:600">{% if busqueda %}Ningún socio coincide con "{{ busqueda }}"{% else %}No hay socios en este filtro{% endif %}</div>
+                            <div style="font-size:12.5px;color:#a0a0aa;margin-top:4px">Probá con otro nombre o DNI, o cambiá el filtro de estado.</div>
+                        </div>
+                    {% endif %}
 
-            </div>
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:11px 14px;border-top:1px solid rgba(255,255,255,0.07);background:#0c0c0f">
+                        <span style="font-size:12.5px;color:#a0a0aa">Mostrando <span style="color:#f4f4f5">{{ desde }}–{{ hasta }}</span> de <span style="color:#f4f4f5">{{ total_filtrado }}</span></span>
+                        <div style="margin-left:auto;display:flex;gap:6px">
+                            {% set base_url = url_for('listado_socios', buscar=busqueda, filtro=filtro, plan=plan_filtro) %}
+                            {% if pagina > 1 %}
+                                <a href="{{ base_url }}&pagina={{ pagina - 1 }}" aria-label="Página anterior" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#c2c2ca;text-decoration:none"><svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg></a>
+                            {% else %}
+                                <span aria-hidden="true" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#6e6e78"><svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M165.66,202.34a8,8,0,0,1-11.32,11.32l-80-80a8,8,0,0,1,0-11.32l80-80a8,8,0,0,1,11.32,11.32L91.31,128Z"></path></svg></span>
+                            {% endif %}
+
+                            {% for p in range(1, total_paginas + 1) %}
+                                {% if p == pagina %}
+                                    <span aria-current="page" style="min-width:34px;height:34px;padding:0 8px;background:#1f1f25;border:1px solid rgba(255,255,255,0.14);border-radius:8px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12.5px;color:#fff;display:grid;place-items:center">{{ p }}</span>
+                                {% else %}
+                                    <a href="{{ base_url }}&pagina={{ p }}" style="min-width:34px;height:34px;padding:0 8px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12.5px;color:#c2c2ca;text-decoration:none;display:grid;place-items:center">{{ p }}</a>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if pagina < total_paginas %}
+                                <a href="{{ base_url }}&pagina={{ pagina + 1 }}" aria-label="Página siguiente" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#c2c2ca;text-decoration:none"><svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg></a>
+                            {% else %}
+                                <span aria-hidden="true" style="width:34px;height:34px;display:grid;place-items:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#6e6e78"><svg width="14" height="14" viewBox="0 0 256 256" fill="currentColor"><path d="M181.66,133.66l-80,80a8,8,0,0,1-11.32-11.32L164.69,128,90.34,53.66a8,8,0,0,1,11.32-11.32l80,80A8,8,0,0,1,181.66,133.66Z"></path></svg></span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
+
+    <script>
+        document.querySelectorAll('.tab-filtro').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.getElementById('input-filtro').value = btn.dataset.filtro;
+                document.getElementById('form-filtros').submit();
+            });
+        });
+    </script>
 </body>
 </html>

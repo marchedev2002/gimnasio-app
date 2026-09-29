@@ -124,59 +124,116 @@ def login_requerido(vista):
         return vista(*args, **kwargs)
     return envoltura
 
-@app.route('/')
-@login_requerido
-def index():
+def datos_dashboard():
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+    id_gim = session['id_gimnasio']
     hoy = date.today()
+
     cursor.execute("""
         SELECT COUNT(*) AS total,
                SUM(CASE WHEN fecha_proximo_vencimiento IS NOT NULL
-                        AND fecha_proximo_vencimiento >= %s THEN 1 ELSE 0 END) AS al_dia
-        FROM USUARIO
-        WHERE id_gimnasio = %s
-    """, (hoy, session['id_gimnasio']))
+                        AND fecha_proximo_vencimiento >= %s THEN 1 ELSE 0 END) AS al_dia,
+               SUM(CASE WHEN fecha_proximo_vencimiento IS NOT NULL
+                        AND fecha_proximo_vencimiento BETWEEN %s AND %s THEN 1 ELSE 0 END) AS vencen_semana
+        FROM USUARIO WHERE id_gimnasio = %s
+    """, (hoy, hoy, hoy + timedelta(days=7), id_gim))
     stats = cursor.fetchone()
-
     total_socios = stats['total'] or 0
-    total_al_dia = stats['al_dia'] or 0
+    total_al_dia = int(stats['al_dia'] or 0)
     total_vencidos = total_socios - total_al_dia
+    vencen_semana = int(stats['vencen_semana'] or 0)
+    porcentaje_al_dia = round(total_al_dia / total_socios * 100) if total_socios else 0
 
     cursor.execute("""
-        SELECT USUARIO.nombre, USUARIO.apellido, PAGO.fecha_pago, PAGO.metodo_pago, PRECIO.monto
+        SELECT COUNT(*) AS total, MIN(fecha_hora) AS primero
+        FROM ASISTENCIA WHERE id_gimnasio = %s AND DATE(fecha_hora) = %s
+    """, (id_gim, hoy))
+    fila = cursor.fetchone()
+    ingresos_hoy = fila['total'] or 0
+    primer_ingreso = fila['primero'].strftime('%H:%M') if fila['primero'] else None
+
+    pico_hora = None
+    if ingresos_hoy:
+        cursor.execute("""
+            SELECT HOUR(fecha_hora) AS hora, COUNT(*) AS c FROM ASISTENCIA
+            WHERE id_gimnasio = %s AND DATE(fecha_hora) = %s
+            GROUP BY hora ORDER BY c DESC, hora LIMIT 1
+        """, (id_gim, hoy))
+        h = cursor.fetchone()['hora']
+        pico_hora = f"{h:02d}:00–{(h + 1) % 24:02d}:00"
+
+    cursor.execute("""
+        SELECT USUARIO.nombre, USUARIO.apellido, PAGO.fecha_pago, PAGO.metodo_pago,
+               PRECIO.tipo_membresia, PRECIO.monto
         FROM PAGO
         JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
         JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
         WHERE PAGO.id_gimnasio = %s
         ORDER BY PAGO.fecha_pago DESC, PAGO.id_pago DESC
-        LIMIT 6
-    """, (session['id_gimnasio'],))
-    flujo_economico = cursor.fetchall()
+        LIMIT 5
+    """, (id_gim,))
+    ultimos_pagos = []
+    for p in cursor.fetchall():
+        cuando = 'hoy' if p['fecha_pago'] == hoy else p['fecha_pago'].strftime('%d/%m')
+        ultimos_pagos.append({
+            'iniciales': (p['nombre'][0] + p['apellido'][0]).upper(),
+            'nombre': f"{p['nombre']} {p['apellido']}",
+            'detalle': f"{p['metodo_pago']} · {p['tipo_membresia']} · {cuando}",
+            'monto': float(p['monto'])
+        })
+    total_ultimos_pagos = sum(p['monto'] for p in ultimos_pagos)
 
     cursor.execute("""
-        SELECT ASISTENCIA.fecha_hora, USUARIO.nombre, USUARIO.apellido, CLASE.nombre AS nombre_clase
+        SELECT ASISTENCIA.fecha_hora, USUARIO.nombre, USUARIO.apellido,
+               USUARIO.fecha_proximo_vencimiento,
+               (SELECT PRECIO.tipo_membresia
+                  FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+                 WHERE PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+                 ORDER BY PAGO.fecha_pago DESC, PAGO.id_pago DESC LIMIT 1) AS plan
         FROM ASISTENCIA
         JOIN USUARIO ON ASISTENCIA.dni = USUARIO.dni AND ASISTENCIA.id_gimnasio = USUARIO.id_gimnasio
-        LEFT JOIN CLASE ON ASISTENCIA.id_clase = CLASE.id_clase
         WHERE ASISTENCIA.id_gimnasio = %s
         ORDER BY ASISTENCIA.fecha_hora DESC
-        LIMIT 6
-    """, (session['id_gimnasio'],))
-    ultimos_checkins = cursor.fetchall()
+        LIMIT 5
+    """, (id_gim,))
+    ultimos_checkins = []
+    for c in cursor.fetchall():
+        venc = c['fecha_proximo_vencimiento']
+        aviso = ''
+        if venc is None or venc < hoy:
+            aviso = 'Vencida'
+        elif (venc - hoy).days <= 7:
+            dias = (venc - hoy).days
+            aviso = 'Vence hoy' if dias == 0 else f"Vence en {dias} día{'s' if dias != 1 else ''}"
+        ultimos_checkins.append({
+            'iniciales': (c['nombre'][0] + c['apellido'][0]).upper(),
+            'nombre': f"{c['nombre']} {c['apellido']}",
+            'plan': c['plan'] or 'Sin plan',
+            'hora': c['fecha_hora'].strftime('%H:%M'),
+            'aviso': aviso
+        })
 
     cursor.close()
     conn.close()
 
-    return render_template(
-        'index.html',
-        total_socios=total_socios,
-        total_al_dia=total_al_dia,
-        total_vencidos=total_vencidos,
-        flujo_economico=flujo_economico,
+    return dict(
+        total_socios=total_socios, total_al_dia=total_al_dia, total_vencidos=total_vencidos,
+        porcentaje_al_dia=porcentaje_al_dia, vencen_semana=vencen_semana,
+        ingresos_hoy=ingresos_hoy, primer_ingreso=primer_ingreso, pico_hora=pico_hora,
+        ultimos_pagos=ultimos_pagos, total_ultimos_pagos=total_ultimos_pagos,
         ultimos_checkins=ultimos_checkins
     )
+
+
+def render_dashboard(error=None):
+    return render_dashboard(error==error, **datos_dashboard())
+
+
+@app.route('/')
+@login_requerido
+def index():
+    return render_dashboard()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -228,7 +285,7 @@ def buscar():
     dni = request.form.get('dni', '').strip()
 
     if not dni:
-        return render_template('index.html', error="Por favor ingresá un DNI.")
+        return render_dashboard(error="Por favor ingresá un DNI.")
 
     return redirect(url_for('ver_socio', dni=dni))
 
@@ -300,7 +357,7 @@ def editar_socio(dni):
         conn.close()
 
         if not usuario:
-            return render_template('index.html', error=f"No se encontró ningún socio con DNI {dni}.")
+            return render_dashboard(error=f"No se encontró ningún socio con DNI {dni}.")
 
         return render_template('form_socio.html', modo='editar', usuario=usuario)
 
@@ -355,7 +412,7 @@ def ver_socio(dni):
     if not usuario:
         cursor.close()
         conn.close()
-        return render_template('index.html', error=f"No se encontró ningún socio con DNI {dni}.")
+        return render_dashboard(error=f"No se encontró ningún socio con DNI {dni}.")
 
     hoy = date.today()
     membresia_al_dia = (
@@ -578,7 +635,7 @@ def eliminar_socio(dni):
     if not usuario:
         cursor.close()
         conn.close()
-        return render_template('index.html', error=f"No se encontró ningún socio con DNI {dni}.")
+        return render_dashboard(error=f"No se encontró ningún socio con DNI {dni}.")
 
     if request.method == 'GET':
         cursor.execute("""
@@ -610,6 +667,80 @@ def eliminar_socio(dni):
     conn.close()
 
     return redirect(url_for('listado_socios', mensaje='baja'))
+@app.route('/api/validar_ingreso', methods=['POST'])
+@login_requerido
+def api_validar_ingreso():
+    dni = (request.form.get('dni') or '').strip()
+    if not dni:
+        return {'estado': 'error', 'mensaje': 'Ingresá un DNI.'}, 400
+
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    id_gim = session['id_gimnasio']
+
+    cursor.execute("SELECT * FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, id_gim))
+    usuario = cursor.fetchone()
+    if not usuario:
+        cursor.close()
+        conn.close()
+        return {'estado': 'no_encontrado', 'dni': dni}
+
+    ahora = datetime.now()
+    hora_actual = ahora.time()
+    cursor.execute("""
+        SELECT id_clase FROM CLASE
+        WHERE hora_inicio <= %s AND hora_fin >= %s AND id_gimnasio = %s LIMIT 1
+    """, (hora_actual, hora_actual, id_gim))
+    clase = cursor.fetchone()
+
+    cursor.execute(
+        "INSERT INTO ASISTENCIA (dni, fecha_hora, id_clase, id_gimnasio) VALUES (%s, %s, %s, %s)",
+        (dni, ahora, clase['id_clase'] if clase else None, id_gim)
+    )
+    conn.commit()
+
+    hoy = date.today()
+    venc = usuario['fecha_proximo_vencimiento']
+    al_dia = venc is not None and venc >= hoy
+
+    cursor.execute("""
+        SELECT PRECIO.tipo_membresia, PRECIO.dias_max_mes
+        FROM PAGO JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
+        WHERE PAGO.dni = %s AND PAGO.id_gimnasio = %s
+        ORDER BY PAGO.fecha_pago DESC, PAGO.id_pago DESC LIMIT 1
+    """, (dni, id_gim))
+    plan_fila = cursor.fetchone()
+
+    cursor.execute("""
+        SELECT COUNT(*) AS cantidad FROM ASISTENCIA
+        WHERE dni = %s AND id_gimnasio = %s
+          AND YEAR(fecha_hora) = YEAR(CURDATE()) AND MONTH(fecha_hora) = MONTH(CURDATE())
+    """, (dni, id_gim))
+    visitas_mes = cursor.fetchone()['cantidad']
+
+    cursor.close()
+    conn.close()
+
+    excede_limite = bool(plan_fila and plan_fila['dias_max_mes'] and visitas_mes > plan_fila['dias_max_mes'])
+
+    aviso = ''
+    if venc is None or venc < hoy:
+        aviso = 'Vencida'
+    elif (venc - hoy).days <= 7:
+        dias = (venc - hoy).days
+        aviso = 'Vence hoy' if dias == 0 else f"Vence en {dias} día{'s' if dias != 1 else ''}"
+
+    return {
+        'estado': 'ok' if al_dia else 'vencida',
+        'dni': dni,
+        'nombre': f"{usuario['nombre']} {usuario['apellido']}",
+        'iniciales': (usuario['nombre'][0] + usuario['apellido'][0]).upper(),
+        'plan': plan_fila['tipo_membresia'] if plan_fila else 'Sin plan',
+        'vencimiento': venc.strftime('%d/%m') if venc else None,
+        'hora': ahora.strftime('%H:%M'),
+        'aviso': aviso,
+        'excede_limite': excede_limite
+    }
 
 @app.route('/alertas')
 @login_requerido

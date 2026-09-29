@@ -769,55 +769,82 @@ def alertas():
     except ValueError:
         dias_limite = 7
 
+    vista = request.args.get('vista', 'vencidos')
+
     conn = get_connection()
     cursor = conn.cursor(dictionary=True)
-
+    id_gim = session['id_gimnasio']
     hoy = date.today()
 
     cursor.execute("""
-        SELECT USUARIO.dni, USUARIO.nombre, USUARIO.apellido, USUARIO.fecha_proximo_vencimiento,
-               ultimo.tipo_membresia AS plan
+        SELECT USUARIO.dni, USUARIO.nombre, USUARIO.apellido, USUARIO.telefono, USUARIO.email,
+               USUARIO.fecha_proximo_vencimiento,
+               ultimo.tipo_membresia AS plan, ultimo.monto AS ultimo_monto
         FROM USUARIO
         LEFT JOIN (
-            SELECT PAGO.dni, PRECIO.tipo_membresia
+            SELECT PAGO.dni, PRECIO.tipo_membresia, PRECIO.monto
             FROM PAGO
             JOIN PRECIO ON PAGO.id_precio = PRECIO.id_precio
             INNER JOIN (
                 SELECT dni, MAX(fecha_pago) AS ultima_fecha
-                FROM PAGO
-                WHERE id_gimnasio = %s
+                FROM PAGO WHERE id_gimnasio = %s
                 GROUP BY dni
             ) ultima ON PAGO.dni = ultima.dni AND PAGO.fecha_pago = ultima.ultima_fecha
             WHERE PAGO.id_gimnasio = %s
         ) ultimo ON ultimo.dni = USUARIO.dni
         WHERE USUARIO.id_gimnasio = %s
         ORDER BY USUARIO.apellido, USUARIO.nombre
-    """, (session['id_gimnasio'], session['id_gimnasio'], session['id_gimnasio']))
+    """, (id_gim, id_gim, id_gim))
     todos = cursor.fetchall()
+    total_socios = len(todos)
 
     cursor.close()
     conn.close()
 
-    vencidos = [
-        s for s in todos
-        if s['fecha_proximo_vencimiento'] is None or s['fecha_proximo_vencimiento'] < hoy
-    ]
-    for s in vencidos:
-        s['dias_vencido'] = (hoy - s['fecha_proximo_vencimiento']).days if s['fecha_proximo_vencimiento'] else None
+    vencidos = []
+    por_vencer = []
+    for s in todos:
+        venc = s['fecha_proximo_vencimiento']
+        if venc is None or venc < hoy:
+            s['dias'] = (hoy - venc).days if venc else None
+            vencidos.append(s)
+        elif (venc - hoy).days <= dias_limite:
+            s['dias'] = (venc - hoy).days
+            por_vencer.append(s)
 
-    por_vencer = [
-        s for s in todos
-        if s['fecha_proximo_vencimiento'] is not None
-        and hoy <= s['fecha_proximo_vencimiento'] <= hoy + timedelta(days=dias_limite)
-    ]
-    for s in por_vencer:
-        s['dias_para_vencer'] = (s['fecha_proximo_vencimiento'] - hoy).days
+    vencidos.sort(key=lambda s: (s['dias'] is None, -(s['dias'] or 0)))
+    por_vencer.sort(key=lambda s: s['dias'])
+
+    deuda_total = sum(float(s['ultimo_monto'] or 0) for s in vencidos)
+    riesgo_total = sum(float(s['ultimo_monto'] or 0) for s in por_vencer)
+    pct_padron = round(len(vencidos) / total_socios * 100) if total_socios else 0
+
+    rangos = {'r1': [], 'r2': [], 'r3': [], 'r4': []}
+    for s in vencidos:
+        d = s['dias'] or 9999
+        if d <= 7:
+            rangos['r1'].append(s)
+        elif d <= 30:
+            rangos['r2'].append(s)
+        elif d <= 60:
+            rangos['r3'].append(s)
+        else:
+            rangos['r4'].append(s)
+
+    antiguedad = []
+    for clave in ['r1', 'r2', 'r3', 'r4']:
+        grupo = rangos[clave]
+        antiguedad.append({
+            'cantidad': len(grupo),
+            'monto': sum(float(s['ultimo_monto'] or 0) for s in grupo),
+            'pct': round(len(grupo) / len(vencidos) * 100, 1) if vencidos else 0
+        })
 
     return render_template(
         'alertas.html',
-        vencidos=vencidos,
-        por_vencer=por_vencer,
-        dias_limite=dias_limite
+        vencidos=vencidos, por_vencer=por_vencer, dias_limite=dias_limite, vista=vista,
+        deuda_total=deuda_total, riesgo_total=riesgo_total, pct_padron=pct_padron,
+        antiguedad=antiguedad, hoy=hoy
     )
 
 @app.route('/reportes')

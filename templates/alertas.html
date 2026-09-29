@@ -3,98 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alertas · {{ nombre_gimnasio }}</title>
+    <title>Vencimientos · {{ nombre_gimnasio }}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>*{box-sizing:border-box}body{margin:0;background:#08080a}button{font-family:inherit}</style>
 </head>
 <body>
     <div class="db-app-shell">
         {% include 'partials/sidebar.html' %}
         <div class="db-main-content">
-            <div class="db-wrapper">
+            <main style="min-width:0;padding:22px 26px 32px;max-width:1280px;color:#f4f4f5;font-family:Inter, system-ui, sans-serif;-webkit-font-smoothing:antialiased">
 
-                <p class="db-eyebrow">Cobranza</p>
-                <h1 class="db-page-title">Vencimientos</h1>
-
-                <div class="db-venc-top">
-                    <div class="db-venc-stats">
-                        <div class="db-venc-stat-card db-venc-stat-card--danger">
-                            <span class="db-venc-stat-number">{{ vencidos|length }}</span>
-                            <span class="db-venc-stat-label">Vencidos</span>
-                            <div class="db-venc-stat-bar"><div class="db-venc-stat-bar-fill" style="width: {{ (vencidos|length / ((vencidos|length + por_vencer|length) or 1) * 100)|round(0) }}%;"></div></div>
-                        </div>
-                        <div class="db-venc-stat-card db-venc-stat-card--warning">
-                            <span class="db-venc-stat-number">{{ por_vencer|length }}</span>
-                            <span class="db-venc-stat-label">Vencen en {{ dias_limite }} días</span>
-                            <div class="db-venc-stat-bar"><div class="db-venc-stat-bar-fill" style="width: {{ (por_vencer|length / ((vencidos|length + por_vencer|length) or 1) * 100)|round(0) }}%;"></div></div>
-                        </div>
+                <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap">
+                    <div>
+                        <div style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#ff8f95">Cobranza</div>
+                        <h1 style="margin:5px 0 0;font-size:25px;font-weight:600;letter-spacing:-0.015em;line-height:1.15">Vencimientos</h1>
+                        <p style="margin:5px 0 0;font-size:13px;color:#a0a0aa">Cuotas vencidas y próximas a vencer. Priorizadas por antigüedad de la deuda.</p>
                     </div>
-
-                    <div class="db-venc-banner">
-                        <img src="{{ url_for('static', filename='fotos/banner_vencimientos.jpeg') }}"
-                             alt="Le Corps Gym somos todos"
-                             class="db-venc-banner-img"
-                             onerror="this.parentElement.style.display='none'">
-                    </div>
+                    <a href="{{ url_for('reportes') }}" style="min-height:40px;padding:0 15px;display:inline-flex;align-items:center;gap:8px;background:transparent;border:1px solid rgba(255,255,255,0.16);border-radius:10px;font-size:13px;font-weight:600;color:#f4f4f5;text-decoration:none;white-space:nowrap">
+                        <svg width="15" height="15" viewBox="0 0 256 256" fill="currentColor" aria-hidden="true"><path d="M224,152v56a16,16,0,0,1-16,16H48a16,16,0,0,1-16-16V152a8,8,0,0,1,16,0v56H208V152a8,8,0,0,1,16,0Zm-101.66,5.66a8,8,0,0,0,11.32,0l40-40a8,8,0,0,0-11.32-11.32L136,132.69V40a8,8,0,0,0-16,0v92.69L93.66,106.34a8,8,0,0,0-11.32,11.32Z"></path></svg>
+                        Ir a Reportes
+                    </a>
                 </div>
 
-                <h3 class="db-section-title db-section-title-danger">Vencidos</h3>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:14px;margin-top:20px">
+                    <section style="padding:16px;border:1px solid rgba(226,50,59,0.35);border-radius:12px;background:linear-gradient(180deg, rgba(226,50,59,0.1), rgba(226,50,59,0.02)), #101013">
+                        <div style="display:flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#ff9aa0"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:#e2323b"></span>Deuda a cobrar</div>
+                        <div style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;margin-top:10px">${{ "%.0f"|format(deuda_total) }}</div>
+                        <div style="font-size:12.5px;color:#c2c2ca;margin-top:7px"><span style="font-family:'IBM Plex Mono', ui-monospace, monospace;color:#fff">{{ vencidos|length }}</span> socios vencidos · {{ pct_padron }}% del padrón</div>
+                    </section>
+                    <section style="padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                        <div style="display:flex;align-items:center;gap:7px;font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa"><span aria-hidden="true" style="width:7px;height:7px;border-radius:50%;background:#e8aa48"></span>Vencen en {{ dias_limite }} días</div>
+                        <div style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:30px;font-weight:500;letter-spacing:-0.03em;line-height:1;margin-top:10px">{{ por_vencer|length }}</div>
+                        <div style="font-size:12.5px;color:#c2c2ca;margin-top:7px">Ingreso en riesgo <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;color:#fff">${{ "%.0f"|format(riesgo_total) }}</span></div>
+                    </section>
+                </div>
+
                 {% if vencidos %}
-                    <div class="db-socios-tabla">
-                        <div class="db-socios-header db-venc-header">
-                            <span>Socio</span>
-                            <span>DNI</span>
-                            <span>Plan</span>
-                            <span>Venció</span>
-                            <span>Días</span>
-                        </div>
-                        {% for socio in vencidos %}
-                            <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-socios-row db-venc-header">
-                                <span class="db-socios-nombre">
-                                    <span class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</span>
-                                    {{ socio.nombre }} {{ socio.apellido }}
-                                </span>
-                                <span>{{ socio.dni }}</span>
-                                <span>{{ socio.plan or '—' }}</span>
-                                <span>{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') if socio.fecha_proximo_vencimiento else 'Nunca pagó' }}</span>
-                                <span>{{ socio.dias_vencido ~ ' días' if socio.dias_vencido is not none else '—' }}</span>
-                            </a>
+                <section style="margin-top:14px;padding:16px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013">
+                    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+                        <span style="font-size:10px;font-weight:600;letter-spacing:0.14em;text-transform:uppercase;color:#a0a0aa">Antigüedad de la deuda</span>
+                        <span style="font-size:12px;color:#a0a0aa">Cuanto más vieja, menos probable que se cobre</span>
+                    </div>
+                    <div aria-hidden="true" style="display:flex;height:10px;border-radius:6px;overflow:hidden;gap:2px">
+                        <div style="width:{{ antiguedad[0].pct }}%;background:#f0a3a7"></div>
+                        <div style="width:{{ antiguedad[1].pct }}%;background:#e2323b"></div>
+                        <div style="width:{{ antiguedad[2].pct }}%;background:#8f1a21"></div>
+                        <div style="width:{{ antiguedad[3].pct }}%;background:#4a1418"></div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:12px">
+                        {% for label, color, extra in [('1 a 7 días', '#f0a3a7', ''), ('8 a 30 días', '#e2323b', ''), ('31 a 60 días', '#8f1a21', ''), ('Más de 60 días', '#4a1418', ' · baja probable')] %}
+                            <div>
+                                <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#a0a0aa"><span aria-hidden="true" style="width:8px;height:8px;border-radius:2px;background:{{ color }};{% if loop.last %}border:1px solid rgba(255,255,255,0.2){% endif %}"></span>{{ label }}</div>
+                                <div style="display:flex;align-items:baseline;gap:7px;margin-top:4px">
+                                    <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:17px;font-weight:500">{{ antiguedad[loop.index0].cantidad }}</span>
+                                    <span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#a0a0aa">${{ "%.0f"|format(antiguedad[loop.index0].monto) }}{{ extra }}</span>
+                                </div>
+                            </div>
                         {% endfor %}
                     </div>
-                {% else %}
-                    <p class="db-empty">No hay socios vencidos. 🎉</p>
+                </section>
                 {% endif %}
 
-                <h3 class="db-section-title db-section-title-warning">Vencen en los próximos {{ dias_limite }} días</h3>
-                {% if por_vencer %}
-                    <div class="db-socios-tabla">
-                        <div class="db-socios-header db-venc-header">
-                            <span>Socio</span>
-                            <span>DNI</span>
-                            <span>Plan</span>
-                            <span>Vence</span>
-                            <span>Días</span>
-                        </div>
-                        {% for socio in por_vencer %}
-                            <a href="{{ url_for('ver_socio', dni=socio.dni) }}" class="db-socios-row db-venc-header">
-                                <span class="db-socios-nombre">
-                                    <span class="db-avatar-initials db-avatar-initials--sm">{{ socio.nombre[0]|upper }}{{ socio.apellido[0]|upper }}</span>
-                                    {{ socio.nombre }} {{ socio.apellido }}
-                                </span>
-                                <span>{{ socio.dni }}</span>
-                                <span>{{ socio.plan or '—' }}</span>
-                                <span>{{ socio.fecha_proximo_vencimiento.strftime('%d/%m') }}</span>
-                                <span>{{ socio.dias_para_vencer }} días</span>
+                <section style="margin-top:14px;border:1px solid rgba(255,255,255,0.09);border-radius:12px;background:#101013;overflow:hidden">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px;border-bottom:1px solid rgba(255,255,255,0.07)">
+                        <div role="tablist" aria-label="Lista" style="display:inline-flex;padding:3px;gap:2px;border:1px solid rgba(255,255,255,0.1);border-radius:10px;background:#0c0c0f">
+                            <a href="{{ url_for('alertas', vista='vencidos', dias=dias_limite) }}" role="tab" aria-selected="{{ 'true' if vista == 'vencidos' else 'false' }}"
+                               style="min-height:34px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;border-radius:7px;font-size:12.5px;text-decoration:none;white-space:nowrap;
+                               {% if vista == 'vencidos' %}background:#1f1f25;border:1px solid rgba(255,255,255,0.12);font-weight:600;color:#fff;{% else %}background:transparent;border:1px solid transparent;font-weight:500;color:#a0a0aa;{% endif %}">
+                                Vencidos<span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11px;color:#ff9aa0">{{ vencidos|length }}</span>
                             </a>
-                        {% endfor %}
+                            <a href="{{ url_for('alertas', vista='por_vencer', dias=dias_limite) }}" role="tab" aria-selected="{{ 'true' if vista == 'por_vencer' else 'false' }}"
+                               style="min-height:34px;padding:0 12px;display:inline-flex;align-items:center;gap:7px;border-radius:7px;font-size:12.5px;text-decoration:none;white-space:nowrap;
+                               {% if vista == 'por_vencer' %}background:#1f1f25;border:1px solid rgba(255,255,255,0.12);font-weight:600;color:#fff;{% else %}background:transparent;border:1px solid transparent;font-weight:500;color:#a0a0aa;{% endif %}">
+                                Vencen en {{ dias_limite }} días<span style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11px;color:#f2c47e">{{ por_vencer|length }}</span>
+                            </a>
+                        </div>
+                        <span style="font-size:12.5px;color:#a0a0aa">{{ 'Ordenado por días de atraso' if vista == 'vencidos' else 'Ordenado por días para vencer' }}</span>
                     </div>
-                {% else %}
-                    <p class="db-empty">Nadie vence en los próximos {{ dias_limite }} días.</p>
-                {% endif %}
 
-            </div>
+                    <div style="overflow-x:auto">
+                        <table style="width:100%;min-width:820px;border-collapse:collapse;font-size:13.5px">
+                            <thead>
+                                <tr style="background:#0c0c0f">
+                                    <th scope="col" style="text-align:left;padding:9px 14px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Socio</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Plan</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">{{ 'Venció' if vista == 'vencidos' else 'Vence' }}</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">{{ 'Atraso' if vista == 'vencidos' else 'Faltan' }}</th>
+                                    <th scope="col" style="text-align:right;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Monto</th>
+                                    <th scope="col" style="text-align:left;padding:9px 12px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Contacto</th>
+                                    <th scope="col" style="text-align:right;padding:9px 14px;font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#a0a0aa;border-bottom:1px solid rgba(255,255,255,0.08)">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set lista = vencidos if vista == 'vencidos' else por_vencer %}
+                                {% for s in lista %}
+                                    <tr style="border-bottom:1px solid rgba(255,255,255,0.055)">
+                                        <td style="padding:10px 14px">
+                                            <div style="display:flex;align-items:center;gap:11px">
+                                                <span aria-hidden="true" style="width:34px;height:34px;flex:none;border-radius:9px;display:grid;place-items:center;font-size:11.5px;font-weight:600;color:#ffdfe1;background:linear-gradient(160deg, #8f1a21, #4a0d11)">{{ s.nombre[0]|upper }}{{ s.apellido[0]|upper }}</span>
+                                                <div style="min-width:0">
+                                                    <a href="{{ url_for('ver_socio', dni=s.dni) }}" style="font-weight:500;color:#f4f4f5;text-decoration:none;white-space:nowrap">{{ s.nombre }} {{ s.apellido }}</a>
+                                                    <div style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:11.5px;color:#a0a0aa;margin-top:1px">DNI {{ s.dni }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td style="padding:10px 12px;color:#c2c2ca;white-space:nowrap">{{ s.plan or '—' }}</td>
+                                        <td style="padding:10px 12px;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12.5px;color:#dcdce2;white-space:nowrap">{{ s.fecha_proximo_vencimiento.strftime('%d/%m/%Y') if s.fecha_proximo_vencimiento else 'Nunca pagó' }}</td>
+                                        <td style="padding:10px 12px">
+                                            {% if vista == 'vencidos' %}
+                                                {% if s.dias is none %}
+                                                    <span style="display:inline-flex;align-items:center;min-height:24px;padding:0 9px;border-radius:7px;border:#b3262e solid 1px;background:#4a1418;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;font-weight:500;color:#fff;white-space:nowrap">Sin pagos</span>
+                                                {% elif s.dias <= 7 %}
+                                                    <span style="display:inline-flex;align-items:center;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid rgba(240,163,167,0.35);background:rgba(240,163,167,0.08);font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#f7c6c8;white-space:nowrap">{{ s.dias }}d</span>
+                                                {% elif s.dias <= 30 %}
+                                                    <span style="display:inline-flex;align-items:center;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid rgba(226,50,59,0.45);background:rgba(226,50,59,0.12);font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#ff9aa0;white-space:nowrap">{{ s.dias }}d</span>
+                                                {% else %}
+                                                    <span style="display:inline-flex;align-items:center;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid #b3262e;background:#4a1418;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;font-weight:500;color:#fff;white-space:nowrap">{{ s.dias }}d</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span style="display:inline-flex;align-items:center;min-height:24px;padding:0 9px;border-radius:7px;border:1px solid rgba(232,170,72,0.4);background:rgba(232,170,72,0.1);font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:12px;color:#f2c47e;white-space:nowrap">{{ s.dias }}d</span>
+                                            {% endif %}
+                                        </td>
+                                        <td style="padding:10px 12px;text-align:right;font-family:'IBM Plex Mono', ui-monospace, monospace;font-variant-numeric:tabular-nums;white-space:nowrap">{{ '$' + '%.0f'|format(s.ultimo_monto) if s.ultimo_monto else '—' }}</td>
+                                        <td style="padding:10px 12px;font-size:12.5px;color:#a0a0aa;white-space:nowrap">{{ s.telefono or s.email or '—' }}</td>
+                                        <td style="padding:10px 14px">
+                                            <div style="display:flex;align-items:center;justify-content:flex-end;gap:6px">
+                                                <a href="{{ url_for('nuevo_pago', dni=s.dni) }}" style="min-height:34px;padding:0 13px;display:inline-flex;align-items:center;background:{{ '#e2323b' if vista == 'vencidos' else 'transparent' }};border:1px solid {{ '#e2323b' if vista == 'vencidos' else 'rgba(255,255,255,0.16)' }};border-radius:8px;font-size:12.5px;font-weight:{{ '600' if vista == 'vencidos' else '500' }};color:{{ '#fff' if vista == 'vencidos' else '#f4f4f5' }};text-decoration:none;white-space:nowrap">
+                                                    {{ 'Cobrar' if vista == 'vencidos' else 'Cobrar por adelantado' }}
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr><td colspan="7" style="padding:34px 16px;text-align:center;color:#a0a0aa">
+                                        {{ '¡Sin socios vencidos! 🎉' if vista == 'vencidos' else 'Nadie vence en los próximos ' + dias_limite|string + ' días.' }}
+                                    </td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </main>
         </div>
     </div>
 </body>

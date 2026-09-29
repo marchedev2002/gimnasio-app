@@ -227,7 +227,7 @@ def datos_dashboard():
 
 
 def render_dashboard(error=None):
-    return render_dashboard(error==error, **datos_dashboard())
+    return render_template('index.html', error=error, **datos_dashboard())
 
 
 @app.route('/')

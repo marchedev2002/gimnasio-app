@@ -101,6 +101,14 @@
                                     </div>
                                     <span class="monto-real" style="display:none;font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:13.5px;font-weight:500;color:#7ae0a8;font-variant-numeric:tabular-nums;white-space:nowrap">+${{ "%.0f"|format(p.monto) }}</span>
                                     <span class="monto-oculto" aria-label="Monto oculto" style="font-family:'IBM Plex Mono', ui-monospace, monospace;font-size:13.5px;color:#6e6e78;letter-spacing:0.08em">••••••</span>
+                                    <a href="{{ url_for('editar_pago', id_pago=p.id_pago) }}" title="Editar pago" style="width:28px;height:28px;flex:none;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;text-decoration:none">
+                                        <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"></path></svg>
+                                    </a>
+                                    <form action="{{ url_for('eliminar_pago', id_pago=p.id_pago) }}" method="POST" onsubmit="return confirm('¿Eliminar este pago? El vencimiento del socio se recalculará según su pago anterior.');">
+                                        <button type="submit" title="Eliminar pago" style="width:28px;height:28px;flex:none;display:inline-flex;align-items:center;justify-content:center;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:7px;color:#a0a0aa;cursor:pointer">
+                                            <svg width="13" height="13" viewBox="0 0 256 256" fill="currentColor"><path d="M216,48H176V40a24,24,0,0,0-24-24H104A24,24,0,0,0,80,40v8H40a8,8,0,0,0,0,16h8V208a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V64h8a8,8,0,0,0,0-16ZM96,40a8,8,0,0,1,8-8h48a8,8,0,0,1,8,8v8H96Zm96,168H64V64H192Z"></path></svg>
+                                        </button>
+                                    </form>
                                 </div>
                             {% else %}
                                 <p style="font-size:12.5px;color:#6e6e78;padding:10px 2px">Todavía no hay pagos registrados.</p>

@@ -66,6 +66,33 @@ def calcular_siguiente_vencimiento(fecha_base, dia_vencimiento):
     dia = min(dia_vencimiento, ultimo_dia_del_mes)  # por si el día no existe en ese mes (ej: 31 en febrero)
     return date(anio, mes, dia)
 
+def recalcular_vencimiento_desde_pagos(cursor, dni, id_gimnasio):
+    """Recalcula fecha_proximo_vencimiento de un socio en base a su pago
+    más reciente que quede registrado (se usa después de borrar un pago)."""
+    cursor.execute("""
+        SELECT id_mes, anio FROM PAGO
+        WHERE dni = %s AND id_gimnasio = %s
+        ORDER BY anio DESC, id_mes DESC LIMIT 1
+    """, (dni, id_gimnasio))
+    ultimo = cursor.fetchone()
+
+    cursor.execute("SELECT dia_vencimiento FROM USUARIO WHERE dni = %s AND id_gimnasio = %s", (dni, id_gimnasio))
+    socio = cursor.fetchone()
+    dia_vto = socio['dia_vencimiento']
+
+    if not ultimo:
+        nueva_fecha = None
+    else:
+        ultimo_dia_mes = calendar.monthrange(ultimo['anio'], ultimo['id_mes'])[1]
+        dia_ajustado = min(dia_vto, ultimo_dia_mes)
+        fecha_periodo = date(ultimo['anio'], ultimo['id_mes'], dia_ajustado)
+        nueva_fecha = calcular_siguiente_vencimiento(fecha_periodo, dia_vto)
+
+    cursor.execute(
+        "UPDATE USUARIO SET fecha_proximo_vencimiento = %s WHERE dni = %s AND id_gimnasio = %s",
+        (nueva_fecha, dni, id_gimnasio)
+    )
+
 def calcular_resumen_pagos(cursor, id_gimnasio, fecha_desde, fecha_hasta=None):
     if fecha_hasta:
         cursor.execute("""
@@ -164,7 +191,7 @@ def datos_dashboard():
         pico_hora = f"{h:02d}:00–{(h + 1) % 24:02d}:00"
 
     cursor.execute("""
-        SELECT USUARIO.nombre, USUARIO.apellido, PAGO.fecha_pago, PAGO.metodo_pago,
+        SELECT PAGO.id_pago, USUARIO.nombre, USUARIO.apellido, PAGO.fecha_pago, PAGO.metodo_pago,
                PRECIO.tipo_membresia, PRECIO.monto
         FROM PAGO
         JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
@@ -177,6 +204,7 @@ def datos_dashboard():
     for p in cursor.fetchall():
         cuando = 'hoy' if p['fecha_pago'] == hoy else p['fecha_pago'].strftime('%d/%m')
         ultimos_pagos.append({
+            'id_pago': p['id_pago'],
             'iniciales': (p['nombre'][0] + p['apellido'][0]).upper(),
             'nombre': f"{p['nombre']} {p['apellido']}",
             'detalle': f"{p['metodo_pago']} · {p['tipo_membresia']} · {cuando}",
@@ -229,6 +257,80 @@ def datos_dashboard():
 def render_dashboard(error=None):
     return render_template('index.html', error=error, **datos_dashboard())
 
+@app.route('/pago/editar/<int:id_pago>', methods=['GET', 'POST'])
+@login_requerido
+def editar_pago(id_pago):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    id_gim = session['id_gimnasio']
+
+    cursor.execute("""
+        SELECT PAGO.*, USUARIO.nombre, USUARIO.apellido
+        FROM PAGO JOIN USUARIO ON PAGO.dni = USUARIO.dni AND PAGO.id_gimnasio = USUARIO.id_gimnasio
+        WHERE PAGO.id_pago = %s AND PAGO.id_gimnasio = %s
+    """, (id_pago, id_gim))
+    pago = cursor.fetchone()
+
+    if not pago:
+        cursor.close()
+        conn.close()
+        return render_dashboard(error="No se encontró ese pago.")
+
+    if request.method == 'GET':
+        cursor.execute(
+            "SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY tipo_membresia",
+            (id_gim,)
+        )
+        precios = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('form_editar_pago.html', pago=pago, precios=precios)
+
+    id_precio = request.form.get('id_precio', '').strip()
+    metodo_pago = request.form.get('metodo_pago', '').strip()
+
+    if not id_precio or not metodo_pago:
+        cursor.execute(
+            "SELECT id_precio, tipo_membresia, monto FROM PRECIO WHERE activo = TRUE AND id_gimnasio = %s ORDER BY tipo_membresia",
+            (id_gim,)
+        )
+        precios = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return render_template('form_editar_pago.html', pago=pago, precios=precios, error="Completá el plan y el método de pago.")
+
+    cursor.execute(
+        "UPDATE PAGO SET id_precio = %s, metodo_pago = %s WHERE id_pago = %s AND id_gimnasio = %s",
+        (id_precio, metodo_pago, id_pago, id_gim)
+    )
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('index'))
+
+
+@app.route('/pago/eliminar/<int:id_pago>', methods=['POST'])
+@login_requerido
+def eliminar_pago(id_pago):
+    conn = get_connection()
+    cursor = conn.cursor(dictionary=True)
+    id_gim = session['id_gimnasio']
+
+    cursor.execute("SELECT dni FROM PAGO WHERE id_pago = %s AND id_gimnasio = %s", (id_pago, id_gim))
+    pago = cursor.fetchone()
+    if not pago:
+        cursor.close()
+        conn.close()
+        return redirect(url_for('index'))
+
+    cursor.execute("DELETE FROM PAGO WHERE id_pago = %s AND id_gimnasio = %s", (id_pago, id_gim))
+    recalcular_vencimiento_desde_pagos(cursor, pago['dni'], id_gim)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return redirect(url_for('index'))
 
 @app.route('/')
 @login_requerido
